@@ -2,7 +2,7 @@ from typing import List
 
 import pandas as pd
 
-from src.data.candle import Candle
+from src.models.candle import Candle
 from src.utils.logger import logger
 
 
