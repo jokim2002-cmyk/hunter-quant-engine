@@ -53,49 +53,32 @@ Completed:
 - SwingPoint Model
 - Swing Detection Engine
 - Swing Configuration
+- Candle Model Testing
+- SwingPoint Model Testing
+- Swing Detection Engine Testing
+- BOSPoint Model
+- BOS Configuration
+- BOSEngine
+- BOSEngine Basic Testing
 
 In Progress:
 
-- Swing Detection Testing
+- BOSEngine Edge Case Testing
 
 Upcoming:
 
-- BOS Detection
 - CHOCH Detection
-
 ---
 
-## Architecture
+## Current Test Coverage
+
+- Candle Model
+- SwingPoint Model
+- BOSPoint Model
+- Swing Detection Engine
+- BOSEngine
+
+Current Test Status:
 
 ```text
-AI Algo Trading Framework
-│
-├── Config Layer
-│
-├── Data Layer
-│
-├── Models
-│
-├── Validation Layer
-│
-├── Market Structure Engines
-│   ├── Swing Detection
-│   ├── BOS Detection
-│   ├── CHOCH Detection
-│   ├── Liquidity Detection
-│   ├── Fair Value Gap Detection
-│   └── Order Block Detection
-│
-├── Strategy Engine
-│
-├── Risk Engine
-│
-├── Backtesting Engine
-│
-├── Paper Trading Engine
-│
-├── Live Trading Engine
-│
-├── AI Decision Engine
-│
-└── Reporting & Analytics
+20 passed
