@@ -1,4 +1,5 @@
 from src.config import settings
+from src.config.swing_config import DEFAULT_SWING_CONFIG
 from src.utils.logger import logger
 from src.data.loader import load_csv_data
 from src.data.candle_factory import create_candles_from_dataframe
@@ -23,7 +24,7 @@ def main():
     print(f"Body Size: {first_candle.body_size}")
     print(f"Range Size: {first_candle.range_size}")
 
-    swing_engine = SwingDetectionEngine(lookback=1)
+    swing_engine = SwingDetectionEngine(lookback=DEFAULT_SWING_CONFIG.lookback)
     swing_points = swing_engine.detect_swings(candles)
 
     print("Detected Swing Points:")

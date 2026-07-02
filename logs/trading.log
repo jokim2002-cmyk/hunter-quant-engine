@@ -57,3 +57,10 @@
 2026-07-03 00:54:25,115 | INFO | Historical data loaded successfully. Rows: 3
 2026-07-03 00:54:25,115 | INFO | Creating candle objects from dataframe
 2026-07-03 00:54:25,117 | INFO | Created 3 candle objects
+2026-07-03 01:00:47,348 | INFO | Application Started
+2026-07-03 01:00:47,349 | INFO | Loading historical data from: data/raw/nifty_5min.csv
+2026-07-03 01:00:47,359 | INFO | Starting market data validation
+2026-07-03 01:00:47,365 | INFO | Market data validation completed successfully
+2026-07-03 01:00:47,366 | INFO | Historical data loaded successfully. Rows: 3
+2026-07-03 01:00:47,366 | INFO | Creating candle objects from dataframe
+2026-07-03 01:00:47,368 | INFO | Created 3 candle objects

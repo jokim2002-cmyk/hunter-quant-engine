@@ -22,3 +22,27 @@ Status: Started
 - AI Trade Analysis
 - Paper Trading
 - Live Trading with Fyers
+## Milestone 2: Market Structure Foundation
+
+### Completed
+- SwingPoint Model
+
+### In Progress
+- Swing Detection Engine
+
+### Upcoming
+- BOS Detection
+- CHOCH Detection
+### Milestone 2: Market Structure Foundation
+
+Completed:
+- SwingPoint Model
+- Swing Detection Engine
+- Swing Configuration
+
+In Progress:
+- Swing Detection Testing
+
+Upcoming:
+- BOS Engine
+- CHOCH Engine
