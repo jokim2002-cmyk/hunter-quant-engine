@@ -43,3 +43,17 @@
 2026-07-03 00:31:39,904 | INFO | Historical data loaded successfully. Rows: 3
 2026-07-03 00:31:39,905 | INFO | Creating candle objects from dataframe
 2026-07-03 00:31:39,906 | INFO | Created 3 candle objects
+2026-07-03 00:54:07,443 | INFO | Application Started
+2026-07-03 00:54:07,445 | INFO | Loading historical data from: data/raw/nifty_5min.csv
+2026-07-03 00:54:07,455 | INFO | Starting market data validation
+2026-07-03 00:54:07,461 | INFO | Market data validation completed successfully
+2026-07-03 00:54:07,462 | INFO | Historical data loaded successfully. Rows: 3
+2026-07-03 00:54:07,462 | INFO | Creating candle objects from dataframe
+2026-07-03 00:54:07,464 | INFO | Created 3 candle objects
+2026-07-03 00:54:25,083 | INFO | Application Started
+2026-07-03 00:54:25,084 | INFO | Loading historical data from: data/raw/nifty_5min.csv
+2026-07-03 00:54:25,109 | INFO | Starting market data validation
+2026-07-03 00:54:25,115 | INFO | Market data validation completed successfully
+2026-07-03 00:54:25,115 | INFO | Historical data loaded successfully. Rows: 3
+2026-07-03 00:54:25,115 | INFO | Creating candle objects from dataframe
+2026-07-03 00:54:25,117 | INFO | Created 3 candle objects
