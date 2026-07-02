@@ -16,10 +16,14 @@ This project is a professional AI-based algorithmic trading framework focused on
 
 The goal is not to build a simple buy/sell bot.
 
-The goal is to build a modular, testable, scalable and explainable trading framework that can support:
+The goal is to build a modular, testable, scalable, and explainable trading framework that can support:
 
 - Smart Money Concepts
 - Market Structure
+- Liquidity
+- Equal High / Equal Low
+- Fair Value Gap
+- Order Blocks
 - Backtesting
 - Paper Trading
 - Live Trading
@@ -29,56 +33,24 @@ The goal is to build a modular, testable, scalable and explainable trading frame
 
 ---
 
-## Current Status
-
-### Milestone 1: Foundation
-
-Completed:
-
-- Project Structure
-- Config System
-- Logging System
-- Historical Data Loader
-- Data Validation
-- Candle Model
-- Candle Factory
-- Git Initialization
-- Git Ignore
-- Professional Architecture Refactor
-
-### Milestone 2: Market Structure Foundation
-
-Completed:
-
-- SwingPoint Model
-- Swing Detection Engine
-- Swing Configuration
-- Candle Model Testing
-- SwingPoint Model Testing
-- Swing Detection Engine Testing
-- BOSPoint Model
-- BOS Configuration
-- BOSEngine
-- BOSEngine Basic Testing
-
-In Progress:
-
-- BOSEngine Edge Case Testing
-
-Upcoming:
-
-- CHOCH Detection
----
-
-## Current Test Coverage
-
-- Candle Model
-- SwingPoint Model
-- BOSPoint Model
-- Swing Detection Engine
-- BOSEngine
-
-Current Test Status:
+## Current Architecture
 
 ```text
-20 passed
+Candles
+    │
+    ▼
+Data Validation
+    │
+    ▼
+SwingDetectionEngine
+    │
+    ▼
+MarketStructureBuilder
+    │
+    ▼
+MarketStructurePoint
+(HH / HL / LH / LL)
+    │
+    ├──────────────┐
+    ▼              ▼
+BOSEngine     CHOCHEngine
