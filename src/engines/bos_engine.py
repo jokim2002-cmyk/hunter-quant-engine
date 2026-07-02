@@ -10,12 +10,13 @@ from src.config.bos_config import BOSConfig, DEFAULT_BOS_CONFIG
 from src.engines.helpers.break_detector import BreakDetector
 from src.models.bos_point import BOSPoint, BOSType
 from src.models.candle import Candle
-from src.models.swing_point import SwingPoint
+from src.models.market_structure import MarketStructurePoint
 
 
 class BOSEngine:
     """
-    Detects bullish and bearish Break of Structure events.
+    Detects bullish and bearish Break of Structure events
+    using MarketStructurePoint.
     """
 
     def __init__(self, config: BOSConfig = DEFAULT_BOS_CONFIG) -> None:
@@ -25,14 +26,16 @@ class BOSEngine:
     def detect_bos(
         self,
         candles: List[Candle],
-        swing_points: List[SwingPoint],
+        market_structure_points: List[MarketStructurePoint],
     ) -> List[BOSPoint]:
         bos_points: List[BOSPoint] = []
 
-        if not candles or not swing_points:
+        if not candles or not market_structure_points:
             return bos_points
 
-        for swing_point in swing_points:
+        for structure_point in market_structure_points:
+            swing_point = structure_point.swing_point
+
             break_result = self.break_detector.find_close_break(
                 candles=candles,
                 swing_point=swing_point,
@@ -55,7 +58,7 @@ class BOSEngine:
                     timestamp=break_candle.datetime,
                     break_price=break_candle.close,
                     bos_type=bos_type,
-                    broken_swing=swing_point,
+                    broken_swing=structure_point,
                 )
             )
 
