@@ -73,3 +73,65 @@ def test_bos_engine_detects_bearish_bos_on_close_below_swing_low():
     assert result[0].break_price == 89
     assert result[0].bos_type == BOSType.BEARISH
     assert result[0].broken_swing == swing_low
+
+
+def test_bos_engine_does_not_detect_bos_when_only_wick_breaks():
+    candles = [
+        make_candle(0, 100),
+        Candle(
+            datetime=datetime(2026, 1, 1, 9, 20),
+            open=109,
+            high=111,
+            low=108,
+            close=109,
+            volume=1000,
+        ),
+    ]
+
+    swing_high = SwingPoint(
+        index=0,
+        timestamp=candles[0].datetime,
+        price=110,
+        swing_type=SwingPointType.SWING_HIGH,
+    )
+
+    engine = BOSEngine()
+
+    result = engine.detect_bos(candles, [swing_high])
+
+    assert result == []
+
+
+def test_bos_engine_returns_empty_when_no_swing_points():
+    candles = [
+        make_candle(0, 100),
+        make_candle(1, 101),
+    ]
+
+    engine = BOSEngine()
+
+    result = engine.detect_bos(candles, [])
+
+    assert result == []
+
+
+def test_bos_engine_creates_only_one_bos_for_same_swing():
+    candles = [
+        make_candle(0, 100),
+        make_candle(1, 111),
+        make_candle(2, 112),
+        make_candle(3, 115),
+    ]
+
+    swing_high = SwingPoint(
+        index=0,
+        timestamp=candles[0].datetime,
+        price=110,
+        swing_type=SwingPointType.SWING_HIGH,
+    )
+
+    engine = BOSEngine()
+
+    result = engine.detect_bos(candles, [swing_high])
+
+    assert len(result) == 1
