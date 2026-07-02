@@ -1,48 +1,101 @@
-# AI Algo Trading Platform
+# AI Algo Trading Framework
 
-Professional AI-based NIFTY Options Algo Trading Platform.
+## Mission Statement
 
-## Phase 1
+Build a production-grade, institutional-quality, AI-powered algorithmic trading framework using clean architecture, professional engineering, rigorous testing, and explainable trading logic.
 
-Status: Started
+## Project Motto
 
-### Completed Modules
+Engineer it right once, improve it forever.
 
-- [x] Module 1: Project folder structure
-- [x] Module 2: Config system
-- [x] Module 3: Logging system
-- [ ] Module 4: Historical data loader
-- [ ] Module 5: Basic backtesting engine
+---
 
-## Final Goal
+## Project Vision
 
-- Historical Backtesting
-- Auto Option Selection
-- SMC / Liquidity / BOS / CHOCH / FVG / Order Block Engine
-- AI Trade Analysis
+This project is a professional AI-based algorithmic trading framework focused on NIFTY Options.
+
+The goal is not to build a simple buy/sell bot.
+
+The goal is to build a modular, testable, scalable and explainable trading framework that can support:
+
+- Smart Money Concepts
+- Market Structure
+- Backtesting
 - Paper Trading
-- Live Trading with Fyers
-## Milestone 2: Market Structure Foundation
+- Live Trading
+- AI-based Trade Analysis
+- Risk Management
+- Performance Analytics
 
-### Completed
-- SwingPoint Model
+---
 
-### In Progress
-- Swing Detection Engine
+## Current Status
 
-### Upcoming
-- BOS Detection
-- CHOCH Detection
+### Milestone 1: Foundation
+
+Completed:
+
+- Project Structure
+- Config System
+- Logging System
+- Historical Data Loader
+- Data Validation
+- Candle Model
+- Candle Factory
+- Git Initialization
+- Git Ignore
+- Professional Architecture Refactor
+
 ### Milestone 2: Market Structure Foundation
 
 Completed:
+
 - SwingPoint Model
 - Swing Detection Engine
 - Swing Configuration
 
 In Progress:
+
 - Swing Detection Testing
 
 Upcoming:
-- BOS Engine
-- CHOCH Engine
+
+- BOS Detection
+- CHOCH Detection
+
+---
+
+## Architecture
+
+```text
+AI Algo Trading Framework
+│
+├── Config Layer
+│
+├── Data Layer
+│
+├── Models
+│
+├── Validation Layer
+│
+├── Market Structure Engines
+│   ├── Swing Detection
+│   ├── BOS Detection
+│   ├── CHOCH Detection
+│   ├── Liquidity Detection
+│   ├── Fair Value Gap Detection
+│   └── Order Block Detection
+│
+├── Strategy Engine
+│
+├── Risk Engine
+│
+├── Backtesting Engine
+│
+├── Paper Trading Engine
+│
+├── Live Trading Engine
+│
+├── AI Decision Engine
+│
+└── Reporting & Analytics
