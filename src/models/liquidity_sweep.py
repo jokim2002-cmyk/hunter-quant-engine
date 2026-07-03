@@ -19,5 +19,7 @@ class LiquiditySweep:
     liquidity_index: int
     sweep_price: float
     liquidity_price: float
+    break_distance: float
+    reclaimed: bool
     sweep_type: LiquiditySweepType
     created_at: int
