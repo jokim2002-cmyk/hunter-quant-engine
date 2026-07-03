@@ -22,3 +22,15 @@ class OrderBlock:
     created_at: datetime
     mitigated: bool = False
     mitigated_at: Optional[datetime] = None
+
+    def is_bullish(self) -> bool:
+        """
+        Return True when the order block is bullish.
+        """
+        return self.order_block_type == OrderBlockType.BULLISH
+
+    def is_bearish(self) -> bool:
+        """
+        Return True when the order block is bearish.
+        """
+        return self.order_block_type == OrderBlockType.BEARISH
