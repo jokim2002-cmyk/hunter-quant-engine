@@ -4,6 +4,8 @@ Backtest Result Model
 Represents an immutable completed backtest result.
 """
 
+from __future__ import annotations
+
 from dataclasses import dataclass
 
 from src.backtesting.performance_summary import PerformanceSummary
@@ -24,3 +26,29 @@ class BacktestResult:
             raise ValueError(
                 "performance_summary.total_trades must match number of trades."
             )
+
+    @classmethod
+    def from_trades(
+        cls,
+        trades: tuple[TradeResult, ...],
+        calculator,
+    ) -> "BacktestResult":
+        """
+        Build a BacktestResult from completed trades.
+
+        Args:
+            trades:
+                Completed historical trades.
+
+            calculator:
+                Performance summary calculator.
+
+        Returns:
+            Fully populated BacktestResult.
+        """
+        summary = calculator.calculate(trades)
+
+        return cls(
+            trades=trades,
+            performance_summary=summary,
+        )

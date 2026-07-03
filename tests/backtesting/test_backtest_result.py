@@ -115,3 +115,23 @@ def test_raises_error_when_summary_trade_count_does_not_match_trades():
             trades=(trade,),
             performance_summary=summary,
         )
+
+from src.backtesting.performance_summary_calculator import (
+    PerformanceSummaryCalculator,
+)
+from tests.builders.backtesting.trade_result_builder import (
+    TradeResultBuilder,
+)
+
+
+def test_builds_backtest_result_from_trade_collection():
+    trade = TradeResultBuilder().build()
+
+    result = BacktestResult.from_trades(
+        trades=(trade,),
+        calculator=PerformanceSummaryCalculator(),
+    )
+
+    assert result.trades == (trade,)
+    assert result.performance_summary.total_trades == 1
+    assert result.performance_summary.winning_trades == 1
