@@ -5,12 +5,14 @@ Defines the abstract contract for all reusable strategy rules.
 """
 
 from abc import ABC, abstractmethod
-from typing import Any
+from typing import Generic, TypeVar
 
 from src.strategy.strategy_context import StrategyContext
 
+T = TypeVar("T")
 
-class BaseRule(ABC):
+
+class BaseRule(ABC, Generic[T]):
     """
     Base contract for all strategy rules.
 
@@ -25,7 +27,10 @@ class BaseRule(ABC):
     """
 
     @abstractmethod
-    def evaluate(self, context: StrategyContext) -> tuple[Any, ...]:
+    def evaluate(
+        self,
+        context: StrategyContext,
+    ) -> tuple[T, ...]:
         """
         Evaluate the rule against a StrategyContext.
 

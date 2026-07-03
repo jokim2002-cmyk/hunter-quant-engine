@@ -8,8 +8,11 @@ from src.strategy.rules.base_rule import BaseRule
 from src.strategy.strategy_context import StrategyContext
 
 
-class DummyRule(BaseRule):
-    def evaluate(self, context: StrategyContext) -> tuple:
+class DummyRule(BaseRule[object]):
+    def evaluate(
+        self,
+        context: StrategyContext,
+    ) -> tuple[object, ...]:
         return ()
 
 
