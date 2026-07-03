@@ -7,6 +7,7 @@ Test builder for creating SwingPoint objects.
 from datetime import datetime
 
 from src.models.swing_point import SwingPoint, SwingPointType
+from tests.builders.common.defaults import DEFAULT_TIMESTAMP
 
 
 class SwingPointBuilder:
@@ -16,7 +17,7 @@ class SwingPointBuilder:
 
     def __init__(self):
         self._index = 1
-        self._timestamp = datetime(2026, 1, 1)
+        self._timestamp = DEFAULT_TIMESTAMP
         self._price = 100.0
         self._swing_type = SwingPointType.SWING_HIGH
 
