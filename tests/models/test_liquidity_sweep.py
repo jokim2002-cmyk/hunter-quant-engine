@@ -60,6 +60,38 @@ def test_create_unreclaimed_liquidity_sweep():
     assert sweep.reclaimed is False
 
 
+def test_high_liquidity_sweep_is_buy_side():
+    sweep = LiquiditySweep(
+        candle_index=10,
+        liquidity_index=5,
+        sweep_price=105.50,
+        liquidity_price=105.00,
+        break_distance=0.50,
+        reclaimed=True,
+        sweep_type=LiquiditySweepType.HIGH,
+        created_at=10,
+    )
+
+    assert sweep.is_buy_side() is True
+    assert sweep.is_sell_side() is False
+
+
+def test_low_liquidity_sweep_is_sell_side():
+    sweep = LiquiditySweep(
+        candle_index=20,
+        liquidity_index=12,
+        sweep_price=94.50,
+        liquidity_price=95.00,
+        break_distance=0.50,
+        reclaimed=True,
+        sweep_type=LiquiditySweepType.LOW,
+        created_at=20,
+    )
+
+    assert sweep.is_sell_side() is True
+    assert sweep.is_buy_side() is False
+
+
 def test_liquidity_sweep_is_immutable():
     sweep = LiquiditySweep(
         candle_index=1,

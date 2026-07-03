@@ -23,3 +23,15 @@ class LiquiditySweep:
     reclaimed: bool
     sweep_type: LiquiditySweepType
     created_at: int
+
+    def is_buy_side(self) -> bool:
+        """
+        Return True when high liquidity was swept.
+        """
+        return self.sweep_type == LiquiditySweepType.HIGH
+
+    def is_sell_side(self) -> bool:
+        """
+        Return True when low liquidity was swept.
+        """
+        return self.sweep_type == LiquiditySweepType.LOW
