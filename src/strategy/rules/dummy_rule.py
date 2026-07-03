@@ -3,7 +3,7 @@ Dummy Rule
 
 Reference implementation of the BaseRule contract.
 
-This rule always evaluates to True and exists solely as a
+This rule always returns an empty tuple and exists solely as a
 minimal example for implementing future market rules.
 """
 
@@ -18,14 +18,14 @@ class DummyRule(BaseRule):
     Intended for architecture validation and developer reference.
     """
 
-    def evaluate(self, context: StrategyContext) -> bool:
+    def evaluate(self, context: StrategyContext) -> tuple:
         """
-        Always returns True.
+        Always returns an empty tuple.
 
         Args:
             context: Immutable strategy context.
 
         Returns:
-            True
+            Empty tuple.
         """
-        return True
+        return ()

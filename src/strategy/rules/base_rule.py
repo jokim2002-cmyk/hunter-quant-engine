@@ -5,6 +5,7 @@ Defines the abstract contract for all reusable strategy rules.
 """
 
 from abc import ABC, abstractmethod
+from typing import Any
 
 from src.strategy.strategy_context import StrategyContext
 
@@ -14,7 +15,7 @@ class BaseRule(ABC):
     Base contract for all strategy rules.
 
     Rules evaluate immutable StrategyContext snapshots and return
-    whether a market condition is present.
+    matching immutable market facts.
 
     Rules do not:
     - create trade signals
@@ -24,7 +25,7 @@ class BaseRule(ABC):
     """
 
     @abstractmethod
-    def evaluate(self, context: StrategyContext) -> bool:
+    def evaluate(self, context: StrategyContext) -> tuple[Any, ...]:
         """
         Evaluate the rule against a StrategyContext.
 
@@ -32,6 +33,7 @@ class BaseRule(ABC):
             context: Immutable market snapshot.
 
         Returns:
-            True if the rule condition is satisfied, otherwise False.
+            Tuple containing all matching immutable market facts.
+            Returns an empty tuple when no match exists.
         """
         raise NotImplementedError

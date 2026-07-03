@@ -12,7 +12,7 @@ def test_dummy_rule_is_base_rule():
     assert isinstance(rule, BaseRule)
 
 
-def test_dummy_rule_always_returns_true():
+def test_dummy_rule_returns_empty_tuple():
     rule = DummyRule()
 
-    assert rule.evaluate(None) is True
+    assert rule.evaluate(None) == ()

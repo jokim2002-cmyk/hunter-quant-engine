@@ -9,8 +9,8 @@ from src.strategy.strategy_context import StrategyContext
 
 
 class DummyRule(BaseRule):
-    def evaluate(self, context: StrategyContext) -> bool:
-        return True
+    def evaluate(self, context: StrategyContext) -> tuple:
+        return ()
 
 
 def test_base_rule_cannot_be_instantiated_directly():
@@ -22,3 +22,5 @@ def test_dummy_rule_implements_base_rule_contract():
     rule = DummyRule()
 
     assert isinstance(rule, BaseRule)
+
+    assert rule.evaluate(None) == ()
