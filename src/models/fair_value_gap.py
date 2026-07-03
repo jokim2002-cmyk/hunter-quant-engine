@@ -24,3 +24,15 @@ class FairValueGap:
     created_at: int
     filled: bool = False
     filled_at: Optional[int] = None
+
+    def is_bullish(self) -> bool:
+        """
+        Return True when this is a bullish Fair Value Gap.
+        """
+        return self.direction == FairValueGapType.BULLISH
+
+    def is_bearish(self) -> bool:
+        """
+        Return True when this is a bearish Fair Value Gap.
+        """
+        return self.direction == FairValueGapType.BEARISH
