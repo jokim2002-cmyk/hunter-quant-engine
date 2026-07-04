@@ -1,0 +1,2 @@
+trade_number,opened_at,closed_at,direction,starting_balance,pnl,brokerage,stt,exchange_transaction_charge,sebi_charge,stamp_duty,gst,total_charges,net_pnl,ending_balance,running_peak,drawdown,drawdown_percent,risk_multiple,exit_reason
+1,2026-01-01T09:40:00,2026-01-01T09:45:00,LONG,10000.0,200.0,2.34,1.0000000000000002,0.2394522,0.0078000000000000005,0.11400000000000002,0.465705396,4.166957596,195.833042404,10195.833042404,10195.833042404,0.0,0.0,2.0,take_profit
