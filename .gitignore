@@ -13,3 +13,5 @@ data/processed/fyers_nifty_5m_normalized.csv
 data/processed/fyers_nifty_5m_trades.csv
 data/processed/fyers_nifty_5m_equity_curve.csv
 data/processed/fyers_nifty_5m_report.txt
+data/processed/fyers_nifty_5m_benchmark_report.txt
+data/processed/fyers_nifty_5m_benchmark_summary.csv
