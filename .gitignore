@@ -15,3 +15,8 @@ data/processed/fyers_nifty_5m_equity_curve.csv
 data/processed/fyers_nifty_5m_report.txt
 data/processed/fyers_nifty_5m_benchmark_report.txt
 data/processed/fyers_nifty_5m_benchmark_summary.csv
+# HQE generated strategy mode benchmark outputs
+data/processed/fyers_nifty_5m_strict_*
+data/processed/fyers_nifty_5m_balanced_*
+data/processed/fyers_nifty_5m_relaxed_*
+data/processed/*mode_benchmark*
