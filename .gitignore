@@ -20,3 +20,7 @@ data/processed/fyers_nifty_5m_strict_*
 data/processed/fyers_nifty_5m_balanced_*
 data/processed/fyers_nifty_5m_relaxed_*
 data/processed/*mode_benchmark*
+# HQE generated strategy experiment outputs
+data/processed/experiments/
+data/processed/strategy_experiment_report.txt
+data/processed/strategy_experiment_summary.csv
