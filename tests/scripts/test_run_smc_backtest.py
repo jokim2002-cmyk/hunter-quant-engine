@@ -2,6 +2,7 @@
 Run SMC Backtest Script Tests
 """
 
+import csv
 from datetime import datetime
 from pathlib import Path
 from types import SimpleNamespace
@@ -16,10 +17,13 @@ from scripts.run_smc_backtest import (
     EXIT_REASON_STOP_LOSS,
     EXIT_REASON_TAKE_PROFIT,
     EXIT_REASON_UNKNOWN,
+    TRADE_EXPORT_COLUMNS,
     build_argument_parser,
     build_report,
     build_risk_profile,
+    export_trades_to_csv,
     infer_exit_reason,
+    trade_to_export_row,
 )
 from src.strategy.signal_type import SignalType
 
@@ -48,6 +52,15 @@ def _completed_trade(
     )
 
 
+def _read_export_rows(csv_path):
+    with csv_path.open(
+        mode="r",
+        newline="",
+        encoding="utf-8",
+    ) as csv_file:
+        return tuple(csv.DictReader(csv_file))
+
+
 def test_build_argument_parser_uses_expected_defaults():
     args = build_argument_parser().parse_args([])
 
@@ -57,6 +70,7 @@ def test_build_argument_parser_uses_expected_defaults():
     assert args.account_balance == DEFAULT_ACCOUNT_BALANCE
     assert args.risk_per_trade == DEFAULT_RISK_PER_TRADE
     assert args.reward_to_risk == DEFAULT_REWARD_TO_RISK
+    assert args.trades_output is None
 
 
 def test_build_argument_parser_accepts_custom_values():
@@ -74,6 +88,8 @@ def test_build_argument_parser_accepts_custom_values():
             "0.02",
             "--reward-to-risk",
             "3.0",
+            "--trades-output",
+            "data/processed/trades.csv",
         ]
     )
 
@@ -83,6 +99,7 @@ def test_build_argument_parser_accepts_custom_values():
     assert args.account_balance == 25000.0
     assert args.risk_per_trade == 0.02
     assert args.reward_to_risk == 3.0
+    assert args.trades_output == "data/processed/trades.csv"
 
 
 def test_build_risk_profile_creates_expected_profile():
@@ -274,3 +291,117 @@ def test_build_report_includes_explainable_short_trade_details():
     assert "Entry Formula: midpoint of selected bearish entry zone." in report
     assert "Stop Loss Formula: selected bearish entry zone high." in report
     assert "PnL Formula: (Entry Price - Exit Price) * Position Size." in report
+
+
+def test_trade_to_export_row_includes_long_trade_details():
+    trade = _completed_trade(
+        signal_type=SignalType.LONG,
+        entry_price=100.0,
+        exit_price=108.0,
+        stop_loss=96.0,
+        take_profit=108.0,
+        position_size=50.0,
+        pnl=400.0,
+        risk_multiple=2.0,
+    )
+
+    row = trade_to_export_row(
+        trade=trade,
+        trade_number=1,
+    )
+
+    assert tuple(row.keys()) == TRADE_EXPORT_COLUMNS
+    assert row["trade_number"] == 1
+    assert row["direction"] == "LONG"
+    assert row["opened_at"] == "2026-01-01T09:30:00"
+    assert row["closed_at"] == "2026-01-01T09:45:00"
+    assert row["entry_price"] == 100.0
+    assert row["stop_loss"] == 96.0
+    assert row["take_profit"] == 108.0
+    assert row["exit_price"] == 108.0
+    assert row["exit_reason"] == "take_profit"
+    assert row["position_size"] == 50.0
+    assert row["pnl"] == 400.0
+    assert row["risk_multiple"] == 2.0
+    assert row["entry_logic"] == "Bullish OB midpoint first, Bullish FVG midpoint fallback"
+    assert row["stop_loss_logic"] == "Selected bullish entry zone low"
+    assert row["take_profit_logic"] == "Fixed reward-to-risk target from RiskManager"
+    assert row["position_size_logic"] == "Fixed-risk sizing from RiskManager"
+    assert row["pnl_formula"] == "(Exit Price - Entry Price) * Position Size"
+
+
+def test_trade_to_export_row_includes_short_trade_details():
+    trade = _completed_trade(
+        signal_type=SignalType.SHORT,
+        entry_price=100.0,
+        exit_price=92.0,
+        stop_loss=104.0,
+        take_profit=92.0,
+        position_size=50.0,
+        pnl=400.0,
+        risk_multiple=2.0,
+    )
+
+    row = trade_to_export_row(
+        trade=trade,
+        trade_number=1,
+    )
+
+    assert row["direction"] == "SHORT"
+    assert row["entry_logic"] == "Bearish OB midpoint first, Bearish FVG midpoint fallback"
+    assert row["stop_loss_logic"] == "Selected bearish entry zone high"
+    assert row["pnl_formula"] == "(Entry Price - Exit Price) * Position Size"
+
+
+def test_export_trades_to_csv_writes_header_and_trade_rows(tmp_path):
+    output_path = tmp_path / "exports" / "trades.csv"
+    first_trade = _completed_trade(
+        signal_type=SignalType.LONG,
+        entry_price=100.0,
+        exit_price=108.0,
+        stop_loss=96.0,
+        take_profit=108.0,
+        pnl=400.0,
+    )
+    second_trade = _completed_trade(
+        signal_type=SignalType.SHORT,
+        entry_price=100.0,
+        exit_price=92.0,
+        stop_loss=104.0,
+        take_profit=92.0,
+        pnl=300.0,
+    )
+
+    exported_path = export_trades_to_csv(
+        trades=(first_trade, second_trade),
+        output_path=output_path,
+    )
+
+    rows = _read_export_rows(output_path)
+
+    assert exported_path == output_path
+    assert output_path.exists()
+    assert len(rows) == 2
+    assert tuple(rows[0].keys()) == TRADE_EXPORT_COLUMNS
+    assert rows[0]["trade_number"] == "1"
+    assert rows[0]["direction"] == "LONG"
+    assert rows[0]["exit_reason"] == "take_profit"
+    assert rows[0]["pnl"] == "400.0"
+    assert rows[1]["trade_number"] == "2"
+    assert rows[1]["direction"] == "SHORT"
+    assert rows[1]["pnl"] == "300.0"
+
+
+def test_export_trades_to_csv_writes_header_when_no_trades_exist(tmp_path):
+    output_path = tmp_path / "exports" / "empty_trades.csv"
+
+    exported_path = export_trades_to_csv(
+        trades=(),
+        output_path=output_path,
+    )
+
+    rows = _read_export_rows(output_path)
+
+    assert exported_path == output_path
+    assert output_path.exists()
+    assert rows == ()

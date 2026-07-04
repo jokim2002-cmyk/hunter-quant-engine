@@ -6,6 +6,7 @@ CSV historical candle data.
 """
 
 import argparse
+import csv
 import sys
 from pathlib import Path
 from typing import Any
@@ -43,6 +44,26 @@ EXIT_REASON_STOP_LOSS = "stop_loss"
 EXIT_REASON_UNKNOWN = "unknown"
 
 PRICE_TOLERANCE = 0.000000001
+
+TRADE_EXPORT_COLUMNS = (
+    "trade_number",
+    "direction",
+    "opened_at",
+    "closed_at",
+    "entry_price",
+    "stop_loss",
+    "take_profit",
+    "exit_price",
+    "exit_reason",
+    "position_size",
+    "pnl",
+    "risk_multiple",
+    "entry_logic",
+    "stop_loss_logic",
+    "take_profit_logic",
+    "position_size_logic",
+    "pnl_formula",
+)
 
 
 def build_argument_parser() -> argparse.ArgumentParser:
@@ -88,6 +109,11 @@ def build_argument_parser() -> argparse.ArgumentParser:
         type=float,
         default=DEFAULT_REWARD_TO_RISK,
         help="Reward-to-risk multiple used for take-profit planning.",
+    )
+    parser.add_argument(
+        "--trades-output",
+        default=None,
+        help="Optional CSV path for exporting completed trade details.",
     )
 
     return parser
@@ -294,6 +320,45 @@ def entry_logic_for_signal(
     )
 
 
+def trade_export_logic_fields(
+    signal_type: Any,
+) -> dict[str, str]:
+    """
+    Build CSV-friendly trade logic fields.
+
+    Args:
+        signal_type: SignalType enum or enum-like/string value.
+
+    Returns:
+        Mapping of logic columns to explanations.
+    """
+    if _is_long_signal(signal_type):
+        return {
+            "entry_logic": "Bullish OB midpoint first, Bullish FVG midpoint fallback",
+            "stop_loss_logic": "Selected bullish entry zone low",
+            "take_profit_logic": "Fixed reward-to-risk target from RiskManager",
+            "position_size_logic": "Fixed-risk sizing from RiskManager",
+            "pnl_formula": pnl_formula_for_signal(signal_type),
+        }
+
+    if _is_short_signal(signal_type):
+        return {
+            "entry_logic": "Bearish OB midpoint first, Bearish FVG midpoint fallback",
+            "stop_loss_logic": "Selected bearish entry zone high",
+            "take_profit_logic": "Fixed reward-to-risk target from RiskManager",
+            "position_size_logic": "Fixed-risk sizing from RiskManager",
+            "pnl_formula": pnl_formula_for_signal(signal_type),
+        }
+
+    return {
+        "entry_logic": "Unknown",
+        "stop_loss_logic": "Unknown",
+        "take_profit_logic": "Unknown",
+        "position_size_logic": "Unknown",
+        "pnl_formula": pnl_formula_for_signal(signal_type),
+    }
+
+
 def _is_long_signal(
     signal_type: Any,
 ) -> bool:
@@ -391,6 +456,81 @@ def build_trade_details_section(
         )
 
     return lines
+
+
+def trade_to_export_row(
+    trade: Any,
+    trade_number: int,
+) -> dict[str, Any]:
+    """
+    Convert a completed trade into a CSV export row.
+
+    Args:
+        trade: TradeResult-like object.
+        trade_number: One-based trade number.
+
+    Returns:
+        CSV export row.
+    """
+    logic_fields = trade_export_logic_fields(trade.signal_type)
+
+    return {
+        "trade_number": trade_number,
+        "direction": format_signal_type(trade.signal_type),
+        "opened_at": trade.opened_at.isoformat(),
+        "closed_at": trade.closed_at.isoformat(),
+        "entry_price": trade.entry_price,
+        "stop_loss": trade.stop_loss,
+        "take_profit": trade.take_profit,
+        "exit_price": trade.exit_price,
+        "exit_reason": infer_exit_reason(trade),
+        "position_size": trade.position_size,
+        "pnl": trade.pnl,
+        "risk_multiple": trade.risk_multiple,
+        **logic_fields,
+    }
+
+
+def export_trades_to_csv(
+    trades: tuple[Any, ...],
+    output_path: str | Path,
+) -> Path:
+    """
+    Export completed trades to CSV.
+
+    Args:
+        trades: Completed trade results.
+        output_path: Output CSV path.
+
+    Returns:
+        Output CSV path.
+    """
+    csv_path = Path(output_path)
+    csv_path.parent.mkdir(
+        parents=True,
+        exist_ok=True,
+    )
+
+    with csv_path.open(
+        mode="w",
+        newline="",
+        encoding="utf-8",
+    ) as csv_file:
+        writer = csv.DictWriter(
+            csv_file,
+            fieldnames=TRADE_EXPORT_COLUMNS,
+        )
+        writer.writeheader()
+
+        for index, trade in enumerate(trades, start=1):
+            writer.writerow(
+                trade_to_export_row(
+                    trade=trade,
+                    trade_number=index,
+                )
+            )
+
+    return csv_path
 
 
 def build_report(
@@ -500,6 +640,14 @@ def main() -> None:
             timeframe=args.timeframe,
         )
     )
+
+    if args.trades_output is not None:
+        exported_path = export_trades_to_csv(
+            trades=tuple(result.trades),
+            output_path=args.trades_output,
+        )
+
+        print(format_metric("Trades Exported", exported_path))
 
 
 if __name__ == "__main__":
