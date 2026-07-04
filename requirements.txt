@@ -3,3 +3,5 @@ numpy
 matplotlib
 python-dotenv
 pydantic
+pytest
+fyers-apiv3
