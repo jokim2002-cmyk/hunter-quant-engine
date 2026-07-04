@@ -7,6 +7,10 @@ Walk-forward pipeline for generating trade plans and running backtests.
 from src.backtesting.backtest_engine import BacktestEngine
 from src.backtesting.backtest_result import BacktestResult
 from src.backtesting.base_backtest_pipeline import BaseBacktestPipeline
+from src.backtesting.base_trade_plan_deduplicator import (
+    BaseTradePlanDeduplicator,
+)
+from src.backtesting.trade_plan_deduplicator import TradePlanDeduplicator
 from src.historical_data.providers.base_historical_data_provider import (
     BaseHistoricalDataProvider,
 )
@@ -35,7 +39,8 @@ class BacktestPipeline(BaseBacktestPipeline):
 
     The pipeline loads historical candles, delegates StrategyContext creation,
     generates strategy signals, converts them into trade candidates, creates
-    risk-approved trade plans, and delegates execution to BacktestEngine.
+    risk-approved trade plans, de-duplicates repeated trade plans, and delegates
+    execution to BacktestEngine.
     """
 
     def __init__(
@@ -48,6 +53,7 @@ class BacktestPipeline(BaseBacktestPipeline):
         symbol: str,
         timeframe: str,
         strategy_context_factory: BaseStrategyContextFactory | None = None,
+        trade_plan_deduplicator: BaseTradePlanDeduplicator | None = None,
     ):
         self._historical_data_provider = historical_data_provider
         self._strategy = strategy
@@ -59,13 +65,19 @@ class BacktestPipeline(BaseBacktestPipeline):
         self._strategy_context_factory = (
             strategy_context_factory or DefaultStrategyContextFactory()
         )
+        self._trade_plan_deduplicator = (
+            trade_plan_deduplicator or TradePlanDeduplicator()
+        )
 
     def run(self) -> BacktestResult:
         candles = self._historical_data_provider.load()
         trade_plans = self._create_trade_plans(candles)
+        unique_trade_plans = self._trade_plan_deduplicator.deduplicate(
+            trade_plans
+        )
 
         return BacktestEngine(
-            trade_plans=trade_plans,
+            trade_plans=unique_trade_plans,
             historical_data_provider=InMemoryHistoricalDataProvider(candles),
         ).run()
 
