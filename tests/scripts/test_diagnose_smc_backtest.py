@@ -88,7 +88,9 @@ def test_build_report_includes_all_required_sections():
         short_signals=12,
         neutral_signals=13,
         trade_candidates=14,
-        trade_plans=15,
+        trade_plans_before_deduplication=15,
+        duplicate_trade_plans_removed=2,
+        trade_plans_after_deduplication=13,
         closed_trades=16,
         total_pnl=100.0,
     )
@@ -104,6 +106,9 @@ def test_build_report_includes_all_required_sections():
     assert "BOS Events: 2" in report
     assert "Long Signals: 11" in report
     assert "Trade Candidates: 14" in report
+    assert "Trade Plans Before De-duplication: 15" in report
+    assert "Duplicate Trade Plans Removed: 2" in report
+    assert "Trade Plans After De-duplication: 13" in report
     assert "Closed Trades: 16" in report
     assert "Total PnL: 100.0" in report
 
@@ -144,6 +149,8 @@ def test_diagnose_returns_zero_metrics_for_empty_csv(tmp_path):
     assert summary.short_signals == 0
     assert summary.neutral_signals == 0
     assert summary.trade_candidates == 0
-    assert summary.trade_plans == 0
+    assert summary.trade_plans_before_deduplication == 0
+    assert summary.duplicate_trade_plans_removed == 0
+    assert summary.trade_plans_after_deduplication == 0
     assert summary.closed_trades == 0
     assert summary.total_pnl == 0.0

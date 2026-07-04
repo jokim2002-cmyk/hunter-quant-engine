@@ -3,7 +3,7 @@ Diagnose SMC Backtest
 
 Diagnostic script for explaining why an SMC backtest produced zero or few
 trades. It reports detection counts, signal counts, candidate counts,
-trade plan counts, and closed trade counts.
+trade plan counts, de-duplication counts, and closed trade counts.
 """
 
 import argparse
@@ -18,6 +18,7 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 from src.backtesting.backtest_engine import BacktestEngine
+from src.backtesting.trade_plan_deduplicator import TradePlanDeduplicator
 from src.historical_data.providers.csv_historical_data_provider import (
     CSVHistoricalDataProvider,
 )
@@ -76,7 +77,10 @@ class DiagnosticSummary:
     neutral_signals: int
 
     trade_candidates: int
-    trade_plans: int
+    trade_plans_before_deduplication: int
+    duplicate_trade_plans_removed: int
+    trade_plans_after_deduplication: int
+
     closed_trades: int
     total_pnl: float
 
@@ -91,7 +95,6 @@ class WalkForwardDiagnostics:
     short_signals: int
     neutral_signals: int
     trade_candidates: int
-    trade_plans: int
     trade_plans_created: tuple[TradePlan, ...]
 
 
@@ -276,7 +279,6 @@ def run_walk_forward_diagnostics(
         short_signals=short_signals,
         neutral_signals=neutral_signals,
         trade_candidates=trade_candidates,
-        trade_plans=len(trade_plans),
         trade_plans_created=tuple(trade_plans),
     )
 
@@ -312,8 +314,17 @@ def diagnose(
         risk_profile=risk_profile,
     )
 
+    trade_plans_before_deduplication = len(walk_forward.trade_plans_created)
+    deduplicated_trade_plans = TradePlanDeduplicator().deduplicate(
+        walk_forward.trade_plans_created
+    )
+    trade_plans_after_deduplication = len(deduplicated_trade_plans)
+    duplicate_trade_plans_removed = (
+        trade_plans_before_deduplication - trade_plans_after_deduplication
+    )
+
     backtest_result = BacktestEngine(
-        trade_plans=walk_forward.trade_plans_created,
+        trade_plans=deduplicated_trade_plans,
         historical_data_provider=InMemoryHistoricalDataProvider(candles),
     ).run()
 
@@ -336,7 +347,9 @@ def diagnose(
         short_signals=walk_forward.short_signals,
         neutral_signals=walk_forward.neutral_signals,
         trade_candidates=walk_forward.trade_candidates,
-        trade_plans=walk_forward.trade_plans,
+        trade_plans_before_deduplication=trade_plans_before_deduplication,
+        duplicate_trade_plans_removed=duplicate_trade_plans_removed,
+        trade_plans_after_deduplication=trade_plans_after_deduplication,
         closed_trades=len(backtest_result.trades),
         total_pnl=backtest_result.performance_summary.total_pnl,
     )
@@ -403,7 +416,18 @@ def build_report(
         format_metric("Short Signals", summary.short_signals),
         format_metric("Neutral Signals", summary.neutral_signals),
         format_metric("Trade Candidates", summary.trade_candidates),
-        format_metric("Trade Plans", summary.trade_plans),
+        format_metric(
+            "Trade Plans Before De-duplication",
+            summary.trade_plans_before_deduplication,
+        ),
+        format_metric(
+            "Duplicate Trade Plans Removed",
+            summary.duplicate_trade_plans_removed,
+        ),
+        format_metric(
+            "Trade Plans After De-duplication",
+            summary.trade_plans_after_deduplication,
+        ),
         "------------------------------------------------------------",
         "EXECUTION",
         "------------------------------------------------------------",
