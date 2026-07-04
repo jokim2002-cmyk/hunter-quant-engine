@@ -73,6 +73,9 @@ EQUITY_CURVE_EXPORT_COLUMNS = (
     "starting_balance",
     "pnl",
     "ending_balance",
+    "running_peak",
+    "drawdown",
+    "drawdown_percent",
     "risk_multiple",
     "exit_reason",
 )
@@ -143,14 +146,6 @@ def build_risk_profile(
 ) -> RiskProfile:
     """
     Build immutable risk profile for the backtest.
-
-    Args:
-        account_balance: Backtest account balance.
-        risk_per_trade: Risk per trade as decimal.
-        reward_to_risk: Reward-to-risk multiple.
-
-    Returns:
-        Immutable RiskProfile.
     """
     return RiskProfile(
         account_balance=account_balance,
@@ -167,15 +162,6 @@ def build_pipeline(
 ) -> BacktestPipeline:
     """
     Build the full HQE SMC backtest pipeline.
-
-    Args:
-        csv_path: CSV historical data path.
-        symbol: Market symbol.
-        timeframe: Market timeframe.
-        risk_profile: Immutable risk profile.
-
-    Returns:
-        Configured BacktestPipeline.
     """
     return BacktestPipeline(
         historical_data_provider=CSVHistoricalDataProvider(csv_path),
@@ -195,13 +181,6 @@ def format_metric(
 ) -> str:
     """
     Format a metric line for console output.
-
-    Args:
-        label: Metric label.
-        value: Metric value.
-
-    Returns:
-        Formatted metric line.
     """
     return f"{label}: {value}"
 
@@ -213,14 +192,6 @@ def optional_metric(
 ) -> str | None:
     """
     Format an optional performance summary metric when it exists.
-
-    Args:
-        summary: Performance summary object.
-        attribute_name: Attribute to inspect.
-        label: Metric label.
-
-    Returns:
-        Formatted metric line when attribute exists, otherwise None.
     """
     if not hasattr(summary, attribute_name):
         return None
@@ -233,12 +204,6 @@ def format_signal_type(
 ) -> str:
     """
     Format signal type for human-readable reporting.
-
-    Args:
-        signal_type: SignalType enum or enum-like/string value.
-
-    Returns:
-        Uppercase signal type text.
     """
     value = getattr(signal_type, "value", signal_type)
 
@@ -251,13 +216,6 @@ def prices_match(
 ) -> bool:
     """
     Return True when two prices are equal within report tolerance.
-
-    Args:
-        first_price: First price.
-        second_price: Second price.
-
-    Returns:
-        True when prices match within tolerance.
     """
     return abs(first_price - second_price) <= PRICE_TOLERANCE
 
@@ -267,12 +225,6 @@ def infer_exit_reason(
 ) -> str:
     """
     Infer exit reason from completed trade prices.
-
-    Args:
-        trade: TradeResult-like object.
-
-    Returns:
-        take_profit, stop_loss, or unknown.
     """
     if prices_match(trade.exit_price, trade.take_profit):
         return EXIT_REASON_TAKE_PROFIT
@@ -288,12 +240,6 @@ def pnl_formula_for_signal(
 ) -> str:
     """
     Return PnL formula explanation for a signal type.
-
-    Args:
-        signal_type: SignalType enum or enum-like/string value.
-
-    Returns:
-        Human-readable PnL formula.
     """
     if _is_long_signal(signal_type):
         return "(Exit Price - Entry Price) * Position Size"
@@ -309,12 +255,6 @@ def entry_logic_for_signal(
 ) -> tuple[str, ...]:
     """
     Return SMC trade planning explanation for a signal type.
-
-    Args:
-        signal_type: SignalType enum or enum-like/string value.
-
-    Returns:
-        Human-readable entry and stop-loss logic lines.
     """
     if _is_long_signal(signal_type):
         return (
@@ -342,12 +282,6 @@ def trade_export_logic_fields(
 ) -> dict[str, str]:
     """
     Build CSV-friendly trade logic fields.
-
-    Args:
-        signal_type: SignalType enum or enum-like/string value.
-
-    Returns:
-        Mapping of logic columns to explanations.
     """
     if _is_long_signal(signal_type):
         return {
@@ -398,13 +332,6 @@ def build_trade_detail_lines(
 ) -> list[str]:
     """
     Build detailed explainable report lines for one completed trade.
-
-    Args:
-        trade: TradeResult-like object.
-        trade_number: One-based trade number.
-
-    Returns:
-        Report lines.
     """
     direction = format_signal_type(trade.signal_type)
     exit_reason = infer_exit_reason(trade)
@@ -445,12 +372,6 @@ def build_trade_details_section(
 ) -> list[str]:
     """
     Build detailed explainable trade report section.
-
-    Args:
-        trades: Completed trades.
-
-    Returns:
-        Report lines.
     """
     if not trades:
         return []
@@ -481,13 +402,6 @@ def trade_to_export_row(
 ) -> dict[str, Any]:
     """
     Convert a completed trade into a CSV export row.
-
-    Args:
-        trade: TradeResult-like object.
-        trade_number: One-based trade number.
-
-    Returns:
-        CSV export row.
     """
     logic_fields = trade_export_logic_fields(trade.signal_type)
 
@@ -514,13 +428,6 @@ def export_trades_to_csv(
 ) -> Path:
     """
     Export completed trades to CSV.
-
-    Args:
-        trades: Completed trade results.
-        output_path: Output CSV path.
-
-    Returns:
-        Output CSV path.
     """
     csv_path = Path(output_path)
     csv_path.parent.mkdir(
@@ -550,23 +457,43 @@ def export_trades_to_csv(
     return csv_path
 
 
+def calculate_drawdown(
+    ending_balance: float,
+    running_peak: float,
+) -> tuple[float, float]:
+    """
+    Calculate drawdown amount and percentage.
+
+    Args:
+        ending_balance: Balance after trade.
+        running_peak: Highest balance reached so far.
+
+    Returns:
+        Drawdown amount and drawdown percentage.
+    """
+    drawdown = max(running_peak - ending_balance, 0.0)
+
+    if running_peak <= 0:
+        return drawdown, 0.0
+
+    return drawdown, drawdown / running_peak
+
+
 def trade_to_equity_curve_row(
     trade: Any,
     trade_number: int,
     starting_balance: float,
+    current_peak: float,
 ) -> dict[str, Any]:
     """
     Convert a completed trade into an equity curve CSV row.
-
-    Args:
-        trade: TradeResult-like object.
-        trade_number: One-based trade number.
-        starting_balance: Account balance before the trade result.
-
-    Returns:
-        Equity curve CSV row.
     """
     ending_balance = starting_balance + trade.pnl
+    running_peak = max(current_peak, ending_balance)
+    drawdown, drawdown_percent = calculate_drawdown(
+        ending_balance=ending_balance,
+        running_peak=running_peak,
+    )
 
     return {
         "trade_number": trade_number,
@@ -576,6 +503,9 @@ def trade_to_equity_curve_row(
         "starting_balance": starting_balance,
         "pnl": trade.pnl,
         "ending_balance": ending_balance,
+        "running_peak": running_peak,
+        "drawdown": drawdown,
+        "drawdown_percent": drawdown_percent,
         "risk_multiple": trade.risk_multiple,
         "exit_reason": infer_exit_reason(trade),
     }
@@ -588,14 +518,6 @@ def export_equity_curve_to_csv(
 ) -> Path:
     """
     Export trade-by-trade equity curve to CSV.
-
-    Args:
-        trades: Completed trade results.
-        output_path: Output CSV path.
-        starting_balance: Starting account balance.
-
-    Returns:
-        Output CSV path.
     """
     csv_path = Path(output_path)
     csv_path.parent.mkdir(
@@ -604,6 +526,7 @@ def export_equity_curve_to_csv(
     )
 
     running_balance = starting_balance
+    running_peak = starting_balance
 
     with csv_path.open(
         mode="w",
@@ -621,9 +544,11 @@ def export_equity_curve_to_csv(
                 trade=trade,
                 trade_number=index,
                 starting_balance=running_balance,
+                current_peak=running_peak,
             )
             writer.writerow(row)
             running_balance = row["ending_balance"]
+            running_peak = row["running_peak"]
 
     return csv_path
 
@@ -636,15 +561,6 @@ def build_report(
 ) -> str:
     """
     Build a human-readable backtest report.
-
-    Args:
-        result: BacktestResult.
-        csv_path: CSV path used.
-        symbol: Market symbol.
-        timeframe: Market timeframe.
-
-    Returns:
-        Multiline report string.
     """
     summary = result.performance_summary
 

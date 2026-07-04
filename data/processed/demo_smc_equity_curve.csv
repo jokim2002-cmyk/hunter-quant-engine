@@ -1,2 +1,2 @@
-trade_number,opened_at,closed_at,direction,starting_balance,pnl,ending_balance,risk_multiple,exit_reason
-1,2026-01-01T09:40:00,2026-01-01T09:45:00,LONG,10000.0,200.0,10200.0,2.0,take_profit
+trade_number,opened_at,closed_at,direction,starting_balance,pnl,ending_balance,running_peak,drawdown,drawdown_percent,risk_multiple,exit_reason
+1,2026-01-01T09:40:00,2026-01-01T09:45:00,LONG,10000.0,200.0,10200.0,10200.0,0.0,0.0,2.0,take_profit

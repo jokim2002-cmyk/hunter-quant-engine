@@ -22,6 +22,7 @@ from scripts.run_smc_backtest import (
     build_argument_parser,
     build_report,
     build_risk_profile,
+    calculate_drawdown,
     export_equity_curve_to_csv,
     export_trades_to_csv,
     infer_exit_reason,
@@ -414,7 +415,27 @@ def test_export_trades_to_csv_writes_header_when_no_trades_exist(tmp_path):
     assert rows == ()
 
 
-def test_trade_to_equity_curve_row_includes_running_balance_details():
+def test_calculate_drawdown_returns_zero_when_balance_is_at_peak():
+    drawdown, drawdown_percent = calculate_drawdown(
+        ending_balance=10200.0,
+        running_peak=10200.0,
+    )
+
+    assert drawdown == 0.0
+    assert drawdown_percent == 0.0
+
+
+def test_calculate_drawdown_returns_amount_and_percent_when_below_peak():
+    drawdown, drawdown_percent = calculate_drawdown(
+        ending_balance=10100.0,
+        running_peak=10200.0,
+    )
+
+    assert drawdown == 100.0
+    assert drawdown_percent == 100.0 / 10200.0
+
+
+def test_trade_to_equity_curve_row_includes_running_balance_and_drawdown():
     trade = _completed_trade(
         signal_type=SignalType.LONG,
         pnl=200.0,
@@ -425,6 +446,7 @@ def test_trade_to_equity_curve_row_includes_running_balance_details():
         trade=trade,
         trade_number=1,
         starting_balance=10000.0,
+        current_peak=10000.0,
     )
 
     assert tuple(row.keys()) == EQUITY_CURVE_EXPORT_COLUMNS
@@ -435,11 +457,14 @@ def test_trade_to_equity_curve_row_includes_running_balance_details():
     assert row["starting_balance"] == 10000.0
     assert row["pnl"] == 200.0
     assert row["ending_balance"] == 10200.0
+    assert row["running_peak"] == 10200.0
+    assert row["drawdown"] == 0.0
+    assert row["drawdown_percent"] == 0.0
     assert row["risk_multiple"] == 2.0
     assert row["exit_reason"] == "take_profit"
 
 
-def test_export_equity_curve_to_csv_writes_running_balance_rows(tmp_path):
+def test_export_equity_curve_to_csv_writes_running_balance_and_drawdown_rows(tmp_path):
     output_path = tmp_path / "exports" / "equity_curve.csv"
     first_trade = _completed_trade(
         signal_type=SignalType.LONG,
@@ -447,7 +472,7 @@ def test_export_equity_curve_to_csv_writes_running_balance_rows(tmp_path):
     )
     second_trade = _completed_trade(
         signal_type=SignalType.SHORT,
-        exit_price=92.0,
+        exit_price=104.0,
         stop_loss=104.0,
         take_profit=92.0,
         pnl=-100.0,
@@ -470,10 +495,16 @@ def test_export_equity_curve_to_csv_writes_running_balance_rows(tmp_path):
     assert rows[0]["starting_balance"] == "10000.0"
     assert rows[0]["pnl"] == "200.0"
     assert rows[0]["ending_balance"] == "10200.0"
+    assert rows[0]["running_peak"] == "10200.0"
+    assert rows[0]["drawdown"] == "0.0"
+    assert rows[0]["drawdown_percent"] == "0.0"
     assert rows[1]["trade_number"] == "2"
     assert rows[1]["starting_balance"] == "10200.0"
     assert rows[1]["pnl"] == "-100.0"
     assert rows[1]["ending_balance"] == "10100.0"
+    assert rows[1]["running_peak"] == "10200.0"
+    assert rows[1]["drawdown"] == "100.0"
+    assert rows[1]["drawdown_percent"] == str(100.0 / 10200.0)
 
 
 def test_export_equity_curve_to_csv_writes_header_when_no_trades_exist(tmp_path):
