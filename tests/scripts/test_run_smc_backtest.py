@@ -634,3 +634,35 @@ def test_trade_to_equity_curve_row_uses_net_pnl_for_running_balance():
     assert row["ending_balance"] == 10180.0
     assert row["running_peak"] == 10180.0
     assert row["drawdown"] == 0.0
+
+def test_build_argument_parser_accepts_fyers_cost_profile():
+    args = build_argument_parser().parse_args(
+        [
+            "--cost-profile",
+            "fyers-equity-intraday",
+        ]
+    )
+
+    assert args.cost_profile == "fyers-equity-intraday"
+
+
+def test_build_transaction_cost_profile_returns_fyers_equity_intraday_preset():
+    from scripts.run_smc_backtest import build_transaction_cost_profile
+
+    profile = build_transaction_cost_profile(
+        brokerage_per_order=0.0,
+        stt_rate=0.0,
+        exchange_transaction_charge_rate=0.0,
+        sebi_charge_rate=0.0,
+        stamp_duty_rate=0.0,
+        gst_rate=0.0,
+        cost_profile="fyers-equity-intraday",
+    )
+
+    assert profile.brokerage_rate == 0.0003
+    assert profile.brokerage_cap_per_order == 20.0
+    assert profile.stt_rate == 0.00025
+    assert profile.exchange_transaction_charge_rate == 0.000030699
+    assert profile.sebi_charge_rate == 0.000001
+    assert profile.stamp_duty_rate == 0.00003
+    assert profile.gst_rate == 0.18

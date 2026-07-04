@@ -23,6 +23,9 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 from src.costs.transaction_cost_profile import TransactionCostProfile
+from src.costs.transaction_cost_profile_preset import (
+    supported_transaction_cost_profile_names,
+)
 from scripts.diagnose_smc_backtest import (
     DiagnosticSummary,
     build_report as build_diagnostic_report,
@@ -40,6 +43,7 @@ from scripts.normalize_csv_data import (
 )
 from scripts.run_smc_backtest import (
     DEFAULT_BROKERAGE_PER_ORDER,
+    DEFAULT_COST_PROFILE,
     DEFAULT_EXCHANGE_TRANSACTION_CHARGE_RATE,
     DEFAULT_GST_RATE,
     DEFAULT_SEBI_CHARGE_RATE,
@@ -153,6 +157,12 @@ def build_argument_parser() -> argparse.ArgumentParser:
         help="Reward-to-risk multiple used for take-profit planning.",
     )
     parser.add_argument(
+        "--cost-profile",
+        default=DEFAULT_COST_PROFILE,
+        choices=supported_transaction_cost_profile_names(),
+        help="Named broker/segment cost profile. Use custom for manual rates.",
+    )
+    parser.add_argument(
         "--brokerage-per-order",
         type=float,
         default=DEFAULT_BROKERAGE_PER_ORDER,
@@ -258,6 +268,7 @@ def run_workflow(
     close_column: str | None = None,
     volume_column: str | None = None,
     default_volume: float = 0.0,
+    cost_profile: str = DEFAULT_COST_PROFILE,
     brokerage_per_order: float = DEFAULT_BROKERAGE_PER_ORDER,
     stt_rate: float = DEFAULT_STT_RATE,
     exchange_transaction_charge_rate: float = DEFAULT_EXCHANGE_TRANSACTION_CHARGE_RATE,
@@ -305,6 +316,7 @@ def run_workflow(
         sebi_charge_rate=sebi_charge_rate,
         stamp_duty_rate=stamp_duty_rate,
         gst_rate=gst_rate,
+        cost_profile=cost_profile,
     )
     transaction_cost_calculator = build_transaction_cost_calculator(
         transaction_cost_profile
@@ -452,6 +464,7 @@ def main() -> None:
         close_column=args.close_column,
         volume_column=args.volume_column,
         default_volume=args.default_volume,
+        cost_profile=args.cost_profile,
         brokerage_per_order=args.brokerage_per_order,
         stt_rate=args.stt_rate,
         exchange_transaction_charge_rate=args.exchange_transaction_charge_rate,

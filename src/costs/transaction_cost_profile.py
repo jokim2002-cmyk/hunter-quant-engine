@@ -15,11 +15,17 @@ class TransactionCostProfile:
     Rates are decimals. Example:
         0.00025 means 0.025%.
 
-    Brokerage is per order, so a completed round-trip trade applies it twice:
-    once for entry and once for exit.
+    Brokerage supports two modes:
+        1. Fixed brokerage per order.
+        2. Percentage brokerage with optional cap per order.
+
+    When brokerage_rate is greater than zero, percentage brokerage is used.
+    When brokerage_cap_per_order is greater than zero, brokerage is capped.
     """
 
     brokerage_per_order: float = 0.0
+    brokerage_rate: float = 0.0
+    brokerage_cap_per_order: float = 0.0
     stt_rate: float = 0.0
     exchange_transaction_charge_rate: float = 0.0
     sebi_charge_rate: float = 0.0
@@ -32,6 +38,8 @@ class TransactionCostProfile:
         """
         values = {
             "brokerage_per_order": self.brokerage_per_order,
+            "brokerage_rate": self.brokerage_rate,
+            "brokerage_cap_per_order": self.brokerage_cap_per_order,
             "stt_rate": self.stt_rate,
             "exchange_transaction_charge_rate": self.exchange_transaction_charge_rate,
             "sebi_charge_rate": self.sebi_charge_rate,

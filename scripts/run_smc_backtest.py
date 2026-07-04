@@ -19,6 +19,11 @@ if str(PROJECT_ROOT) not in sys.path:
 from src.backtesting.backtest_pipeline import BacktestPipeline
 from src.costs.transaction_cost_calculator import TransactionCostCalculator
 from src.costs.transaction_cost_profile import TransactionCostProfile
+from src.costs.transaction_cost_profile_preset import (
+    COST_PROFILE_CUSTOM,
+    build_transaction_cost_profile_from_name,
+    supported_transaction_cost_profile_names,
+)
 from src.historical_data.providers.csv_historical_data_provider import (
     CSVHistoricalDataProvider,
 )
@@ -47,6 +52,7 @@ DEFAULT_EXCHANGE_TRANSACTION_CHARGE_RATE = 0.0
 DEFAULT_SEBI_CHARGE_RATE = 0.0
 DEFAULT_STAMP_DUTY_RATE = 0.0
 DEFAULT_GST_RATE = 0.0
+DEFAULT_COST_PROFILE = COST_PROFILE_CUSTOM
 
 EXIT_REASON_TAKE_PROFIT = "take_profit"
 EXIT_REASON_STOP_LOSS = "stop_loss"
@@ -151,6 +157,12 @@ def build_argument_parser() -> argparse.ArgumentParser:
         help="Reward-to-risk multiple used for take-profit planning.",
     )
     parser.add_argument(
+        "--cost-profile",
+        default=DEFAULT_COST_PROFILE,
+        choices=supported_transaction_cost_profile_names(),
+        help="Named broker/segment cost profile. Use custom for manual rates.",
+    )
+    parser.add_argument(
         "--brokerage-per-order",
         type=float,
         default=DEFAULT_BROKERAGE_PER_ORDER,
@@ -222,10 +234,14 @@ def build_transaction_cost_profile(
     sebi_charge_rate: float,
     stamp_duty_rate: float,
     gst_rate: float,
+    cost_profile: str = DEFAULT_COST_PROFILE,
 ) -> TransactionCostProfile:
     """
     Build immutable transaction cost profile.
     """
+    if cost_profile != COST_PROFILE_CUSTOM:
+        return build_transaction_cost_profile_from_name(cost_profile)
+
     return TransactionCostProfile(
         brokerage_per_order=brokerage_per_order,
         stt_rate=stt_rate,
@@ -814,6 +830,7 @@ def main() -> None:
         sebi_charge_rate=args.sebi_charge_rate,
         stamp_duty_rate=args.stamp_duty_rate,
         gst_rate=args.gst_rate,
+        cost_profile=args.cost_profile,
     )
     transaction_cost_calculator = build_transaction_cost_calculator(
         transaction_cost_profile

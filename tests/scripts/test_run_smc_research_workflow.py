@@ -256,3 +256,13 @@ def test_build_argument_parser_accepts_transaction_cost_values():
     assert args.sebi_charge_rate == 0.000001
     assert args.stamp_duty_rate == 0.00003
     assert args.gst_rate == 0.18
+
+def test_build_argument_parser_accepts_fyers_cost_profile():
+    args = build_argument_parser().parse_args(
+        [
+            "--cost-profile",
+            "fyers-equity-intraday",
+        ]
+    )
+
+    assert args.cost_profile == "fyers-equity-intraday"

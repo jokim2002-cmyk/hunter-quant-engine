@@ -38,7 +38,9 @@ class TransactionCostCalculator:
         exit_turnover = abs(float(trade.exit_price) * position_size)
         total_turnover = entry_turnover + exit_turnover
 
-        brokerage = self._profile.brokerage_per_order * 2.0
+        brokerage = self._calculate_brokerage(entry_turnover) + self._calculate_brokerage(
+            exit_turnover
+        )
         stt = exit_turnover * self._profile.stt_rate
         exchange_transaction_charge = (
             total_turnover * self._profile.exchange_transaction_charge_rate
@@ -70,4 +72,30 @@ class TransactionCostCalculator:
             gst=gst,
             total_charges=total_charges,
             net_pnl=net_pnl,
+        )
+
+    def _calculate_brokerage(
+        self,
+        order_turnover: float,
+    ) -> float:
+        """
+        Calculate brokerage for one executed order.
+
+        Args:
+            order_turnover: Single order turnover.
+
+        Returns:
+            Brokerage amount for one order.
+        """
+        if self._profile.brokerage_rate <= 0:
+            return self._profile.brokerage_per_order
+
+        percentage_brokerage = order_turnover * self._profile.brokerage_rate
+
+        if self._profile.brokerage_cap_per_order <= 0:
+            return percentage_brokerage
+
+        return min(
+            percentage_brokerage,
+            self._profile.brokerage_cap_per_order,
         )
