@@ -438,10 +438,18 @@ def write_report(
 def write_summary_csv(
     results: tuple[ExperimentResult, ...],
     output_path: Path,
+    sort_by: str = "net_pnl",
+    descending: bool = True,
 ) -> None:
     """
-    Write experiment summary CSV.
+    Write experiment summary CSV sorted by a supported result metric.
     """
+    sorted_results = sort_experiment_results(
+        results=results,
+        sort_by=sort_by,
+        descending=descending,
+    )
+
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
     with output_path.open("w", newline="", encoding="utf-8") as csv_file:
@@ -465,7 +473,7 @@ def write_summary_csv(
             ]
         )
 
-        for result in results:
+        for result in sorted_results:
             writer.writerow(
                 [
                     result.name,

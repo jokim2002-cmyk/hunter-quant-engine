@@ -344,3 +344,20 @@ def test_build_experiment_report_includes_best_and_worst_sections():
     assert "WORST RESULTS BY NET PNL" in report
     assert "balanced_default | balanced | Net PnL: 30.00 | Return %: 0.3000" in report
     assert "relaxed_default | relaxed | Net PnL: -5.00 | Return %: -0.0500" in report
+
+
+def test_write_summary_csv_sorts_results_by_net_pnl_descending(tmp_path: Path):
+    output_path = tmp_path / "summary.csv"
+    results = (
+        make_experiment_result("strict_default", net_pnl=10.0, return_percent=0.1),
+        make_experiment_result("balanced_default", net_pnl=30.0, return_percent=0.3),
+        make_experiment_result("relaxed_default", net_pnl=-5.0, return_percent=-0.05),
+    )
+
+    write_summary_csv(results, output_path)
+
+    lines = output_path.read_text(encoding="utf-8").splitlines()
+
+    assert lines[1].startswith("balanced_default,balanced")
+    assert lines[2].startswith("strict_default,strict")
+    assert lines[3].startswith("relaxed_default,relaxed")
