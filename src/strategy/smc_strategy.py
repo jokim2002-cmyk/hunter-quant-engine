@@ -4,6 +4,10 @@ SMC Strategy
 Generates TradeSignal objects from Smart Money Concept confluence.
 """
 
+from src.config.strategy_config import (
+    DEFAULT_SMC_STRATEGY_CONFIG,
+    SMCStrategyConfig,
+)
 from src.models.institutional_setup import InstitutionalSetup
 from src.strategy.base_strategy import BaseStrategy
 from src.strategy.confluence.base_confluence_engine import BaseConfluenceEngine
@@ -11,7 +15,6 @@ from src.strategy.confluence.smc_confluence_engine import SMCConfluenceEngine
 from src.strategy.rule_sets.bearish_smc_rule_set import BearishSMCRuleSet
 from src.strategy.rule_sets.bullish_smc_rule_set import BullishSMCRuleSet
 from src.strategy.rule_sets.smc_rule_set_result import SMCRuleSetResult
-from src.strategy.signal_strength import SignalStrength
 from src.strategy.signal_type import SignalType
 from src.strategy.strategy_context import StrategyContext
 from src.strategy.trade_signal import TradeSignal
@@ -33,10 +36,19 @@ class SMCStrategy(BaseStrategy):
         confluence_engine: (
             BaseConfluenceEngine[SMCRuleSetResult, InstitutionalSetup] | None
         ) = None,
+        config: SMCStrategyConfig | None = None,
     ) -> None:
         self._bullish_rule_set = bullish_rule_set or BullishSMCRuleSet()
         self._bearish_rule_set = bearish_rule_set or BearishSMCRuleSet()
         self._confluence_engine = confluence_engine or SMCConfluenceEngine()
+        self._config = config or DEFAULT_SMC_STRATEGY_CONFIG
+
+    @property
+    def config(self) -> SMCStrategyConfig:
+        """
+        Return immutable strategy configuration.
+        """
+        return self._config
 
     def generate(
         self,
@@ -49,7 +61,7 @@ class SMCStrategy(BaseStrategy):
             context: Immutable strategy context.
 
         Returns:
-            Tuple containing one deterministic TradeSignal.
+            Tuple containing one deterministic TradeSignal by default.
         """
         bullish_result = self._bullish_rule_set.evaluate(context)
         bearish_result = self._bearish_rule_set.evaluate(context)
@@ -72,9 +84,13 @@ class SMCStrategy(BaseStrategy):
             return (self._short_signal(context),)
 
         if bullish_setups and bearish_setups:
-            return (self._conflicting_neutral_signal(context),)
+            return self._neutral_or_empty(
+                self._conflicting_neutral_signal(context),
+            )
 
-        return (self._no_setup_neutral_signal(context),)
+        return self._neutral_or_empty(
+            self._no_setup_neutral_signal(context),
+        )
 
     def _long_signal(
         self,
@@ -82,8 +98,8 @@ class SMCStrategy(BaseStrategy):
     ) -> TradeSignal:
         return TradeSignal(
             signal_type=SignalType.LONG,
-            strength=SignalStrength.MEDIUM,
-            confidence=0.75,
+            strength=self._config.directional_signal_strength,
+            confidence=self._config.directional_signal_confidence,
             rationale=(
                 "Bullish SMC setup is valid.",
                 "Bearish SMC setup is invalid.",
@@ -97,8 +113,8 @@ class SMCStrategy(BaseStrategy):
     ) -> TradeSignal:
         return TradeSignal(
             signal_type=SignalType.SHORT,
-            strength=SignalStrength.MEDIUM,
-            confidence=0.75,
+            strength=self._config.directional_signal_strength,
+            confidence=self._config.directional_signal_confidence,
             rationale=(
                 "Bearish SMC setup is valid.",
                 "Bullish SMC setup is invalid.",
@@ -112,8 +128,8 @@ class SMCStrategy(BaseStrategy):
     ) -> TradeSignal:
         return TradeSignal(
             signal_type=SignalType.NEUTRAL,
-            strength=SignalStrength.WEAK,
-            confidence=0.0,
+            strength=self._config.neutral_signal_strength,
+            confidence=self._config.neutral_signal_confidence,
             rationale=(
                 "Conflicting bullish and bearish SMC setups exist.",
             ),
@@ -126,10 +142,19 @@ class SMCStrategy(BaseStrategy):
     ) -> TradeSignal:
         return TradeSignal(
             signal_type=SignalType.NEUTRAL,
-            strength=SignalStrength.WEAK,
-            confidence=0.0,
+            strength=self._config.neutral_signal_strength,
+            confidence=self._config.neutral_signal_confidence,
             rationale=(
                 "No valid directional SMC setup exists.",
             ),
             created_at=context.analysis_time,
         )
+
+    def _neutral_or_empty(
+        self,
+        signal: TradeSignal,
+    ) -> tuple[TradeSignal, ...]:
+        if not self._config.emit_neutral_signal:
+            return ()
+
+        return (signal,)
