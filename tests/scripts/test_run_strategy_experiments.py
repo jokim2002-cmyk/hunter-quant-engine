@@ -329,3 +329,18 @@ def test_best_and_worst_experiment_results_reject_invalid_limit():
         assert "Worst experiment result limit" in str(error)
     else:
         raise AssertionError("Expected ValueError.")
+
+
+def test_build_experiment_report_includes_best_and_worst_sections():
+    results = (
+        make_experiment_result("strict_default", net_pnl=10.0, return_percent=0.1),
+        make_experiment_result("balanced_default", net_pnl=30.0, return_percent=0.3),
+        make_experiment_result("relaxed_default", net_pnl=-5.0, return_percent=-0.05),
+    )
+
+    report = build_experiment_report(results)
+
+    assert "BEST RESULTS BY NET PNL" in report
+    assert "WORST RESULTS BY NET PNL" in report
+    assert "balanced_default | balanced | Net PnL: 30.00 | Return %: 0.3000" in report
+    assert "relaxed_default | relaxed | Net PnL: -5.00 | Return %: -0.0500" in report

@@ -367,6 +367,53 @@ def build_experiment_report(
             )
         )
 
+    if results:
+        ranking_limit = min(3, len(results))
+
+        lines.extend(
+            [
+                "------------------------------------------------------------",
+                "BEST RESULTS BY NET PNL",
+                "------------------------------------------------------------",
+            ]
+        )
+
+        for result in best_experiment_results(
+            results=results,
+            limit=ranking_limit,
+            sort_by="net_pnl",
+        ):
+            lines.append(
+                (
+                    f"{result.name} | "
+                    f"{result.strategy_mode} | "
+                    f"Net PnL: {result.net_pnl:.2f} | "
+                    f"Return %: {result.return_percent:.4f}"
+                )
+            )
+
+        lines.extend(
+            [
+                "------------------------------------------------------------",
+                "WORST RESULTS BY NET PNL",
+                "------------------------------------------------------------",
+            ]
+        )
+
+        for result in worst_experiment_results(
+            results=results,
+            limit=ranking_limit,
+            sort_by="net_pnl",
+        ):
+            lines.append(
+                (
+                    f"{result.name} | "
+                    f"{result.strategy_mode} | "
+                    f"Net PnL: {result.net_pnl:.2f} | "
+                    f"Return %: {result.return_percent:.4f}"
+                )
+            )
+
     lines.extend(
         [
             "============================================================",
