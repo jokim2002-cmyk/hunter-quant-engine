@@ -1,0 +1,2 @@
+trade_number,direction,opened_at,closed_at,entry_price,stop_loss,take_profit,exit_price,exit_reason,position_size,pnl,risk_multiple,entry_logic,stop_loss_logic,take_profit_logic,position_size_logic,pnl_formula
+1,LONG,2026-01-01T09:40:00,2026-01-01T09:45:00,114.0,111.0,120.0,120.0,take_profit,33.333333333333336,200.0,2.0,"Bullish OB midpoint first, Bullish FVG midpoint fallback",Selected bullish entry zone low,Fixed reward-to-risk target from RiskManager,Fixed-risk sizing from RiskManager,(Exit Price - Entry Price) * Position Size
