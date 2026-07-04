@@ -4,7 +4,9 @@ Default Strategy Context Factory Tests
 
 from datetime import datetime
 
+from src.models.bos_point import BOSType
 from src.models.candle import Candle
+from src.models.choch_point import CHOCHType
 from src.models.market_structure import MarketStructureType
 from src.strategy.context_factories.default_strategy_context_factory import (
     DefaultStrategyContextFactory,
@@ -12,16 +14,17 @@ from src.strategy.context_factories.default_strategy_context_factory import (
 
 
 def _candle(
-    candle_time: datetime = datetime(2026, 1, 1, 9, 0),
-    high: float = 105.0,
-    low: float = 95.0,
+    candle_time: datetime,
+    high: float,
+    low: float,
+    close: float,
 ) -> Candle:
     return Candle(
         datetime=candle_time,
-        open=100.0,
+        open=close,
         high=high,
         low=low,
-        close=100.0,
+        close=close,
         volume=1000.0,
     )
 
@@ -42,8 +45,18 @@ def test_create_sets_context_metadata():
 
 
 def test_create_sets_context_candles():
-    first_candle = _candle(datetime(2026, 1, 1, 9, 0))
-    second_candle = _candle(datetime(2026, 1, 1, 10, 0))
+    first_candle = _candle(
+        datetime(2026, 1, 1, 9, 0),
+        high=105.0,
+        low=95.0,
+        close=100.0,
+    )
+    second_candle = _candle(
+        datetime(2026, 1, 1, 10, 0),
+        high=106.0,
+        low=96.0,
+        close=101.0,
+    )
 
     context = DefaultStrategyContextFactory().create(
         symbol="TEST",
@@ -60,26 +73,31 @@ def test_create_populates_market_structure_points_from_detected_swings():
         datetime(2026, 1, 1, 9, 0),
         high=100.0,
         low=90.0,
+        close=95.0,
     )
     second_candle = _candle(
         datetime(2026, 1, 1, 10, 0),
         high=101.0,
         low=91.0,
+        close=96.0,
     )
     swing_high_candle = _candle(
         datetime(2026, 1, 1, 11, 0),
         high=110.0,
         low=99.0,
+        close=105.0,
     )
     fourth_candle = _candle(
         datetime(2026, 1, 1, 12, 0),
         high=102.0,
         low=92.0,
+        close=97.0,
     )
     fifth_candle = _candle(
         datetime(2026, 1, 1, 13, 0),
         high=103.0,
         low=93.0,
+        close=98.0,
     )
 
     context = DefaultStrategyContextFactory().create(
@@ -107,7 +125,151 @@ def test_create_populates_market_structure_points_from_detected_swings():
     )
 
 
-def test_create_returns_empty_market_structure_when_no_swings_exist():
+def test_create_populates_bos_events_from_market_structure_points():
+    first_candle = _candle(
+        datetime(2026, 1, 1, 9, 0),
+        high=100.0,
+        low=90.0,
+        close=95.0,
+    )
+    second_candle = _candle(
+        datetime(2026, 1, 1, 10, 0),
+        high=101.0,
+        low=91.0,
+        close=96.0,
+    )
+    swing_high_candle = _candle(
+        datetime(2026, 1, 1, 11, 0),
+        high=110.0,
+        low=99.0,
+        close=105.0,
+    )
+    fourth_candle = _candle(
+        datetime(2026, 1, 1, 12, 0),
+        high=102.0,
+        low=92.0,
+        close=97.0,
+    )
+    fifth_candle = _candle(
+        datetime(2026, 1, 1, 13, 0),
+        high=103.0,
+        low=93.0,
+        close=98.0,
+    )
+    break_candle = _candle(
+        datetime(2026, 1, 1, 14, 0),
+        high=112.0,
+        low=100.0,
+        close=111.0,
+    )
+
+    context = DefaultStrategyContextFactory().create(
+        symbol="TEST",
+        timeframe="1H",
+        analysis_time=break_candle.datetime,
+        candles=(
+            first_candle,
+            second_candle,
+            swing_high_candle,
+            fourth_candle,
+            fifth_candle,
+            break_candle,
+        ),
+    )
+
+    assert len(context.bos_events) == 1
+    assert context.bos_events[0].bos_type is BOSType.BULLISH
+    assert context.bos_events[0].break_price == 111.0
+    assert context.bos_events[0].timestamp == break_candle.datetime
+
+
+def test_create_populates_choch_events_from_market_structure_points():
+    first_candle = _candle(
+        datetime(2026, 1, 1, 9, 0),
+        high=105.0,
+        low=95.0,
+        close=100.0,
+    )
+    second_candle = _candle(
+        datetime(2026, 1, 1, 10, 0),
+        high=104.0,
+        low=94.0,
+        close=99.0,
+    )
+    first_swing_low_candle = _candle(
+        datetime(2026, 1, 1, 11, 0),
+        high=103.0,
+        low=80.0,
+        close=95.0,
+    )
+    fourth_candle = _candle(
+        datetime(2026, 1, 1, 12, 0),
+        high=104.0,
+        low=93.0,
+        close=98.0,
+    )
+    fifth_candle = _candle(
+        datetime(2026, 1, 1, 13, 0),
+        high=105.0,
+        low=92.0,
+        close=99.0,
+    )
+    sixth_candle = _candle(
+        datetime(2026, 1, 1, 14, 0),
+        high=106.0,
+        low=95.0,
+        close=100.0,
+    )
+    higher_low_candle = _candle(
+        datetime(2026, 1, 1, 15, 0),
+        high=107.0,
+        low=90.0,
+        close=96.0,
+    )
+    eighth_candle = _candle(
+        datetime(2026, 1, 1, 16, 0),
+        high=108.0,
+        low=91.0,
+        close=97.0,
+    )
+    ninth_candle = _candle(
+        datetime(2026, 1, 1, 17, 0),
+        high=109.0,
+        low=92.0,
+        close=98.0,
+    )
+    break_candle = _candle(
+        datetime(2026, 1, 1, 18, 0),
+        high=100.0,
+        low=88.0,
+        close=89.0,
+    )
+
+    context = DefaultStrategyContextFactory().create(
+        symbol="TEST",
+        timeframe="1H",
+        analysis_time=break_candle.datetime,
+        candles=(
+            first_candle,
+            second_candle,
+            first_swing_low_candle,
+            fourth_candle,
+            fifth_candle,
+            sixth_candle,
+            higher_low_candle,
+            eighth_candle,
+            ninth_candle,
+            break_candle,
+        ),
+    )
+
+    assert len(context.choch_events) == 1
+    assert context.choch_events[0].choch_type is CHOCHType.BEARISH
+    assert context.choch_events[0].break_price == 89.0
+    assert context.choch_events[0].timestamp == break_candle.datetime
+
+
+def test_create_returns_empty_detection_events_when_no_swings_exist():
     context = DefaultStrategyContextFactory().create(
         symbol="TEST",
         timeframe="1H",
@@ -116,9 +278,11 @@ def test_create_returns_empty_market_structure_when_no_swings_exist():
     )
 
     assert context.market_structure_points == ()
+    assert context.bos_events == ()
+    assert context.choch_events == ()
 
 
-def test_create_leaves_other_detection_events_empty_for_now():
+def test_create_leaves_unintegrated_detection_events_empty_for_now():
     context = DefaultStrategyContextFactory().create(
         symbol="TEST",
         timeframe="1H",
@@ -126,8 +290,6 @@ def test_create_leaves_other_detection_events_empty_for_now():
         candles=(),
     )
 
-    assert context.bos_events == ()
-    assert context.choch_events == ()
     assert context.liquidity_points == ()
     assert context.equal_high_points == ()
     assert context.equal_low_points == ()
