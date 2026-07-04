@@ -4,12 +4,15 @@ SMC Strategy
 Generates TradeSignal objects from Smart Money Concept confluence.
 """
 
+from src.models.institutional_setup import InstitutionalSetup
 from src.strategy.base_strategy import BaseStrategy
+from src.strategy.confluence.base_confluence_engine import BaseConfluenceEngine
+from src.strategy.confluence.smc_confluence_engine import SMCConfluenceEngine
 from src.strategy.rule_sets.bearish_smc_rule_set import BearishSMCRuleSet
 from src.strategy.rule_sets.bullish_smc_rule_set import BullishSMCRuleSet
+from src.strategy.rule_sets.smc_rule_set_result import SMCRuleSetResult
 from src.strategy.signal_strength import SignalStrength
 from src.strategy.signal_type import SignalType
-from src.strategy.setup_validators.smc_setup_validator import SMCSetupValidator
 from src.strategy.strategy_context import StrategyContext
 from src.strategy.trade_signal import TradeSignal
 
@@ -18,14 +21,22 @@ class SMCStrategy(BaseStrategy):
     """
     Smart Money Concept strategy.
 
-    Consumes bullish and bearish SMC rule sets, validates confluence,
-    and emits deterministic TradeSignal objects.
+    Consumes bullish and bearish SMC rule sets, generates institutional
+    setups through a confluence engine, and emits deterministic TradeSignal
+    objects.
     """
 
-    def __init__(self):
-        self._bullish_rule_set = BullishSMCRuleSet()
-        self._bearish_rule_set = BearishSMCRuleSet()
-        self._setup_validator = SMCSetupValidator()
+    def __init__(
+        self,
+        bullish_rule_set: BullishSMCRuleSet | None = None,
+        bearish_rule_set: BearishSMCRuleSet | None = None,
+        confluence_engine: (
+            BaseConfluenceEngine[SMCRuleSetResult, InstitutionalSetup] | None
+        ) = None,
+    ) -> None:
+        self._bullish_rule_set = bullish_rule_set or BullishSMCRuleSet()
+        self._bearish_rule_set = bearish_rule_set or BearishSMCRuleSet()
+        self._confluence_engine = confluence_engine or SMCConfluenceEngine()
 
     def generate(
         self,
@@ -43,16 +54,24 @@ class SMCStrategy(BaseStrategy):
         bullish_result = self._bullish_rule_set.evaluate(context)
         bearish_result = self._bearish_rule_set.evaluate(context)
 
-        bullish_is_valid = self._setup_validator.is_valid(bullish_result)
-        bearish_is_valid = self._setup_validator.is_valid(bearish_result)
+        bullish_setups = self._confluence_engine.generate(
+            result=bullish_result,
+            direction=SignalType.LONG,
+            created_at=context.analysis_time,
+        )
+        bearish_setups = self._confluence_engine.generate(
+            result=bearish_result,
+            direction=SignalType.SHORT,
+            created_at=context.analysis_time,
+        )
 
-        if bullish_is_valid and not bearish_is_valid:
+        if bullish_setups and not bearish_setups:
             return (self._long_signal(context),)
 
-        if bearish_is_valid and not bullish_is_valid:
+        if bearish_setups and not bullish_setups:
             return (self._short_signal(context),)
 
-        if bullish_is_valid and bearish_is_valid:
+        if bullish_setups and bearish_setups:
             return (self._conflicting_neutral_signal(context),)
 
         return (self._no_setup_neutral_signal(context),)
