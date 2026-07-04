@@ -6,8 +6,14 @@ CSV historical candle data.
 """
 
 import argparse
+import sys
 from pathlib import Path
 from typing import Any
+
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
 
 from src.backtesting.backtest_pipeline import BacktestPipeline
 from src.historical_data.providers.csv_historical_data_provider import (
@@ -24,7 +30,7 @@ from src.trade_planning.smc_trade_candidate_planner import (
 )
 
 
-DEFAULT_CSV_PATH = Path("data/raw/nifty_5min.csv")
+DEFAULT_CSV_PATH = PROJECT_ROOT / "data" / "raw" / "nifty_5min.csv"
 DEFAULT_SYMBOL = "NIFTY"
 DEFAULT_TIMEFRAME = "5m"
 DEFAULT_ACCOUNT_BALANCE = 10000.0
