@@ -42,6 +42,10 @@ class StrategyContextBuilder:
         self._analysis_time = analysis_time
         return self
 
+    def with_candles(self, *candles):
+        self._candles.extend(candles)
+        return self
+
     def with_bos(self, *bos_events):
         self._bos_events.extend(bos_events)
         return self
