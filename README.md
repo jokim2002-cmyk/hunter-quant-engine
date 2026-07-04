@@ -1,12 +1,12 @@
-﻿# Hunter Quant Engine (HQE)
+# Hunter Quant Engine (HQE)
 
 ## Mission Statement
 
-Build a production-grade, institutional-quality quantitative trading framework using clean architecture, professional engineering, rigorous testing, and explainable trading logic.
+Build a production-grade quantitative trading research and execution foundation using clean architecture, rigorous testing, explainable logic, and honest benchmark results.
 
-HQE is not a trading bot.
+HQE is not a fake-profit trading bot.
 
-HQE is an event-driven quantitative trading framework designed to transform market data into immutable market events, strategy signals, and risk-approved trade plans.
+HQE is a market research and execution framework designed to transform market data into immutable market events, strategy signals, risk-approved trade plans, backtest results, benchmark reports, and eventually paper/live execution decisions.
 
 ---
 
@@ -16,52 +16,126 @@ Engineer it right once. Improve it forever.
 
 ---
 
-## Project Vision
+## Current Status
 
-Hunter Quant Engine is designed for long-term maintainability, extensibility, and institutional-quality trading research.
+HQE currently supports:
 
-The goal is not to build a simple buy/sell script.
+- Clean Python architecture
+- 616 tests passing
+- Smart Money Concepts detection
+- SMC strategy signal generation
+- Strategy config presets
+- Strict/Balanced/Relaxed strategy modes
+- Strategy mode CLI support
+- Backtest pipeline
+- Trade CSV export
+- Net equity curve export
+- Transaction cost modeling
+- Buy-and-hold benchmark comparison
+- Strategy mode benchmark runner
+- Strategy experiment dry-run planner
+- Experiment result ranking helpers
+- PC-only benchmark and experiment shortcuts
+- PC + laptop GitHub workflow
 
-The goal is to build a modular, testable, scalable, and explainable framework that can support:
+Current benchmark truth:
 
-- Smart Money Concepts
-- Market Structure
-- Liquidity
-- Equal High / Equal Low
-- Liquidity Sweeps
-- Fair Value Gaps
-- Order Blocks
-- Rule Composition
-- Setup Validation
-- Strategy Signal Generation
-- Risk Management
-- Trade Planning
-- Backtesting
-- Paper Trading
-- Live Trading
-- AI-based Decision Support
-- Performance Analytics
+- First real FYERS NIFTY baseline underperformed buy-and-hold
+- This is not treated as failure
+- It is treated as the first honest baseline
+- Future work must improve based on net results after costs
 
 ---
 
-## Current Architecture
+## Machine Workflow
+
+Laptop role:
+
+- Code changes
+- Unit tests
+- Full pytest
+- Small sample-data validation
+- Git commit and push
+
+PC role:
+
+- Pull latest code
+- Full pytest after pull
+- Full FYERS real-data benchmarks
+- Strategy mode benchmark execution
+- Strategy experiment execution
+- Heavy research runs
+
+Do not run full real-data strategy mode benchmarks or experiment execution on the laptop.
+
+---
+
+## Safe Laptop Commands
+
+Run all tests:
+
+```powershell
+py -m pytest
+```
+
+Run experiment dry-run only:
+
+```powershell
+py scripts\run_strategy_experiments.py
+```
+
+Check Git status:
+
+```powershell
+git status --short
+```
+
+---
+
+## PC-Only Heavy Commands
+
+Strategy mode benchmark:
+
+```powershell
+.\hqe_benchmark_modes.bat
+```
+
+Strategy experiment execution:
+
+```powershell
+.\hqe_run_experiments.bat
+```
+
+Direct strategy mode benchmark command:
+
+```powershell
+.\.venv\Scripts\python.exe scripts\benchmark_strategy_modes.py --input "data\raw\fyers_nifty_5min.csv"
+```
+
+Direct strategy experiment command:
+
+```powershell
+.\.venv\Scripts\python.exe scripts\run_strategy_experiments.py --execute --input "data\raw\fyers_nifty_5min.csv"
+```
+
+---
+
+## Architecture
 
 ```text
 Market Data
     |
-    vDetection Layer
+    v
+Detection Layer
     |
     v
-Mmutable Market Events
+Immutable Market Events
     |
     v
 StrategyContext
     |
     v
-Reusable Rules
-    |
-    v
-Rule Sets
+Rules and Rule Sets
     |
     v
 Setup Validators
@@ -79,7 +153,10 @@ Risk Layer
 TradePlan
     |
     v
-Backtesting / Paper Trading / Live Trading
+Backtesting / Benchmarking / Experiments
+    |
+    v
+Paper Trading / Live Trading
 ```
 
 ---
@@ -116,8 +193,10 @@ Backtesting / Paper Trading / Live Trading
 - Rule Sets
 - Setup Validators
 - SMCStrategy
+- SMCStrategyConfig
+- Strict/Balanced/Relaxed modes
 
-### Risk Layer
+### Risk and Backtest Layer
 
 - RiskProfile
 - TradePlan
@@ -125,56 +204,77 @@ Backtesting / Paper Trading / Live Trading
 - FixedRiskPositionSizer
 - FixedRewardToRiskTradeLevelPlanner
 - RiskManager
+- Backtest pipeline
+- Transaction cost model
+- Trade CSV export
+- Net equity curve export
+
+### Research Layer
+
+- Buy-and-hold benchmark comparison
+- Strategy mode benchmark runner
+- Strategy experiment dry-run planner
+- Experiment result sorting
+- Best/worst experiment ranking sections
 
 ---
 
-## Engineering Principles
+## Non-Negotiable Rules
 
-- Architecture before features
-- Quality before speed
-- Immutable domain models
-- Stateless engines
-- Explicit contracts
-- Test before trust
-- Builders for test setup
-- Documentation is part of development
-- Refactor only when architecture becomes harder to understand
-
----
-
-## Current Status
-
-HQE currently supports:
-
-- Immutable market event detection
-- Strategy context construction
-- Reusable event rules
-- Rule composition
-- SMC setup validation
-- Deterministic SMC signal generation
-- Fixed-risk trade planning
-
-Current pipeline:
-
-```text
-Facts -> Evidence -> Validation -> Decision -> Risk Plan
-```
+1. No fake profit claims.
+2. Every feature must have tests.
+3. Every strategy must be benchmarked.
+4. Every result must include transaction costs.
+5. secrets/ must never be committed.
+6. Real-money execution comes last.
+7. Broker-specific code must stay isolated from core strategy/backtest logic.
+8. UI must show truth, not hide weak results.
+9. Avoid overfitting.
+10. No milestone is complete unless tests pass and Git is clean.
 
 ---
 
-## Next Major Milestone
+## Current Priority
 
-The next major phase is:
+Immediate PC pending work:
 
-```text
-Backtesting Engine
-```
+- Pull latest code on PC
+- Run full tests on PC
+- Run strict/balanced/relaxed strategy mode benchmark
+- Run strategy experiment execution
+- Review net PnL after costs
+- Compare against buy-and-hold
 
-The Backtesting Engine will consume strategy signals and risk-approved trade plans to simulate historical performance.
+Next engineering milestones:
+
+- Full experiment execution review
+- Walk-forward testing
+- Streamlit UI dashboard
+- Broker gateway interfaces
+- Live market observer
+- Paper trading
+- Risk gateway
+- Micro live execution
+
+---
+
+## Documentation
+
+- ROADMAP.md
+- docs/PC_BENCHMARK_RUNBOOK.md
 
 ---
 
 ## Guiding Principle
 
-Every release should improve quality without sacrificing simplicity.
+Every release should improve truth, safety, and quality without sacrificing simplicity.
 
+HQE is built to answer honestly:
+
+- What works?
+- What fails?
+- What survives after costs?
+- What beats the benchmark?
+- What survives out-of-sample?
+- What is safe enough for paper trading?
+- What is safe enough for tiny real-money testing?

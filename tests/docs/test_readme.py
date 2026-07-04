@@ -1,0 +1,35 @@
+"""
+Tests for README documentation.
+"""
+
+from pathlib import Path
+
+
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+
+
+def test_readme_documents_current_hqe_workflow():
+    readme_path = PROJECT_ROOT / "README.md"
+
+    assert readme_path.exists()
+
+    text = readme_path.read_text(encoding="utf-8")
+
+    assert "Hunter Quant Engine (HQE)" in text
+    assert "616 tests passing" in text
+    assert "Strict/Balanced/Relaxed strategy modes" in text
+    assert "Strategy mode benchmark runner" in text
+    assert "Strategy experiment dry-run planner" in text
+    assert "Do not run full real-data strategy mode benchmarks or experiment execution on the laptop." in text
+    assert "hqe_benchmark_modes.bat" in text
+    assert "hqe_run_experiments.bat" in text
+    assert "No fake profit claims." in text
+    assert "docs/PC_BENCHMARK_RUNBOOK.md" in text
+
+
+def test_readme_no_longer_contains_old_architecture_typos():
+    text = (PROJECT_ROOT / "README.md").read_text(encoding="utf-8")
+
+    assert "vDetection" not in text
+    assert "Mmutable" not in text
+    assert "Backtesting Engine will consume" not in text
