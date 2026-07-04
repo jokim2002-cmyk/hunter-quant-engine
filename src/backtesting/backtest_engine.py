@@ -16,6 +16,9 @@ from src.backtesting.performance_summary_calculator import (
     PerformanceSummaryCalculator,
 )
 from src.backtesting.trade_result import TradeResult
+from src.historical_data.providers.base_historical_data_provider import (
+    BaseHistoricalDataProvider,
+)
 from src.models.candle import Candle
 from src.risk.trade_plan import TradePlan
 
@@ -31,12 +34,12 @@ class BacktestEngine(BaseBacktestEngine):
     def __init__(
         self,
         trade_plans: tuple[TradePlan, ...],
-        candles: tuple[Candle, ...],
+        historical_data_provider: BaseHistoricalDataProvider,
         trade_execution_simulator: BaseTradeExecutionSimulator | None = None,
         performance_summary_calculator: PerformanceSummaryCalculator | None = None,
     ):
         self._trade_plans = trade_plans
-        self._candles = candles
+        self._historical_data_provider = historical_data_provider
         self._trade_execution_simulator = (
             trade_execution_simulator or OHLCTradeExecutionSimulator()
         )
@@ -45,10 +48,14 @@ class BacktestEngine(BaseBacktestEngine):
         )
 
     def run(self) -> BacktestResult:
+        candles = self._historical_data_provider.load()
         trade_results: list[TradeResult] = []
 
         for trade_plan in self._trade_plans:
-            future_candles = self._get_future_candles(trade_plan)
+            future_candles = self._get_future_candles(
+                trade_plan=trade_plan,
+                candles=candles,
+            )
 
             trade_result = self._trade_execution_simulator.simulate(
                 trade_plan=trade_plan,
@@ -66,9 +73,10 @@ class BacktestEngine(BaseBacktestEngine):
     def _get_future_candles(
         self,
         trade_plan: TradePlan,
+        candles: tuple[Candle, ...],
     ) -> tuple[Candle, ...]:
         return tuple(
             candle
-            for candle in self._candles
+            for candle in candles
             if candle.datetime > trade_plan.created_at
         )

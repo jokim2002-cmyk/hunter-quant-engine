@@ -6,6 +6,9 @@ from datetime import datetime
 
 from src.backtesting.backtest_engine import BacktestEngine
 from src.backtesting.trade_result import TradeResult
+from src.historical_data.providers.in_memory_historical_data_provider import (
+    InMemoryHistoricalDataProvider,
+)
 from src.models.candle import Candle
 from src.risk.trade_plan import TradePlan
 from src.strategy.signal_type import SignalType
@@ -24,6 +27,12 @@ def _candle(
         close=100.0,
         volume=1000.0,
     )
+
+
+def _historical_data_provider(
+    candles: tuple[Candle, ...],
+) -> InMemoryHistoricalDataProvider:
+    return InMemoryHistoricalDataProvider(candles)
 
 
 def _long_trade_plan(created_at: datetime) -> TradePlan:
@@ -55,7 +64,7 @@ def _short_trade_plan(created_at: datetime) -> TradePlan:
 def test_backtest_engine_returns_empty_result_when_no_trade_plans_exist():
     result = BacktestEngine(
         trade_plans=(),
-        candles=(),
+        historical_data_provider=_historical_data_provider(()),
     ).run()
 
     assert result.trades == ()
@@ -74,7 +83,7 @@ def test_backtest_engine_returns_empty_result_when_trade_never_closes():
 
     result = BacktestEngine(
         trade_plans=(trade_plan,),
-        candles=candles,
+        historical_data_provider=_historical_data_provider(candles),
     ).run()
 
     assert result.trades == ()
@@ -93,7 +102,7 @@ def test_backtest_engine_records_closed_long_trade():
 
     result = BacktestEngine(
         trade_plans=(trade_plan,),
-        candles=(closing_candle,),
+        historical_data_provider=_historical_data_provider((closing_candle,)),
     ).run()
 
     assert len(result.trades) == 1
@@ -117,7 +126,7 @@ def test_backtest_engine_records_closed_short_trade():
 
     result = BacktestEngine(
         trade_plans=(trade_plan,),
-        candles=(closing_candle,),
+        historical_data_provider=_historical_data_provider((closing_candle,)),
     ).run()
 
     assert len(result.trades) == 1
@@ -145,9 +154,11 @@ def test_backtest_engine_ignores_candles_before_trade_plan_creation_time():
 
     result = BacktestEngine(
         trade_plans=(trade_plan,),
-        candles=(
-            old_candle_that_would_have_hit_take_profit,
-            future_candle_that_hits_stop_loss,
+        historical_data_provider=_historical_data_provider(
+            (
+                old_candle_that_would_have_hit_take_profit,
+                future_candle_that_hits_stop_loss,
+            )
         ),
     ).run()
 
@@ -177,9 +188,11 @@ def test_backtest_engine_collects_multiple_closed_trade_results():
 
     result = BacktestEngine(
         trade_plans=(long_trade_plan, short_trade_plan),
-        candles=(
-            long_closing_candle,
-            short_closing_candle,
+        historical_data_provider=_historical_data_provider(
+            (
+                long_closing_candle,
+                short_closing_candle,
+            )
         ),
     ).run()
 
@@ -208,7 +221,9 @@ def test_backtest_engine_passes_only_future_candles_to_simulator():
 
     BacktestEngine(
         trade_plans=(trade_plan,),
-        candles=(old_candle, future_candle),
+        historical_data_provider=_historical_data_provider(
+            (old_candle, future_candle)
+        ),
         trade_execution_simulator=simulator,
     ).run()
 
@@ -238,10 +253,9 @@ def test_backtest_engine_accepts_custom_trade_execution_simulator():
 
     result = BacktestEngine(
         trade_plans=(trade_plan,),
-        candles=(),
+        historical_data_provider=_historical_data_provider(()),
         trade_execution_simulator=StaticWinningTradeExecutionSimulator(),
     ).run()
 
     assert len(result.trades) == 1
     assert result.performance_summary.total_pnl == 100.0
-
