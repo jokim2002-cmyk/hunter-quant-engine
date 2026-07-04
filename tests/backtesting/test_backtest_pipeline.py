@@ -9,6 +9,8 @@ from src.historical_data.providers.in_memory_historical_data_provider import (
     InMemoryHistoricalDataProvider,
 )
 from src.models.candle import Candle
+from src.models.order_block import OrderBlock
+from src.models.order_block_type import OrderBlockType
 from src.risk.risk_manager import RiskManager
 from src.strategy.context_factories.default_strategy_context_factory import (
     DefaultStrategyContextFactory,
@@ -19,7 +21,11 @@ from src.strategy.trade_signal import TradeSignal
 from src.trade_planning.simple_candle_trade_candidate_planner import (
     SimpleCandleTradeCandidatePlanner,
 )
+from src.trade_planning.smc_trade_candidate_planner import (
+    SMCTradeCandidatePlanner,
+)
 from tests.builders.risk.risk_profile_builder import RiskProfileBuilder
+from tests.builders.strategy.strategy_context_builder import StrategyContextBuilder
 
 
 def _candle(
@@ -102,6 +108,29 @@ class RecordingStrategyContextFactory:
             timeframe=timeframe,
             analysis_time=analysis_time,
             candles=candles,
+        )
+
+
+class FixedOrderBlockStrategyContextFactory:
+    def __init__(
+        self,
+        order_block: OrderBlock,
+    ):
+        self._order_block = order_block
+
+    def create(
+        self,
+        symbol,
+        timeframe,
+        analysis_time,
+        candles,
+    ):
+        return (
+            StrategyContextBuilder()
+            .analysis_time(analysis_time)
+            .with_candles(*candles)
+            .with_order_blocks(self._order_block)
+            .build()
         )
 
 
@@ -199,7 +228,7 @@ def test_backtest_pipeline_sets_context_metadata():
     assert context.analysis_time == candle.datetime
 
 
-def test_backtest_pipeline_leaves_detection_events_empty_in_v1():
+def test_backtest_pipeline_leaves_detection_events_empty_when_no_detections_exist():
     strategy = RecordingNeutralStrategy()
     candle = _candle(datetime(2026, 1, 1, 9, 0))
 
@@ -266,6 +295,60 @@ def test_backtest_pipeline_generates_trade_plan_and_backtest_result():
     assert result.trades[0].stop_loss == 95.0
     assert result.trades[0].take_profit == 110.0
     assert result.trades[0].exit_price == 110.0
+    assert result.trades[0].pnl == 200.0
+    assert result.performance_summary.total_trades == 1
+    assert result.performance_summary.total_pnl == 200.0
+
+
+def test_backtest_pipeline_can_use_smc_trade_candidate_planner_via_di():
+    signal_candle = _candle(
+        candle_time=datetime(2026, 1, 1, 9, 0),
+        high=104.0,
+        low=95.0,
+        close=100.0,
+    )
+    closing_candle = _candle(
+        candle_time=datetime(2026, 1, 1, 10, 0),
+        high=109.0,
+        low=97.0,
+        close=108.0,
+    )
+    order_block = OrderBlock(
+        candle_index=0,
+        high=104.0,
+        low=96.0,
+        open=103.0,
+        close=97.0,
+        order_block_type=OrderBlockType.BULLISH,
+        created_at=signal_candle.datetime,
+    )
+
+    pipeline = BacktestPipeline(
+        historical_data_provider=InMemoryHistoricalDataProvider(
+            (signal_candle, closing_candle)
+        ),
+        strategy=FirstCandleLongStrategy(),
+        trade_candidate_planner=SMCTradeCandidatePlanner(),
+        risk_manager=RiskManager(),
+        risk_profile=RiskProfileBuilder()
+        .with_account_balance(10000.0)
+        .with_risk_per_trade(0.01)
+        .with_reward_to_risk(2.0)
+        .build(),
+        symbol="TEST",
+        timeframe="1H",
+        strategy_context_factory=FixedOrderBlockStrategyContextFactory(
+            order_block=order_block,
+        ),
+    )
+
+    result = pipeline.run()
+
+    assert len(result.trades) == 1
+    assert result.trades[0].entry_price == 100.0
+    assert result.trades[0].stop_loss == 96.0
+    assert result.trades[0].take_profit == 108.0
+    assert result.trades[0].exit_price == 108.0
     assert result.trades[0].pnl == 200.0
     assert result.performance_summary.total_trades == 1
     assert result.performance_summary.total_pnl == 200.0
