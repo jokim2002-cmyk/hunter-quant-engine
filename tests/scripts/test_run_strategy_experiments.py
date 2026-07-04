@@ -11,6 +11,7 @@ import pytest
 from scripts.run_strategy_experiments import (
     ExperimentResult,
     ExperimentSpec,
+    best_experiment_results,
     build_argument_parser,
     build_default_experiment_specs,
     build_dry_run_report,
@@ -18,9 +19,34 @@ from scripts.run_strategy_experiments import (
     build_experiment_report,
     run_experiment_spec,
     sanitize_experiment_name,
+    sort_experiment_results,
+    worst_experiment_results,
     write_summary_csv,
 )
 from src.config.strategy_config import supported_strategy_mode_names
+
+
+def make_experiment_result(
+    name: str,
+    net_pnl: float,
+    return_percent: float,
+    total_charges: float = 0.0,
+) -> ExperimentResult:
+    return ExperimentResult(
+        name=name,
+        strategy_mode=name.split("_")[0],
+        risk_per_trade=0.01,
+        reward_to_risk=2.0,
+        total_trades=1,
+        gross_pnl=net_pnl + total_charges,
+        total_charges=total_charges,
+        net_pnl=net_pnl,
+        ending_balance=10000.0 + net_pnl,
+        return_percent=return_percent,
+        normalized_output_path=Path(f"{name}_normalized.csv"),
+        trades_output_path=Path(f"{name}_trades.csv"),
+        equity_output_path=Path(f"{name}_equity.csv"),
+    )
 
 
 def test_build_default_experiment_specs_creates_one_spec_per_mode():
@@ -204,3 +230,102 @@ def test_strategy_experiments_script_runs_as_direct_file_in_dry_run():
     assert completed.returncode == 0
     assert "Mode: DRY RUN" in completed.stdout
     assert "No backtests were executed." in completed.stdout
+
+
+def test_sort_experiment_results_orders_by_net_pnl():
+    results = (
+        make_experiment_result("strict_default", net_pnl=10.0, return_percent=0.1),
+        make_experiment_result("balanced_default", net_pnl=30.0, return_percent=0.3),
+        make_experiment_result("relaxed_default", net_pnl=-5.0, return_percent=-0.05),
+    )
+
+    sorted_results = sort_experiment_results(results)
+
+    assert tuple(result.name for result in sorted_results) == (
+        "balanced_default",
+        "strict_default",
+        "relaxed_default",
+    )
+
+
+def test_sort_experiment_results_can_sort_ascending_by_return_percent():
+    results = (
+        make_experiment_result("strict_default", net_pnl=10.0, return_percent=0.1),
+        make_experiment_result("balanced_default", net_pnl=30.0, return_percent=0.3),
+        make_experiment_result("relaxed_default", net_pnl=-5.0, return_percent=-0.05),
+    )
+
+    sorted_results = sort_experiment_results(
+        results=results,
+        sort_by="return_percent",
+        descending=False,
+    )
+
+    assert tuple(result.name for result in sorted_results) == (
+        "relaxed_default",
+        "strict_default",
+        "balanced_default",
+    )
+
+
+def test_sort_experiment_results_rejects_unknown_metric():
+    results = (
+        make_experiment_result("strict_default", net_pnl=10.0, return_percent=0.1),
+    )
+
+    try:
+        sort_experiment_results(results=results, sort_by="unknown_metric")
+    except ValueError as error:
+        assert "Unsupported experiment result sort field" in str(error)
+    else:
+        raise AssertionError("Expected ValueError.")
+
+
+def test_best_experiment_results_returns_top_limited_results():
+    results = (
+        make_experiment_result("strict_default", net_pnl=10.0, return_percent=0.1),
+        make_experiment_result("balanced_default", net_pnl=30.0, return_percent=0.3),
+        make_experiment_result("relaxed_default", net_pnl=-5.0, return_percent=-0.05),
+    )
+
+    best_results = best_experiment_results(results=results, limit=2)
+
+    assert tuple(result.name for result in best_results) == (
+        "balanced_default",
+        "strict_default",
+    )
+
+
+def test_worst_experiment_results_returns_bottom_limited_results():
+    results = (
+        make_experiment_result("strict_default", net_pnl=10.0, return_percent=0.1),
+        make_experiment_result("balanced_default", net_pnl=30.0, return_percent=0.3),
+        make_experiment_result("relaxed_default", net_pnl=-5.0, return_percent=-0.05),
+    )
+
+    worst_results = worst_experiment_results(results=results, limit=2)
+
+    assert tuple(result.name for result in worst_results) == (
+        "relaxed_default",
+        "strict_default",
+    )
+
+
+def test_best_and_worst_experiment_results_reject_invalid_limit():
+    results = (
+        make_experiment_result("strict_default", net_pnl=10.0, return_percent=0.1),
+    )
+
+    try:
+        best_experiment_results(results=results, limit=0)
+    except ValueError as error:
+        assert "Best experiment result limit" in str(error)
+    else:
+        raise AssertionError("Expected ValueError.")
+
+    try:
+        worst_experiment_results(results=results, limit=0)
+    except ValueError as error:
+        assert "Worst experiment result limit" in str(error)
+    else:
+        raise AssertionError("Expected ValueError.")

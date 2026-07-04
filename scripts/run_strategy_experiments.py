@@ -224,6 +224,76 @@ def run_experiments(
     )
 
 
+EXPERIMENT_RESULT_SORT_FIELDS = (
+    "net_pnl",
+    "return_percent",
+    "gross_pnl",
+    "ending_balance",
+    "total_trades",
+    "total_charges",
+)
+
+
+def sort_experiment_results(
+    results: tuple[ExperimentResult, ...],
+    sort_by: str = "net_pnl",
+    descending: bool = True,
+) -> tuple[ExperimentResult, ...]:
+    """
+    Sort experiment results by a supported numeric result field.
+    """
+    if sort_by not in EXPERIMENT_RESULT_SORT_FIELDS:
+        supported_fields = ", ".join(EXPERIMENT_RESULT_SORT_FIELDS)
+        raise ValueError(
+            f"Unsupported experiment result sort field: {sort_by}. "
+            f"Supported fields: {supported_fields}"
+        )
+
+    return tuple(
+        sorted(
+            results,
+            key=lambda result: getattr(result, sort_by),
+            reverse=descending,
+        )
+    )
+
+
+def best_experiment_results(
+    results: tuple[ExperimentResult, ...],
+    limit: int = 3,
+    sort_by: str = "net_pnl",
+) -> tuple[ExperimentResult, ...]:
+    """
+    Return best experiment results for a supported metric.
+    """
+    if limit < 1:
+        raise ValueError("Best experiment result limit must be at least 1.")
+
+    return sort_experiment_results(
+        results=results,
+        sort_by=sort_by,
+        descending=True,
+    )[:limit]
+
+
+def worst_experiment_results(
+    results: tuple[ExperimentResult, ...],
+    limit: int = 3,
+    sort_by: str = "net_pnl",
+) -> tuple[ExperimentResult, ...]:
+    """
+    Return worst experiment results for a supported metric.
+    """
+    if limit < 1:
+        raise ValueError("Worst experiment result limit must be at least 1.")
+
+    return sort_experiment_results(
+        results=results,
+        sort_by=sort_by,
+        descending=False,
+    )[:limit]
+
+
 def build_dry_run_report(
     specs: tuple[ExperimentSpec, ...],
 ) -> str:
