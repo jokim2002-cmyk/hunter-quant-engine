@@ -24,6 +24,7 @@ from src.risk.risk_profile import RiskProfile
 from src.strategy.context_factories.default_strategy_context_factory import (
     DefaultStrategyContextFactory,
 )
+from src.strategy.signal_type import SignalType
 from src.strategy.smc_strategy import SMCStrategy
 from src.trade_planning.smc_trade_candidate_planner import (
     SMCTradeCandidatePlanner,
@@ -36,6 +37,12 @@ DEFAULT_TIMEFRAME = "5m"
 DEFAULT_ACCOUNT_BALANCE = 10000.0
 DEFAULT_RISK_PER_TRADE = 0.01
 DEFAULT_REWARD_TO_RISK = 2.0
+
+EXIT_REASON_TAKE_PROFIT = "take_profit"
+EXIT_REASON_STOP_LOSS = "stop_loss"
+EXIT_REASON_UNKNOWN = "unknown"
+
+PRICE_TOLERANCE = 0.000000001
 
 
 def build_argument_parser() -> argparse.ArgumentParser:
@@ -178,6 +185,214 @@ def optional_metric(
     return format_metric(label, getattr(summary, attribute_name))
 
 
+def format_signal_type(
+    signal_type: Any,
+) -> str:
+    """
+    Format signal type for human-readable reporting.
+
+    Args:
+        signal_type: SignalType enum or enum-like/string value.
+
+    Returns:
+        Uppercase signal type text.
+    """
+    value = getattr(signal_type, "value", signal_type)
+
+    return str(value).upper()
+
+
+def prices_match(
+    first_price: float,
+    second_price: float,
+) -> bool:
+    """
+    Return True when two prices are equal within report tolerance.
+
+    Args:
+        first_price: First price.
+        second_price: Second price.
+
+    Returns:
+        True when prices match within tolerance.
+    """
+    return abs(first_price - second_price) <= PRICE_TOLERANCE
+
+
+def infer_exit_reason(
+    trade: Any,
+) -> str:
+    """
+    Infer exit reason from completed trade prices.
+
+    Args:
+        trade: TradeResult-like object.
+
+    Returns:
+        take_profit, stop_loss, or unknown.
+    """
+    if prices_match(trade.exit_price, trade.take_profit):
+        return EXIT_REASON_TAKE_PROFIT
+
+    if prices_match(trade.exit_price, trade.stop_loss):
+        return EXIT_REASON_STOP_LOSS
+
+    return EXIT_REASON_UNKNOWN
+
+
+def pnl_formula_for_signal(
+    signal_type: Any,
+) -> str:
+    """
+    Return PnL formula explanation for a signal type.
+
+    Args:
+        signal_type: SignalType enum or enum-like/string value.
+
+    Returns:
+        Human-readable PnL formula.
+    """
+    if _is_long_signal(signal_type):
+        return "(Exit Price - Entry Price) * Position Size"
+
+    if _is_short_signal(signal_type):
+        return "(Entry Price - Exit Price) * Position Size"
+
+    return "Unknown directional PnL formula"
+
+
+def entry_logic_for_signal(
+    signal_type: Any,
+) -> tuple[str, ...]:
+    """
+    Return SMC trade planning explanation for a signal type.
+
+    Args:
+        signal_type: SignalType enum or enum-like/string value.
+
+    Returns:
+        Human-readable entry and stop-loss logic lines.
+    """
+    if _is_long_signal(signal_type):
+        return (
+            "Signal Logic: Bullish SMC setup was valid.",
+            "Entry Zone Priority: Bullish Order Block first, Bullish FVG fallback.",
+            "Entry Formula: midpoint of selected bullish entry zone.",
+            "Stop Loss Formula: selected bullish entry zone low.",
+        )
+
+    if _is_short_signal(signal_type):
+        return (
+            "Signal Logic: Bearish SMC setup was valid.",
+            "Entry Zone Priority: Bearish Order Block first, Bearish FVG fallback.",
+            "Entry Formula: midpoint of selected bearish entry zone.",
+            "Stop Loss Formula: selected bearish entry zone high.",
+        )
+
+    return (
+        "Signal Logic: Directional SMC setup was not available.",
+    )
+
+
+def _is_long_signal(
+    signal_type: Any,
+) -> bool:
+    value = getattr(signal_type, "value", signal_type)
+
+    return signal_type == SignalType.LONG or str(value).lower() == "long"
+
+
+def _is_short_signal(
+    signal_type: Any,
+) -> bool:
+    value = getattr(signal_type, "value", signal_type)
+
+    return signal_type == SignalType.SHORT or str(value).lower() == "short"
+
+
+def build_trade_detail_lines(
+    trade: Any,
+    trade_number: int,
+) -> list[str]:
+    """
+    Build detailed explainable report lines for one completed trade.
+
+    Args:
+        trade: TradeResult-like object.
+        trade_number: One-based trade number.
+
+    Returns:
+        Report lines.
+    """
+    direction = format_signal_type(trade.signal_type)
+    exit_reason = infer_exit_reason(trade)
+
+    lines = [
+        f"Trade #{trade_number}",
+        format_metric("Direction", direction),
+        format_metric("Opened At", trade.opened_at),
+        format_metric("Closed At", trade.closed_at),
+        format_metric("Entry Price", trade.entry_price),
+        format_metric("Stop Loss", trade.stop_loss),
+        format_metric("Take Profit", trade.take_profit),
+        format_metric("Exit Price", trade.exit_price),
+        format_metric("Exit Reason", exit_reason),
+        format_metric("Position Size", trade.position_size),
+        format_metric("PnL", trade.pnl),
+        format_metric("Risk Multiple", trade.risk_multiple),
+        "Logic",
+    ]
+
+    lines.extend(
+        f"- {logic_line}"
+        for logic_line in entry_logic_for_signal(trade.signal_type)
+    )
+    lines.extend(
+        [
+            "- Take Profit Formula: fixed reward-to-risk target from RiskManager.",
+            "- Position Size Formula: fixed-risk sizing from RiskManager.",
+            f"- PnL Formula: {pnl_formula_for_signal(trade.signal_type)}.",
+        ]
+    )
+
+    return lines
+
+
+def build_trade_details_section(
+    trades: tuple[Any, ...],
+) -> list[str]:
+    """
+    Build detailed explainable trade report section.
+
+    Args:
+        trades: Completed trades.
+
+    Returns:
+        Report lines.
+    """
+    if not trades:
+        return []
+
+    lines = [
+        "------------------------------------------------------------",
+        "TRADE DETAILS",
+        "------------------------------------------------------------",
+    ]
+
+    for index, trade in enumerate(trades, start=1):
+        if index > 1:
+            lines.append("------------------------------------------------------------")
+
+        lines.extend(
+            build_trade_detail_lines(
+                trade=trade,
+                trade_number=index,
+            )
+        )
+
+    return lines
+
+
 def build_report(
     result: Any,
     csv_path: str | Path,
@@ -235,6 +450,11 @@ def build_report(
         [
             "------------------------------------------------------------",
             format_metric("Closed Trades", len(result.trades)),
+        ]
+    )
+    lines.extend(build_trade_details_section(tuple(result.trades)))
+    lines.extend(
+        [
             "============================================================",
             "",
         ]
