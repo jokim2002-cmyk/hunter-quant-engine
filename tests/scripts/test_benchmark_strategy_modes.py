@@ -3,6 +3,8 @@ Strategy Mode Benchmark Script Tests
 """
 
 from pathlib import Path
+import subprocess
+import sys
 
 import pytest
 
@@ -226,3 +228,21 @@ def test_benchmark_strategy_modes_runs_all_modes_and_creates_outputs(tmp_path: P
         assert result.benchmark_return_percent == 5.0
         assert result.alpha_percent == -5.0
         assert result.outperformed is False
+
+
+def test_benchmark_script_can_run_as_direct_file():
+    completed = subprocess.run(
+        [
+            sys.executable,
+            "scripts/benchmark_strategy_modes.py",
+            "--help",
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert completed.returncode == 0
+    assert "Benchmark strict, balanced, and relaxed HQE strategy modes." in (
+        completed.stdout
+    )
