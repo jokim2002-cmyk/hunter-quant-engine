@@ -18,7 +18,12 @@ from src.risk.base_risk_manager import BaseRiskManager
 from src.risk.risk_profile import RiskProfile
 from src.risk.trade_plan import TradePlan
 from src.strategy.base_strategy import BaseStrategy
-from src.strategy.strategy_context import StrategyContext
+from src.strategy.context_factories.base_strategy_context_factory import (
+    BaseStrategyContextFactory,
+)
+from src.strategy.context_factories.default_strategy_context_factory import (
+    DefaultStrategyContextFactory,
+)
 from src.trade_planning.base_trade_candidate_planner import (
     BaseTradeCandidatePlanner,
 )
@@ -28,9 +33,9 @@ class BacktestPipeline(BaseBacktestPipeline):
     """
     Walk-forward backtest pipeline.
 
-    The pipeline loads historical candles, builds walk-forward StrategyContext
-    snapshots, generates strategy signals, converts them into trade candidates,
-    creates risk-approved trade plans, and delegates execution to BacktestEngine.
+    The pipeline loads historical candles, delegates StrategyContext creation,
+    generates strategy signals, converts them into trade candidates, creates
+    risk-approved trade plans, and delegates execution to BacktestEngine.
     """
 
     def __init__(
@@ -42,6 +47,7 @@ class BacktestPipeline(BaseBacktestPipeline):
         risk_profile: RiskProfile,
         symbol: str,
         timeframe: str,
+        strategy_context_factory: BaseStrategyContextFactory | None = None,
     ):
         self._historical_data_provider = historical_data_provider
         self._strategy = strategy
@@ -50,6 +56,9 @@ class BacktestPipeline(BaseBacktestPipeline):
         self._risk_profile = risk_profile
         self._symbol = symbol
         self._timeframe = timeframe
+        self._strategy_context_factory = (
+            strategy_context_factory or DefaultStrategyContextFactory()
+        )
 
     def run(self) -> BacktestResult:
         candles = self._historical_data_provider.load()
@@ -67,9 +76,11 @@ class BacktestPipeline(BaseBacktestPipeline):
         trade_plans: list[TradePlan] = []
 
         for index, candle in enumerate(candles):
-            context = self._build_context(
+            context = self._strategy_context_factory.create(
+                symbol=self._symbol,
+                timeframe=self._timeframe,
+                analysis_time=candle.datetime,
                 candles=candles[: index + 1],
-                analysis_candle=candle,
             )
 
             signals = self._strategy.generate(context)
@@ -91,25 +102,3 @@ class BacktestPipeline(BaseBacktestPipeline):
                     trade_plans.extend(plans)
 
         return tuple(trade_plans)
-
-    def _build_context(
-        self,
-        candles: tuple[Candle, ...],
-        analysis_candle: Candle,
-    ) -> StrategyContext:
-        return StrategyContext(
-            symbol=self._symbol,
-            timeframe=self._timeframe,
-            analysis_time=analysis_candle.datetime,
-            candles=candles,
-            market_structure_points=(),
-            bos_events=(),
-            choch_events=(),
-            liquidity_points=(),
-            equal_high_points=(),
-            equal_low_points=(),
-            liquidity_clusters=(),
-            liquidity_sweeps=(),
-            fair_value_gaps=(),
-            order_blocks=(),
-        )

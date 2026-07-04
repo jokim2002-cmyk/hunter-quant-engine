@@ -10,6 +10,9 @@ from src.historical_data.providers.in_memory_historical_data_provider import (
 )
 from src.models.candle import Candle
 from src.risk.risk_manager import RiskManager
+from src.strategy.context_factories.default_strategy_context_factory import (
+    DefaultStrategyContextFactory,
+)
 from src.strategy.signal_strength import SignalStrength
 from src.strategy.signal_type import SignalType
 from src.strategy.trade_signal import TradeSignal
@@ -73,6 +76,35 @@ class FirstCandleLongStrategy:
         return (_neutral_signal(context.analysis_time),)
 
 
+class RecordingStrategyContextFactory:
+    def __init__(self):
+        self.calls = []
+        self._delegate = DefaultStrategyContextFactory()
+
+    def create(
+        self,
+        symbol,
+        timeframe,
+        analysis_time,
+        candles,
+    ):
+        self.calls.append(
+            {
+                "symbol": symbol,
+                "timeframe": timeframe,
+                "analysis_time": analysis_time,
+                "candles": candles,
+            }
+        )
+
+        return self._delegate.create(
+            symbol=symbol,
+            timeframe=timeframe,
+            analysis_time=analysis_time,
+            candles=candles,
+        )
+
+
 def test_backtest_pipeline_returns_empty_result_when_no_candles_exist():
     pipeline = BacktestPipeline(
         historical_data_provider=InMemoryHistoricalDataProvider(()),
@@ -112,6 +144,36 @@ def test_backtest_pipeline_builds_walk_forward_contexts():
     assert len(strategy.contexts) == 2
     assert strategy.contexts[0].candles == (first_candle,)
     assert strategy.contexts[1].candles == (first_candle, second_candle)
+
+
+def test_backtest_pipeline_delegates_context_creation_to_factory():
+    factory = RecordingStrategyContextFactory()
+    strategy = RecordingNeutralStrategy()
+    first_candle = _candle(datetime(2026, 1, 1, 9, 0))
+    second_candle = _candle(datetime(2026, 1, 1, 10, 0))
+
+    pipeline = BacktestPipeline(
+        historical_data_provider=InMemoryHistoricalDataProvider(
+            (first_candle, second_candle)
+        ),
+        strategy=strategy,
+        trade_candidate_planner=SimpleCandleTradeCandidatePlanner(),
+        risk_manager=RiskManager(),
+        risk_profile=RiskProfileBuilder().build(),
+        symbol="EURUSD",
+        timeframe="1H",
+        strategy_context_factory=factory,
+    )
+
+    pipeline.run()
+
+    assert len(factory.calls) == 2
+    assert factory.calls[0]["symbol"] == "EURUSD"
+    assert factory.calls[0]["timeframe"] == "1H"
+    assert factory.calls[0]["analysis_time"] == first_candle.datetime
+    assert factory.calls[0]["candles"] == (first_candle,)
+    assert factory.calls[1]["analysis_time"] == second_candle.datetime
+    assert factory.calls[1]["candles"] == (first_candle, second_candle)
 
 
 def test_backtest_pipeline_sets_context_metadata():
