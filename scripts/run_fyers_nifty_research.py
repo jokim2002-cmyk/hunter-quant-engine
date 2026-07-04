@@ -20,11 +20,13 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
+from src.config.strategy_config import supported_strategy_mode_names
 from src.costs.transaction_cost_profile_preset import (
     COST_PROFILE_FYERS_EQUITY_INTRADAY,
 )
 from scripts.run_smc_research_workflow import (
     DEFAULT_ACCOUNT_BALANCE,
+    DEFAULT_STRATEGY_MODE,
     DEFAULT_REWARD_TO_RISK,
     DEFAULT_RISK_PER_TRADE,
     build_workflow_summary_report,
@@ -140,6 +142,12 @@ def build_argument_parser() -> argparse.ArgumentParser:
         default=DEFAULT_REWARD_TO_RISK,
         help="Reward-to-risk multiple used for take-profit planning.",
     )
+    parser.add_argument(
+        "--strategy-mode",
+        default=DEFAULT_STRATEGY_MODE,
+        choices=supported_strategy_mode_names(),
+        help="SMC strategy mode: strict, balanced, or relaxed.",
+    )
 
     parser.add_argument(
         "--datetime-column",
@@ -200,6 +208,7 @@ def run_fyers_nifty_research(
     account_balance: float,
     risk_per_trade: float,
     reward_to_risk: float,
+    strategy_mode: str = DEFAULT_STRATEGY_MODE,
     datetime_column: str | None = None,
     date_column: str | None = None,
     time_column: str | None = None,
@@ -250,6 +259,7 @@ def run_fyers_nifty_research(
         account_balance=account_balance,
         risk_per_trade=risk_per_trade,
         reward_to_risk=reward_to_risk,
+        strategy_mode=strategy_mode,
         datetime_column=datetime_column,
         date_column=date_column,
         time_column=time_column,
@@ -279,6 +289,7 @@ def main() -> None:
         account_balance=args.account_balance,
         risk_per_trade=args.risk_per_trade,
         reward_to_risk=args.reward_to_risk,
+        strategy_mode=args.strategy_mode,
         datetime_column=args.datetime_column,
         date_column=args.date_column,
         time_column=args.time_column,

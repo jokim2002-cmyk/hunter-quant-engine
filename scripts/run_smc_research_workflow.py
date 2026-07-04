@@ -22,6 +22,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
+from src.config.strategy_config import supported_strategy_mode_names
 from src.costs.transaction_cost_profile import TransactionCostProfile
 from src.costs.transaction_cost_profile_preset import (
     supported_transaction_cost_profile_names,
@@ -49,6 +50,7 @@ from scripts.run_smc_backtest import (
     DEFAULT_SEBI_CHARGE_RATE,
     DEFAULT_STAMP_DUTY_RATE,
     DEFAULT_STT_RATE,
+    DEFAULT_STRATEGY_MODE,
     build_pipeline,
     build_report as build_backtest_report,
     build_risk_profile,
@@ -95,6 +97,7 @@ class SMCResearchWorkflowSummary:
     inspection_summary: CSVInspectionSummary
     diagnostic_summary: DiagnosticSummary
     backtest_result: Any
+    strategy_mode: str = DEFAULT_STRATEGY_MODE
 
 
 def build_argument_parser() -> argparse.ArgumentParser:
@@ -155,6 +158,12 @@ def build_argument_parser() -> argparse.ArgumentParser:
         type=float,
         default=DEFAULT_REWARD_TO_RISK,
         help="Reward-to-risk multiple used for take-profit planning.",
+    )
+    parser.add_argument(
+        "--strategy-mode",
+        default=DEFAULT_STRATEGY_MODE,
+        choices=supported_strategy_mode_names(),
+        help="SMC strategy mode: strict, balanced, or relaxed.",
     )
     parser.add_argument(
         "--cost-profile",
@@ -259,6 +268,7 @@ def run_workflow(
     account_balance: float,
     risk_per_trade: float,
     reward_to_risk: float,
+    strategy_mode: str = DEFAULT_STRATEGY_MODE,
     datetime_column: str | None = None,
     date_column: str | None = None,
     time_column: str | None = None,
@@ -327,6 +337,7 @@ def run_workflow(
         symbol=symbol,
         timeframe=timeframe,
         risk_profile=risk_profile,
+        strategy_mode=strategy_mode,
     )
 
     pipeline = build_pipeline(
@@ -334,6 +345,7 @@ def run_workflow(
         symbol=symbol,
         timeframe=timeframe,
         risk_profile=risk_profile,
+        strategy_mode=strategy_mode,
     )
     backtest_result = pipeline.run()
 
@@ -361,6 +373,7 @@ def run_workflow(
         inspection_summary=inspection_summary,
         diagnostic_summary=diagnostic_summary,
         backtest_result=backtest_result,
+        strategy_mode=strategy_mode,
     )
 
 
@@ -406,6 +419,7 @@ def build_workflow_summary_report(
         format_metric("Equity Curve CSV", summary.equity_output_path),
         format_metric("Symbol", summary.symbol),
         format_metric("Timeframe", summary.timeframe),
+        format_metric("Strategy Mode", summary.strategy_mode),
         "------------------------------------------------------------",
         format_metric("Rows Normalized", summary.normalization_summary.rows_written),
         format_metric("Ready For HQE", summary.inspection_summary.ready_for_hqe),
@@ -455,6 +469,7 @@ def main() -> None:
         account_balance=args.account_balance,
         risk_per_trade=args.risk_per_trade,
         reward_to_risk=args.reward_to_risk,
+        strategy_mode=args.strategy_mode,
         datetime_column=args.datetime_column,
         date_column=args.date_column,
         time_column=args.time_column,
@@ -487,6 +502,7 @@ def main() -> None:
             symbol=summary.symbol,
             timeframe=summary.timeframe,
             transaction_cost_calculator=transaction_cost_calculator,
+            strategy_mode=summary.strategy_mode,
         )
     )
     print(build_workflow_summary_report(summary))

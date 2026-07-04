@@ -96,3 +96,48 @@ def test_returns_false_for_empty_result():
     result = SMCRuleSetResultBuilder().build()
 
     assert SMCSetupValidator().is_valid(result) is False
+
+def test_strict_config_requires_both_fvg_and_order_block():
+    from src.config.strategy_config import STRICT_SMC_STRATEGY_CONFIG
+
+    bos = BOSBuilder().bullish().build()
+    sweep = LiquiditySweepBuilder().buy_side().build()
+    fvg = FairValueGapBuilder().bullish().build()
+    order_block = OrderBlockBuilder().bullish().build()
+
+    result_without_order_block = (
+        SMCRuleSetResultBuilder()
+        .with_bos(bos)
+        .with_liquidity_sweeps(sweep)
+        .with_fair_value_gaps(fvg)
+        .build()
+    )
+    complete_strict_result = (
+        SMCRuleSetResultBuilder()
+        .with_bos(bos)
+        .with_liquidity_sweeps(sweep)
+        .with_fair_value_gaps(fvg)
+        .with_order_blocks(order_block)
+        .build()
+    )
+
+    validator = SMCSetupValidator(config=STRICT_SMC_STRATEGY_CONFIG)
+
+    assert validator.is_valid(result_without_order_block) is False
+    assert validator.is_valid(complete_strict_result) is True
+
+
+def test_relaxed_config_does_not_require_liquidity_sweep():
+    from src.config.strategy_config import RELAXED_SMC_STRATEGY_CONFIG
+
+    bos = BOSBuilder().bullish().build()
+    fvg = FairValueGapBuilder().bullish().build()
+
+    result = (
+        SMCRuleSetResultBuilder()
+        .with_bos(bos)
+        .with_fair_value_gaps(fvg)
+        .build()
+    )
+
+    assert SMCSetupValidator(config=RELAXED_SMC_STRATEGY_CONFIG).is_valid(result) is True

@@ -15,6 +15,7 @@ from src.strategy.confluence.smc_confluence_engine import SMCConfluenceEngine
 from src.strategy.rule_sets.bearish_smc_rule_set import BearishSMCRuleSet
 from src.strategy.rule_sets.bullish_smc_rule_set import BullishSMCRuleSet
 from src.strategy.rule_sets.smc_rule_set_result import SMCRuleSetResult
+from src.strategy.setup_validators.smc_setup_validator import SMCSetupValidator
 from src.strategy.signal_type import SignalType
 from src.strategy.strategy_context import StrategyContext
 from src.strategy.trade_signal import TradeSignal
@@ -38,10 +39,12 @@ class SMCStrategy(BaseStrategy):
         ) = None,
         config: SMCStrategyConfig | None = None,
     ) -> None:
+        self._config = config or DEFAULT_SMC_STRATEGY_CONFIG
         self._bullish_rule_set = bullish_rule_set or BullishSMCRuleSet()
         self._bearish_rule_set = bearish_rule_set or BearishSMCRuleSet()
-        self._confluence_engine = confluence_engine or SMCConfluenceEngine()
-        self._config = config or DEFAULT_SMC_STRATEGY_CONFIG
+        self._confluence_engine = confluence_engine or SMCConfluenceEngine(
+            setup_validator=SMCSetupValidator(config=self._config),
+        )
 
     @property
     def config(self) -> SMCStrategyConfig:

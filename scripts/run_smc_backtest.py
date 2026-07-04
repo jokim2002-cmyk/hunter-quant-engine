@@ -17,6 +17,11 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 from src.backtesting.backtest_pipeline import BacktestPipeline
+from src.config.strategy_config import (
+    DEFAULT_SMC_STRATEGY_CONFIG,
+    smc_strategy_config_for_mode,
+    supported_strategy_mode_names,
+)
 from src.costs.transaction_cost_calculator import TransactionCostCalculator
 from src.costs.transaction_cost_profile import TransactionCostProfile
 from src.costs.transaction_cost_profile_preset import (
@@ -45,6 +50,7 @@ DEFAULT_TIMEFRAME = "5m"
 DEFAULT_ACCOUNT_BALANCE = 10000.0
 DEFAULT_RISK_PER_TRADE = 0.01
 DEFAULT_REWARD_TO_RISK = 2.0
+DEFAULT_STRATEGY_MODE = DEFAULT_SMC_STRATEGY_CONFIG.mode.value
 
 DEFAULT_BROKERAGE_PER_ORDER = 0.0
 DEFAULT_STT_RATE = 0.0
@@ -157,6 +163,12 @@ def build_argument_parser() -> argparse.ArgumentParser:
         help="Reward-to-risk multiple used for take-profit planning.",
     )
     parser.add_argument(
+        "--strategy-mode",
+        default=DEFAULT_STRATEGY_MODE,
+        choices=supported_strategy_mode_names(),
+        help="SMC strategy mode: strict, balanced, or relaxed.",
+    )
+    parser.add_argument(
         "--cost-profile",
         default=DEFAULT_COST_PROFILE,
         choices=supported_transaction_cost_profile_names(),
@@ -266,13 +278,16 @@ def build_pipeline(
     symbol: str,
     timeframe: str,
     risk_profile: RiskProfile,
+    strategy_mode: str = DEFAULT_STRATEGY_MODE,
 ) -> BacktestPipeline:
     """
     Build the full HQE SMC backtest pipeline.
     """
     return BacktestPipeline(
         historical_data_provider=CSVHistoricalDataProvider(csv_path),
-        strategy=SMCStrategy(),
+        strategy=SMCStrategy(
+            config=smc_strategy_config_for_mode(strategy_mode),
+        ),
         trade_candidate_planner=SMCTradeCandidatePlanner(),
         risk_manager=RiskManager(),
         risk_profile=risk_profile,
@@ -730,6 +745,7 @@ def build_report(
     symbol: str,
     timeframe: str,
     transaction_cost_calculator: TransactionCostCalculator | None = None,
+    strategy_mode: str = DEFAULT_STRATEGY_MODE,
 ) -> str:
     """
     Build a human-readable backtest report.
@@ -754,6 +770,7 @@ def build_report(
         format_metric("CSV", Path(csv_path)),
         format_metric("Symbol", symbol),
         format_metric("Timeframe", timeframe),
+        format_metric("Strategy Mode", strategy_mode),
         "------------------------------------------------------------",
         format_metric("Total Trades", summary.total_trades),
         format_metric("Total PnL", summary.total_pnl),
@@ -840,6 +857,7 @@ def main() -> None:
         symbol=args.symbol,
         timeframe=args.timeframe,
         risk_profile=risk_profile,
+        strategy_mode=args.strategy_mode,
     )
 
     result = pipeline.run()
@@ -851,6 +869,7 @@ def main() -> None:
             symbol=args.symbol,
             timeframe=args.timeframe,
             transaction_cost_calculator=transaction_cost_calculator,
+            strategy_mode=args.strategy_mode,
         )
     )
 

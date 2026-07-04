@@ -84,3 +84,22 @@ def test_smc_strategy_config_for_mode_returns_expected_preset():
     assert smc_strategy_config_for_mode("strict") == STRICT_SMC_STRATEGY_CONFIG
     assert smc_strategy_config_for_mode("balanced") == BALANCED_SMC_STRATEGY_CONFIG
     assert smc_strategy_config_for_mode("relaxed") == RELAXED_SMC_STRATEGY_CONFIG
+
+def test_strategy_mode_presets_control_confluence_requirements():
+    assert STRICT_SMC_STRATEGY_CONFIG.require_market_structure is True
+    assert STRICT_SMC_STRATEGY_CONFIG.require_liquidity_sweep is True
+    assert STRICT_SMC_STRATEGY_CONFIG.require_entry_zone is True
+    assert STRICT_SMC_STRATEGY_CONFIG.require_fair_value_gap is True
+    assert STRICT_SMC_STRATEGY_CONFIG.require_order_block is True
+
+    assert BALANCED_SMC_STRATEGY_CONFIG.require_market_structure is True
+    assert BALANCED_SMC_STRATEGY_CONFIG.require_liquidity_sweep is True
+    assert BALANCED_SMC_STRATEGY_CONFIG.require_entry_zone is True
+    assert BALANCED_SMC_STRATEGY_CONFIG.require_fair_value_gap is False
+    assert BALANCED_SMC_STRATEGY_CONFIG.require_order_block is False
+
+    assert RELAXED_SMC_STRATEGY_CONFIG.require_market_structure is True
+    assert RELAXED_SMC_STRATEGY_CONFIG.require_liquidity_sweep is False
+    assert RELAXED_SMC_STRATEGY_CONFIG.require_entry_zone is True
+    assert RELAXED_SMC_STRATEGY_CONFIG.require_fair_value_gap is False
+    assert RELAXED_SMC_STRATEGY_CONFIG.require_order_block is False

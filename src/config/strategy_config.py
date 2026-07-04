@@ -41,6 +41,11 @@ class SMCStrategyConfig:
         neutral_signal_confidence: Confidence used for NEUTRAL signals.
         emit_neutral_signal: Whether strategy should emit neutral signals when
             no valid directional setup exists.
+        require_market_structure: Whether BOS or CHOCH evidence is required.
+        require_liquidity_sweep: Whether liquidity sweep evidence is required.
+        require_entry_zone: Whether FVG or order block evidence is required.
+        require_fair_value_gap: Whether FVG evidence is specifically required.
+        require_order_block: Whether order block evidence is specifically required.
     """
 
     mode: StrategyMode | str = StrategyMode.BALANCED
@@ -49,6 +54,11 @@ class SMCStrategyConfig:
     neutral_signal_strength: SignalStrength = SignalStrength.WEAK
     neutral_signal_confidence: float = 0.0
     emit_neutral_signal: bool = True
+    require_market_structure: bool = True
+    require_liquidity_sweep: bool = True
+    require_entry_zone: bool = True
+    require_fair_value_gap: bool = False
+    require_order_block: bool = False
 
     def __post_init__(self) -> None:
         """
@@ -116,6 +126,11 @@ STRICT_SMC_STRATEGY_CONFIG = SMCStrategyConfig(
     neutral_signal_strength=SignalStrength.WEAK,
     neutral_signal_confidence=0.0,
     emit_neutral_signal=True,
+    require_market_structure=True,
+    require_liquidity_sweep=True,
+    require_entry_zone=True,
+    require_fair_value_gap=True,
+    require_order_block=True,
 )
 
 BALANCED_SMC_STRATEGY_CONFIG = SMCStrategyConfig(
@@ -125,6 +140,11 @@ BALANCED_SMC_STRATEGY_CONFIG = SMCStrategyConfig(
     neutral_signal_strength=SignalStrength.WEAK,
     neutral_signal_confidence=0.0,
     emit_neutral_signal=True,
+    require_market_structure=True,
+    require_liquidity_sweep=True,
+    require_entry_zone=True,
+    require_fair_value_gap=False,
+    require_order_block=False,
 )
 
 RELAXED_SMC_STRATEGY_CONFIG = SMCStrategyConfig(
@@ -134,6 +154,11 @@ RELAXED_SMC_STRATEGY_CONFIG = SMCStrategyConfig(
     neutral_signal_strength=SignalStrength.WEAK,
     neutral_signal_confidence=0.0,
     emit_neutral_signal=True,
+    require_market_structure=True,
+    require_liquidity_sweep=False,
+    require_entry_zone=True,
+    require_fair_value_gap=False,
+    require_order_block=False,
 )
 
 DEFAULT_SMC_STRATEGY_CONFIG = BALANCED_SMC_STRATEGY_CONFIG

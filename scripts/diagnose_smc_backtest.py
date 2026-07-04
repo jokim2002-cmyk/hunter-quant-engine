@@ -18,6 +18,11 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 from src.backtesting.backtest_engine import BacktestEngine
+from src.config.strategy_config import (
+    DEFAULT_SMC_STRATEGY_CONFIG,
+    smc_strategy_config_for_mode,
+    supported_strategy_mode_names,
+)
 from src.backtesting.trade_plan_deduplicator import TradePlanDeduplicator
 from src.historical_data.providers.csv_historical_data_provider import (
     CSVHistoricalDataProvider,
@@ -46,6 +51,7 @@ DEFAULT_TIMEFRAME = "5m"
 DEFAULT_ACCOUNT_BALANCE = 10000.0
 DEFAULT_RISK_PER_TRADE = 0.01
 DEFAULT_REWARD_TO_RISK = 2.0
+DEFAULT_STRATEGY_MODE = DEFAULT_SMC_STRATEGY_CONFIG.mode.value
 EMPTY_ANALYSIS_TIME = datetime(1970, 1, 1)
 
 
@@ -83,6 +89,7 @@ class DiagnosticSummary:
 
     closed_trades: int
     total_pnl: float
+    strategy_mode: str = DEFAULT_STRATEGY_MODE
 
 
 @dataclass(frozen=True)
@@ -141,6 +148,12 @@ def build_argument_parser() -> argparse.ArgumentParser:
         type=float,
         default=DEFAULT_REWARD_TO_RISK,
         help="Reward-to-risk multiple used for take-profit planning.",
+    )
+    parser.add_argument(
+        "--strategy-mode",
+        default=DEFAULT_STRATEGY_MODE,
+        choices=supported_strategy_mode_names(),
+        help="SMC strategy mode: strict, balanced, or relaxed.",
     )
 
     return parser
@@ -215,6 +228,7 @@ def run_walk_forward_diagnostics(
     symbol: str,
     timeframe: str,
     risk_profile: RiskProfile,
+    strategy_mode: str = DEFAULT_STRATEGY_MODE,
 ) -> WalkForwardDiagnostics:
     """
     Run strategy, trade candidate planning, and risk planning in walk-forward mode.
@@ -229,7 +243,9 @@ def run_walk_forward_diagnostics(
         Immutable walk-forward diagnostic counters.
     """
     context_factory = DefaultStrategyContextFactory()
-    strategy = SMCStrategy()
+    strategy = SMCStrategy(
+        config=smc_strategy_config_for_mode(strategy_mode),
+    )
     trade_candidate_planner = SMCTradeCandidatePlanner()
     risk_manager = RiskManager()
 
@@ -288,6 +304,7 @@ def diagnose(
     symbol: str,
     timeframe: str,
     risk_profile: RiskProfile,
+    strategy_mode: str = DEFAULT_STRATEGY_MODE,
 ) -> DiagnosticSummary:
     """
     Build full diagnostic summary.
@@ -312,6 +329,7 @@ def diagnose(
         symbol=symbol,
         timeframe=timeframe,
         risk_profile=risk_profile,
+        strategy_mode=strategy_mode,
     )
 
     trade_plans_before_deduplication = len(walk_forward.trade_plans_created)
@@ -352,6 +370,7 @@ def diagnose(
         trade_plans_after_deduplication=trade_plans_after_deduplication,
         closed_trades=len(backtest_result.trades),
         total_pnl=backtest_result.performance_summary.total_pnl,
+        strategy_mode=strategy_mode,
     )
 
 
@@ -392,6 +411,7 @@ def build_report(
         format_metric("CSV", summary.csv_path),
         format_metric("Symbol", summary.symbol),
         format_metric("Timeframe", summary.timeframe),
+        format_metric("Strategy Mode", summary.strategy_mode),
         "------------------------------------------------------------",
         "DATA",
         "------------------------------------------------------------",
@@ -466,6 +486,7 @@ def main() -> None:
         symbol=args.symbol,
         timeframe=args.timeframe,
         risk_profile=risk_profile,
+        strategy_mode=args.strategy_mode,
     )
 
     print(build_report(summary))
