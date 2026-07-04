@@ -6,6 +6,7 @@ import csv
 
 from scripts.run_smc_research_workflow import (
     DEFAULT_ACCOUNT_BALANCE,
+    DEFAULT_EQUITY_OUTPUT_PATH,
     DEFAULT_INPUT_PATH,
     DEFAULT_NORMALIZED_OUTPUT_PATH,
     DEFAULT_REWARD_TO_RISK,
@@ -34,6 +35,7 @@ def test_build_argument_parser_uses_expected_defaults():
     assert args.input == str(DEFAULT_INPUT_PATH)
     assert args.normalized_output == str(DEFAULT_NORMALIZED_OUTPUT_PATH)
     assert args.trades_output == str(DEFAULT_TRADES_OUTPUT_PATH)
+    assert args.equity_output == str(DEFAULT_EQUITY_OUTPUT_PATH)
     assert args.symbol == DEFAULT_SYMBOL
     assert args.timeframe == DEFAULT_TIMEFRAME
     assert args.account_balance == DEFAULT_ACCOUNT_BALANCE
@@ -52,6 +54,8 @@ def test_build_argument_parser_accepts_custom_values():
             "data/processed/normalized.csv",
             "--trades-output",
             "data/processed/trades.csv",
+            "--equity-output",
+            "data/processed/equity_curve.csv",
             "--symbol",
             "BANKNIFTY",
             "--timeframe",
@@ -82,6 +86,7 @@ def test_build_argument_parser_accepts_custom_values():
     assert args.input == "data/raw/broker.csv"
     assert args.normalized_output == "data/processed/normalized.csv"
     assert args.trades_output == "data/processed/trades.csv"
+    assert args.equity_output == "data/processed/equity_curve.csv"
     assert args.symbol == "BANKNIFTY"
     assert args.timeframe == "15m"
     assert args.account_balance == 50000.0
@@ -96,10 +101,11 @@ def test_build_argument_parser_accepts_custom_values():
     assert args.default_volume == 100.0
 
 
-def test_run_workflow_creates_normalized_and_trade_export_files(tmp_path):
+def test_run_workflow_creates_normalized_trade_and_equity_files(tmp_path):
     input_path = tmp_path / "raw.csv"
     normalized_output_path = tmp_path / "processed" / "normalized.csv"
     trades_output_path = tmp_path / "processed" / "trades.csv"
+    equity_output_path = tmp_path / "processed" / "equity_curve.csv"
 
     input_path.write_text(
         "\n".join(
@@ -116,6 +122,7 @@ def test_run_workflow_creates_normalized_and_trade_export_files(tmp_path):
         input_path=input_path,
         normalized_output_path=normalized_output_path,
         trades_output_path=trades_output_path,
+        equity_output_path=equity_output_path,
         symbol="TEST",
         timeframe="5m",
         account_balance=10000.0,
@@ -125,10 +132,12 @@ def test_run_workflow_creates_normalized_and_trade_export_files(tmp_path):
 
     normalized_rows = _read_rows(normalized_output_path)
     trade_rows = _read_rows(trades_output_path)
+    equity_rows = _read_rows(equity_output_path)
 
     assert summary.input_path == input_path
     assert summary.normalized_output_path == normalized_output_path
     assert summary.trades_output_path == trades_output_path
+    assert summary.equity_output_path == equity_output_path
     assert summary.symbol == "TEST"
     assert summary.timeframe == "5m"
     assert summary.normalization_summary.rows_written == 2
@@ -137,14 +146,17 @@ def test_run_workflow_creates_normalized_and_trade_export_files(tmp_path):
     assert summary.backtest_result.performance_summary.total_trades == 0
     assert normalized_output_path.exists()
     assert trades_output_path.exists()
+    assert equity_output_path.exists()
     assert len(normalized_rows) == 2
     assert trade_rows == ()
+    assert equity_rows == ()
 
 
 def test_run_workflow_supports_broker_column_mapping(tmp_path):
     input_path = tmp_path / "broker.csv"
     normalized_output_path = tmp_path / "processed" / "normalized.csv"
     trades_output_path = tmp_path / "processed" / "trades.csv"
+    equity_output_path = tmp_path / "processed" / "equity_curve.csv"
 
     input_path.write_text(
         "\n".join(
@@ -160,6 +172,7 @@ def test_run_workflow_supports_broker_column_mapping(tmp_path):
         input_path=input_path,
         normalized_output_path=normalized_output_path,
         trades_output_path=trades_output_path,
+        equity_output_path=equity_output_path,
         symbol="TEST",
         timeframe="5m",
         account_balance=10000.0,
@@ -182,6 +195,7 @@ def test_build_workflow_summary_report_includes_key_metrics(tmp_path):
     input_path = tmp_path / "raw.csv"
     normalized_output_path = tmp_path / "processed" / "normalized.csv"
     trades_output_path = tmp_path / "processed" / "trades.csv"
+    equity_output_path = tmp_path / "processed" / "equity_curve.csv"
 
     input_path.write_text(
         "\n".join(
@@ -197,6 +211,7 @@ def test_build_workflow_summary_report_includes_key_metrics(tmp_path):
         input_path=input_path,
         normalized_output_path=normalized_output_path,
         trades_output_path=trades_output_path,
+        equity_output_path=equity_output_path,
         symbol="TEST",
         timeframe="5m",
         account_balance=10000.0,
@@ -210,6 +225,7 @@ def test_build_workflow_summary_report_includes_key_metrics(tmp_path):
     assert "Input CSV:" in report
     assert "Normalized CSV:" in report
     assert "Trades CSV:" in report
+    assert "Equity Curve CSV:" in report
     assert "Rows Normalized: 1" in report
     assert "Ready For HQE: True" in report
     assert "Candles Loaded: 1" in report

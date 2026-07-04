@@ -8,6 +8,7 @@ One-command workflow for real-data SMC research:
 3. Run SMC diagnostics
 4. Run SMC backtest
 5. Export completed trades to CSV
+6. Export equity curve to CSV
 """
 
 import argparse
@@ -40,6 +41,7 @@ from scripts.run_smc_backtest import (
     build_pipeline,
     build_report as build_backtest_report,
     build_risk_profile,
+    export_equity_curve_to_csv,
     export_trades_to_csv,
 )
 
@@ -50,6 +52,9 @@ DEFAULT_NORMALIZED_OUTPUT_PATH = (
 )
 DEFAULT_TRADES_OUTPUT_PATH = (
     PROJECT_ROOT / "data" / "processed" / "smc_research_trades.csv"
+)
+DEFAULT_EQUITY_OUTPUT_PATH = (
+    PROJECT_ROOT / "data" / "processed" / "smc_research_equity_curve.csv"
 )
 DEFAULT_SYMBOL = "NIFTY"
 DEFAULT_TIMEFRAME = "5m"
@@ -67,6 +72,7 @@ class SMCResearchWorkflowSummary:
     input_path: Path
     normalized_output_path: Path
     trades_output_path: Path
+    equity_output_path: Path
     symbol: str
     timeframe: str
     normalization_summary: NormalizationSummary
@@ -100,6 +106,11 @@ def build_argument_parser() -> argparse.ArgumentParser:
         "--trades-output",
         default=str(DEFAULT_TRADES_OUTPUT_PATH),
         help="Output path for completed trade export CSV.",
+    )
+    parser.add_argument(
+        "--equity-output",
+        default=str(DEFAULT_EQUITY_OUTPUT_PATH),
+        help="Output path for trade-by-trade equity curve CSV.",
     )
     parser.add_argument(
         "--symbol",
@@ -184,6 +195,7 @@ def run_workflow(
     input_path: str | Path,
     normalized_output_path: str | Path,
     trades_output_path: str | Path,
+    equity_output_path: str | Path,
     symbol: str,
     timeframe: str,
     account_balance: float,
@@ -206,6 +218,7 @@ def run_workflow(
         input_path: Raw input CSV path.
         normalized_output_path: Normalized output CSV path.
         trades_output_path: Completed trades export CSV path.
+        equity_output_path: Equity curve export CSV path.
         symbol: Market symbol.
         timeframe: Market timeframe.
         account_balance: Account balance.
@@ -271,11 +284,17 @@ def run_workflow(
         trades=tuple(backtest_result.trades),
         output_path=trades_output_path,
     )
+    export_equity_curve_to_csv(
+        trades=tuple(backtest_result.trades),
+        output_path=equity_output_path,
+        starting_balance=account_balance,
+    )
 
     return SMCResearchWorkflowSummary(
         input_path=Path(input_path),
         normalized_output_path=Path(normalized_output_path),
         trades_output_path=Path(trades_output_path),
+        equity_output_path=Path(equity_output_path),
         symbol=symbol,
         timeframe=timeframe,
         normalization_summary=normalization_summary,
@@ -324,6 +343,7 @@ def build_workflow_summary_report(
         format_metric("Input CSV", summary.input_path),
         format_metric("Normalized CSV", summary.normalized_output_path),
         format_metric("Trades CSV", summary.trades_output_path),
+        format_metric("Equity Curve CSV", summary.equity_output_path),
         format_metric("Symbol", summary.symbol),
         format_metric("Timeframe", summary.timeframe),
         "------------------------------------------------------------",
@@ -367,6 +387,7 @@ def main() -> None:
         input_path=args.input,
         normalized_output_path=args.normalized_output,
         trades_output_path=args.trades_output,
+        equity_output_path=args.equity_output,
         symbol=args.symbol,
         timeframe=args.timeframe,
         account_balance=args.account_balance,

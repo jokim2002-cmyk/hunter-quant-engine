@@ -65,6 +65,18 @@ TRADE_EXPORT_COLUMNS = (
     "pnl_formula",
 )
 
+EQUITY_CURVE_EXPORT_COLUMNS = (
+    "trade_number",
+    "opened_at",
+    "closed_at",
+    "direction",
+    "starting_balance",
+    "pnl",
+    "ending_balance",
+    "risk_multiple",
+    "exit_reason",
+)
+
 
 def build_argument_parser() -> argparse.ArgumentParser:
     """
@@ -114,6 +126,11 @@ def build_argument_parser() -> argparse.ArgumentParser:
         "--trades-output",
         default=None,
         help="Optional CSV path for exporting completed trade details.",
+    )
+    parser.add_argument(
+        "--equity-output",
+        default=None,
+        help="Optional CSV path for exporting trade-by-trade equity curve.",
     )
 
     return parser
@@ -533,6 +550,84 @@ def export_trades_to_csv(
     return csv_path
 
 
+def trade_to_equity_curve_row(
+    trade: Any,
+    trade_number: int,
+    starting_balance: float,
+) -> dict[str, Any]:
+    """
+    Convert a completed trade into an equity curve CSV row.
+
+    Args:
+        trade: TradeResult-like object.
+        trade_number: One-based trade number.
+        starting_balance: Account balance before the trade result.
+
+    Returns:
+        Equity curve CSV row.
+    """
+    ending_balance = starting_balance + trade.pnl
+
+    return {
+        "trade_number": trade_number,
+        "opened_at": trade.opened_at.isoformat(),
+        "closed_at": trade.closed_at.isoformat(),
+        "direction": format_signal_type(trade.signal_type),
+        "starting_balance": starting_balance,
+        "pnl": trade.pnl,
+        "ending_balance": ending_balance,
+        "risk_multiple": trade.risk_multiple,
+        "exit_reason": infer_exit_reason(trade),
+    }
+
+
+def export_equity_curve_to_csv(
+    trades: tuple[Any, ...],
+    output_path: str | Path,
+    starting_balance: float,
+) -> Path:
+    """
+    Export trade-by-trade equity curve to CSV.
+
+    Args:
+        trades: Completed trade results.
+        output_path: Output CSV path.
+        starting_balance: Starting account balance.
+
+    Returns:
+        Output CSV path.
+    """
+    csv_path = Path(output_path)
+    csv_path.parent.mkdir(
+        parents=True,
+        exist_ok=True,
+    )
+
+    running_balance = starting_balance
+
+    with csv_path.open(
+        mode="w",
+        newline="",
+        encoding="utf-8",
+    ) as csv_file:
+        writer = csv.DictWriter(
+            csv_file,
+            fieldnames=EQUITY_CURVE_EXPORT_COLUMNS,
+        )
+        writer.writeheader()
+
+        for index, trade in enumerate(trades, start=1):
+            row = trade_to_equity_curve_row(
+                trade=trade,
+                trade_number=index,
+                starting_balance=running_balance,
+            )
+            writer.writerow(row)
+            running_balance = row["ending_balance"]
+
+    return csv_path
+
+
 def build_report(
     result: Any,
     csv_path: str | Path,
@@ -648,6 +743,15 @@ def main() -> None:
         )
 
         print(format_metric("Trades Exported", exported_path))
+
+    if args.equity_output is not None:
+        exported_path = export_equity_curve_to_csv(
+            trades=tuple(result.trades),
+            output_path=args.equity_output,
+            starting_balance=args.account_balance,
+        )
+
+        print(format_metric("Equity Curve Exported", exported_path))
 
 
 if __name__ == "__main__":

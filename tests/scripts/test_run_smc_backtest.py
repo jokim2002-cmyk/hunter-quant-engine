@@ -14,6 +14,7 @@ from scripts.run_smc_backtest import (
     DEFAULT_RISK_PER_TRADE,
     DEFAULT_SYMBOL,
     DEFAULT_TIMEFRAME,
+    EQUITY_CURVE_EXPORT_COLUMNS,
     EXIT_REASON_STOP_LOSS,
     EXIT_REASON_TAKE_PROFIT,
     EXIT_REASON_UNKNOWN,
@@ -21,8 +22,10 @@ from scripts.run_smc_backtest import (
     build_argument_parser,
     build_report,
     build_risk_profile,
+    export_equity_curve_to_csv,
     export_trades_to_csv,
     infer_exit_reason,
+    trade_to_equity_curve_row,
     trade_to_export_row,
 )
 from src.strategy.signal_type import SignalType
@@ -71,6 +74,7 @@ def test_build_argument_parser_uses_expected_defaults():
     assert args.risk_per_trade == DEFAULT_RISK_PER_TRADE
     assert args.reward_to_risk == DEFAULT_REWARD_TO_RISK
     assert args.trades_output is None
+    assert args.equity_output is None
 
 
 def test_build_argument_parser_accepts_custom_values():
@@ -90,6 +94,8 @@ def test_build_argument_parser_accepts_custom_values():
             "3.0",
             "--trades-output",
             "data/processed/trades.csv",
+            "--equity-output",
+            "data/processed/equity_curve.csv",
         ]
     )
 
@@ -100,6 +106,7 @@ def test_build_argument_parser_accepts_custom_values():
     assert args.risk_per_trade == 0.02
     assert args.reward_to_risk == 3.0
     assert args.trades_output == "data/processed/trades.csv"
+    assert args.equity_output == "data/processed/equity_curve.csv"
 
 
 def test_build_risk_profile_creates_expected_profile():
@@ -398,6 +405,84 @@ def test_export_trades_to_csv_writes_header_when_no_trades_exist(tmp_path):
     exported_path = export_trades_to_csv(
         trades=(),
         output_path=output_path,
+    )
+
+    rows = _read_export_rows(output_path)
+
+    assert exported_path == output_path
+    assert output_path.exists()
+    assert rows == ()
+
+
+def test_trade_to_equity_curve_row_includes_running_balance_details():
+    trade = _completed_trade(
+        signal_type=SignalType.LONG,
+        pnl=200.0,
+        risk_multiple=2.0,
+    )
+
+    row = trade_to_equity_curve_row(
+        trade=trade,
+        trade_number=1,
+        starting_balance=10000.0,
+    )
+
+    assert tuple(row.keys()) == EQUITY_CURVE_EXPORT_COLUMNS
+    assert row["trade_number"] == 1
+    assert row["opened_at"] == "2026-01-01T09:30:00"
+    assert row["closed_at"] == "2026-01-01T09:45:00"
+    assert row["direction"] == "LONG"
+    assert row["starting_balance"] == 10000.0
+    assert row["pnl"] == 200.0
+    assert row["ending_balance"] == 10200.0
+    assert row["risk_multiple"] == 2.0
+    assert row["exit_reason"] == "take_profit"
+
+
+def test_export_equity_curve_to_csv_writes_running_balance_rows(tmp_path):
+    output_path = tmp_path / "exports" / "equity_curve.csv"
+    first_trade = _completed_trade(
+        signal_type=SignalType.LONG,
+        pnl=200.0,
+    )
+    second_trade = _completed_trade(
+        signal_type=SignalType.SHORT,
+        exit_price=92.0,
+        stop_loss=104.0,
+        take_profit=92.0,
+        pnl=-100.0,
+        risk_multiple=-1.0,
+    )
+
+    exported_path = export_equity_curve_to_csv(
+        trades=(first_trade, second_trade),
+        output_path=output_path,
+        starting_balance=10000.0,
+    )
+
+    rows = _read_export_rows(output_path)
+
+    assert exported_path == output_path
+    assert output_path.exists()
+    assert len(rows) == 2
+    assert tuple(rows[0].keys()) == EQUITY_CURVE_EXPORT_COLUMNS
+    assert rows[0]["trade_number"] == "1"
+    assert rows[0]["starting_balance"] == "10000.0"
+    assert rows[0]["pnl"] == "200.0"
+    assert rows[0]["ending_balance"] == "10200.0"
+    assert rows[1]["trade_number"] == "2"
+    assert rows[1]["starting_balance"] == "10200.0"
+    assert rows[1]["pnl"] == "-100.0"
+    assert rows[1]["ending_balance"] == "10100.0"
+
+
+def test_export_equity_curve_to_csv_writes_header_when_no_trades_exist(tmp_path):
+    output_path = tmp_path / "exports" / "empty_equity_curve.csv"
+
+    exported_path = export_equity_curve_to_csv(
+        trades=(),
+        output_path=output_path,
+        starting_balance=10000.0,
     )
 
     rows = _read_export_rows(output_path)
