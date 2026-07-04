@@ -458,6 +458,26 @@ def test_create_populates_liquidity_sweeps_from_liquidity_points():
     assert context.liquidity_sweeps[0].reclaimed is True
 
 
+def test_create_populates_fair_value_gaps_from_candles():
+    candles = (
+        _candle(datetime(2026, 1, 1, 9, 0), high=101.0, low=99.0, close=100.0),
+        _candle(datetime(2026, 1, 1, 10, 0), high=103.0, low=100.0, close=102.0),
+        _candle(datetime(2026, 1, 1, 11, 0), high=105.0, low=103.0, close=104.0),
+    )
+
+    context = DefaultStrategyContextFactory().create(
+        symbol="TEST",
+        timeframe="1H",
+        analysis_time=candles[-1].datetime,
+        candles=candles,
+    )
+
+    assert len(context.fair_value_gaps) == 1
+    assert context.fair_value_gaps[0].is_bullish()
+    assert context.fair_value_gaps[0].low == 101.0
+    assert context.fair_value_gaps[0].high == 103.0
+
+
 def test_create_returns_empty_detection_events_when_no_swings_exist():
     context = DefaultStrategyContextFactory().create(
         symbol="TEST",
@@ -474,6 +494,7 @@ def test_create_returns_empty_detection_events_when_no_swings_exist():
     assert context.equal_low_points == ()
     assert context.liquidity_clusters == ()
     assert context.liquidity_sweeps == ()
+    assert context.fair_value_gaps == ()
 
 
 def test_create_leaves_unintegrated_detection_events_empty_for_now():
@@ -484,5 +505,4 @@ def test_create_leaves_unintegrated_detection_events_empty_for_now():
         candles=(),
     )
 
-    assert context.fair_value_gaps == ()
     assert context.order_blocks == ()
