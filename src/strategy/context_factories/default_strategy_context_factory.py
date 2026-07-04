@@ -8,9 +8,14 @@ from datetime import datetime
 
 from src.engines.bos_engine import BOSEngine
 from src.engines.choch_engine import CHOCHEngine
+from src.engines.equal_level_engine import EqualLevelEngine
+from src.engines.liquidity_cluster_engine import LiquidityClusterEngine
+from src.engines.liquidity_engine import LiquidityEngine
+from src.engines.liquidity_sweep_engine import LiquiditySweepEngine
 from src.engines.market_structure_builder import MarketStructureBuilder
 from src.engines.swing_detection_engine import SwingDetectionEngine
 from src.models.candle import Candle
+from src.models.equal_level_type import EqualLevelType
 from src.strategy.context_factories.base_strategy_context_factory import (
     BaseStrategyContextFactory,
 )
@@ -21,7 +26,8 @@ class DefaultStrategyContextFactory(BaseStrategyContextFactory):
     """
     Default StrategyContext factory.
 
-    Builds context with candles, metadata, market structure, BOS, and CHOCH.
+    Builds context with candles, metadata, market structure, BOS, CHOCH,
+    liquidity points, equal levels, liquidity clusters, and liquidity sweeps.
     Other detection event collections remain empty until further integration.
     """
 
@@ -31,6 +37,10 @@ class DefaultStrategyContextFactory(BaseStrategyContextFactory):
         market_structure_builder: MarketStructureBuilder | None = None,
         bos_engine: BOSEngine | None = None,
         choch_engine: CHOCHEngine | None = None,
+        liquidity_engine: LiquidityEngine | None = None,
+        equal_level_engine: EqualLevelEngine | None = None,
+        liquidity_cluster_engine: LiquidityClusterEngine | None = None,
+        liquidity_sweep_engine: LiquiditySweepEngine | None = None,
     ):
         self._swing_detection_engine = (
             swing_detection_engine or SwingDetectionEngine()
@@ -40,6 +50,14 @@ class DefaultStrategyContextFactory(BaseStrategyContextFactory):
         )
         self._bos_engine = bos_engine or BOSEngine()
         self._choch_engine = choch_engine or CHOCHEngine()
+        self._liquidity_engine = liquidity_engine or LiquidityEngine()
+        self._equal_level_engine = equal_level_engine or EqualLevelEngine()
+        self._liquidity_cluster_engine = (
+            liquidity_cluster_engine or LiquidityClusterEngine()
+        )
+        self._liquidity_sweep_engine = (
+            liquidity_sweep_engine or LiquiditySweepEngine()
+        )
 
     def create(
         self,
@@ -58,7 +76,7 @@ class DefaultStrategyContextFactory(BaseStrategyContextFactory):
             candles: Walk-forward candles available at analysis time.
 
         Returns:
-            Immutable StrategyContext with detected market structure, BOS, and CHOCH.
+            Immutable StrategyContext with detected market facts.
         """
         candle_list = list(candles)
 
@@ -76,6 +94,24 @@ class DefaultStrategyContextFactory(BaseStrategyContextFactory):
             candles=candle_list,
             market_structure_points=market_structure_points,
         )
+        liquidity_points = self._liquidity_engine.detect_liquidity(
+            market_structure_points=market_structure_points,
+        )
+        equal_high_points = self._equal_level_engine.detect_equal_levels(
+            market_structure_points=market_structure_points,
+            level_type=EqualLevelType.HIGH,
+        )
+        equal_low_points = self._equal_level_engine.detect_equal_levels(
+            market_structure_points=market_structure_points,
+            level_type=EqualLevelType.LOW,
+        )
+        liquidity_clusters = self._liquidity_cluster_engine.build_clusters(
+            liquidity_points=liquidity_points,
+        )
+        liquidity_sweeps = self._liquidity_sweep_engine.detect(
+            candles=candle_list,
+            liquidity_points=liquidity_points,
+        )
 
         return StrategyContext(
             symbol=symbol,
@@ -85,11 +121,11 @@ class DefaultStrategyContextFactory(BaseStrategyContextFactory):
             market_structure_points=tuple(market_structure_points),
             bos_events=tuple(bos_events),
             choch_events=tuple(choch_events),
-            liquidity_points=(),
-            equal_high_points=(),
-            equal_low_points=(),
-            liquidity_clusters=(),
-            liquidity_sweeps=(),
+            liquidity_points=tuple(liquidity_points),
+            equal_high_points=tuple(equal_high_points),
+            equal_low_points=tuple(equal_low_points),
+            liquidity_clusters=tuple(liquidity_clusters),
+            liquidity_sweeps=tuple(liquidity_sweeps),
             fair_value_gaps=(),
             order_blocks=(),
         )
