@@ -9,6 +9,7 @@ from src.models.candle import Candle
 from src.models.choch_point import CHOCHType
 from src.models.liquidity_sweep_type import LiquiditySweepType
 from src.models.market_structure import MarketStructureType
+from src.models.order_block_type import OrderBlockType
 from src.strategy.context_factories.default_strategy_context_factory import (
     DefaultStrategyContextFactory,
 )
@@ -23,6 +24,23 @@ def _candle(
     return Candle(
         datetime=candle_time,
         open=close,
+        high=high,
+        low=low,
+        close=close,
+        volume=1000.0,
+    )
+
+
+def _candle_with_open(
+    candle_time: datetime,
+    open_price: float,
+    high: float,
+    low: float,
+    close: float,
+) -> Candle:
+    return Candle(
+        datetime=candle_time,
+        open=open_price,
         high=high,
         low=low,
         close=close,
@@ -478,6 +496,37 @@ def test_create_populates_fair_value_gaps_from_candles():
     assert context.fair_value_gaps[0].high == 103.0
 
 
+def test_create_populates_order_blocks_from_candles():
+    bearish_candle = _candle_with_open(
+        datetime(2026, 1, 1, 9, 0),
+        open_price=110.0,
+        high=112.0,
+        low=100.0,
+        close=102.0,
+    )
+    bullish_displacement_candle = _candle_with_open(
+        datetime(2026, 1, 1, 10, 0),
+        open_price=102.0,
+        high=120.0,
+        low=101.0,
+        close=118.0,
+    )
+
+    context = DefaultStrategyContextFactory().create(
+        symbol="TEST",
+        timeframe="1H",
+        analysis_time=bullish_displacement_candle.datetime,
+        candles=(bearish_candle, bullish_displacement_candle),
+    )
+
+    assert len(context.order_blocks) == 1
+    assert context.order_blocks[0].candle_index == 0
+    assert context.order_blocks[0].order_block_type is OrderBlockType.BULLISH
+    assert context.order_blocks[0].high == 112.0
+    assert context.order_blocks[0].low == 100.0
+    assert context.order_blocks[0].created_at == bearish_candle.datetime
+
+
 def test_create_returns_empty_detection_events_when_no_swings_exist():
     context = DefaultStrategyContextFactory().create(
         symbol="TEST",
@@ -495,14 +544,4 @@ def test_create_returns_empty_detection_events_when_no_swings_exist():
     assert context.liquidity_clusters == ()
     assert context.liquidity_sweeps == ()
     assert context.fair_value_gaps == ()
-
-
-def test_create_leaves_unintegrated_detection_events_empty_for_now():
-    context = DefaultStrategyContextFactory().create(
-        symbol="TEST",
-        timeframe="1H",
-        analysis_time=datetime(2026, 1, 1, 9, 0),
-        candles=(),
-    )
-
     assert context.order_blocks == ()

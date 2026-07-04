@@ -14,6 +14,7 @@ from src.engines.liquidity_cluster_engine import LiquidityClusterEngine
 from src.engines.liquidity_engine import LiquidityEngine
 from src.engines.liquidity_sweep_engine import LiquiditySweepEngine
 from src.engines.market_structure_builder import MarketStructureBuilder
+from src.engines.order_block_engine import OrderBlockEngine
 from src.engines.swing_detection_engine import SwingDetectionEngine
 from src.models.candle import Candle
 from src.models.equal_level_type import EqualLevelType
@@ -29,8 +30,7 @@ class DefaultStrategyContextFactory(BaseStrategyContextFactory):
 
     Builds context with candles, metadata, market structure, BOS, CHOCH,
     liquidity points, equal levels, liquidity clusters, liquidity sweeps,
-    and fair value gaps.
-    Order blocks remain empty until further integration.
+    fair value gaps, and order blocks.
     """
 
     def __init__(
@@ -44,6 +44,7 @@ class DefaultStrategyContextFactory(BaseStrategyContextFactory):
         liquidity_cluster_engine: LiquidityClusterEngine | None = None,
         liquidity_sweep_engine: LiquiditySweepEngine | None = None,
         fair_value_gap_engine: FairValueGapEngine | None = None,
+        order_block_engine: OrderBlockEngine | None = None,
     ):
         self._swing_detection_engine = (
             swing_detection_engine or SwingDetectionEngine()
@@ -64,6 +65,7 @@ class DefaultStrategyContextFactory(BaseStrategyContextFactory):
         self._fair_value_gap_engine = (
             fair_value_gap_engine or FairValueGapEngine()
         )
+        self._order_block_engine = order_block_engine or OrderBlockEngine()
 
     def create(
         self,
@@ -87,6 +89,9 @@ class DefaultStrategyContextFactory(BaseStrategyContextFactory):
         candle_list = list(candles)
 
         fair_value_gaps = self._fair_value_gap_engine.detect(
+            candle_list,
+        )
+        order_blocks = self._order_block_engine.detect(
             candle_list,
         )
 
@@ -137,5 +142,5 @@ class DefaultStrategyContextFactory(BaseStrategyContextFactory):
             liquidity_clusters=tuple(liquidity_clusters),
             liquidity_sweeps=tuple(liquidity_sweeps),
             fair_value_gaps=tuple(fair_value_gaps),
-            order_blocks=(),
+            order_blocks=tuple(order_blocks),
         )
