@@ -4,3 +4,12 @@ __pycache__/
 .env
 logs/
 secrets/
+*.py[cod]
+fyersApi.log
+fyersRequests.log
+data/raw/fyers_nifty_5min.csv
+data/raw/fyers_nifty_5min_sample_*.csv
+data/processed/fyers_nifty_5m_normalized.csv
+data/processed/fyers_nifty_5m_trades.csv
+data/processed/fyers_nifty_5m_equity_curve.csv
+data/processed/fyers_nifty_5m_report.txt
