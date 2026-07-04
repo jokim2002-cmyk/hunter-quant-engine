@@ -7,7 +7,7 @@ HQE is not a timepass script. It is a serious market research and execution foun
 HQE v0.1 Foundation:
 
 - Clean Python architecture
-- 596 tests passing
+- 615 tests passing
 - FYERS NIFTY 5m historical data download
 - SMC detections: BOS, CHOCH, FVG, Order Blocks, Liquidity, Sweeps
 - Strategy config system
@@ -162,6 +162,9 @@ Current status:
 - `--execute` required for real workflow execution
 - Laptop-safe tests added
 - Generated experiment outputs ignored
+- Experiment result ranking helpers built
+- Best/Worst report sections added
+- PC-only experiment shortcut added
 
 PC pending:
 
@@ -481,14 +484,16 @@ Definition of Done:
 4. Strategy mode benchmark runner ? DONE
 5. Full real-data mode benchmark on PC ? PENDING
 6. Strategy experiment runner dry-run ? DONE
-7. Full strategy experiment execution on PC ? PENDING
-8. Walk-forward testing
-9. Streamlit UI dashboard
-10. Broker gateway interfaces
-11. Live market observer
-12. Paper trading
-13. Risk gateway
-14. Micro live execution
+7. Experiment ranking/report helpers ? DONE
+8. PC-only strategy experiment shortcut ? DONE
+9. Full strategy experiment execution on PC ? PENDING
+10. Walk-forward testing
+11. Streamlit UI dashboard
+12. Broker gateway interfaces
+13. Live market observer
+14. Paper trading
+15. Risk gateway
+16. Micro live execution
 
 ---
 
