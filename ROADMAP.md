@@ -155,11 +155,26 @@ Script:
 
 - scripts/run_strategy_experiments.py
 
+Current status:
+
+- Dry-run experiment planner built
+- strict_default, balanced_default, relaxed_default planned
+- `--execute` required for real workflow execution
+- Laptop-safe tests added
+- Generated experiment outputs ignored
+
+PC pending:
+
+- Execute experiments on real FYERS data
+- Review summary CSV
+- Compare net PnL after costs
+- Add best/worst config reporting after first PC result
+
 Outputs:
 
-- experiment_summary.csv
-- best_configs.csv
-- worst_configs.csv
+- data/processed/strategy_experiment_summary.csv
+- data/processed/strategy_experiment_report.txt
+- data/processed/experiments/
 
 Definition of Done:
 
@@ -465,14 +480,15 @@ Definition of Done:
 3. Strict/Balanced/Relaxed modes ? DONE
 4. Strategy mode benchmark runner ? DONE
 5. Full real-data mode benchmark on PC ? PENDING
-6. Experiment runner
-7. Walk-forward testing
-8. Streamlit UI dashboard
-9. Broker gateway interfaces
-10. Live market observer
-11. Paper trading
-12. Risk gateway
-13. Micro live execution
+6. Strategy experiment runner dry-run ? DONE
+7. Full strategy experiment execution on PC ? PENDING
+8. Walk-forward testing
+9. Streamlit UI dashboard
+10. Broker gateway interfaces
+11. Live market observer
+12. Paper trading
+13. Risk gateway
+14. Micro live execution
 
 ---
 
