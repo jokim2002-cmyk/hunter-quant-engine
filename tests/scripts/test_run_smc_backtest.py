@@ -521,3 +521,116 @@ def test_export_equity_curve_to_csv_writes_header_when_no_trades_exist(tmp_path)
     assert exported_path == output_path
     assert output_path.exists()
     assert rows == ()
+
+def test_build_argument_parser_accepts_transaction_cost_values():
+    args = build_argument_parser().parse_args(
+        [
+            "--brokerage-per-order",
+            "20",
+            "--stt-rate",
+            "0.00025",
+            "--exchange-transaction-charge-rate",
+            "0.0000325",
+            "--sebi-charge-rate",
+            "0.000001",
+            "--stamp-duty-rate",
+            "0.00003",
+            "--gst-rate",
+            "0.18",
+        ]
+    )
+
+    assert args.brokerage_per_order == 20.0
+    assert args.stt_rate == 0.00025
+    assert args.exchange_transaction_charge_rate == 0.0000325
+    assert args.sebi_charge_rate == 0.000001
+    assert args.stamp_duty_rate == 0.00003
+    assert args.gst_rate == 0.18
+
+
+def test_build_report_includes_total_charges_and_net_pnl():
+    from src.costs.transaction_cost_calculator import TransactionCostCalculator
+    from src.costs.transaction_cost_profile import TransactionCostProfile
+
+    trade = _completed_trade(
+        pnl=400.0,
+    )
+    result = SimpleNamespace(
+        trades=(trade,),
+        performance_summary=SimpleNamespace(
+            total_trades=1,
+            total_pnl=400.0,
+        ),
+    )
+    calculator = TransactionCostCalculator(
+        TransactionCostProfile(
+            brokerage_per_order=10.0,
+        )
+    )
+
+    report = build_report(
+        result=result,
+        csv_path=Path("data/raw/demo_smc_5min.csv"),
+        symbol="DEMO",
+        timeframe="5m",
+        transaction_cost_calculator=calculator,
+    )
+
+    assert "Total PnL: 400.0" in report
+    assert "Total Charges: 20.0" in report
+    assert "Net PnL: 380.0" in report
+
+
+def test_trade_to_export_row_includes_transaction_cost_and_net_pnl():
+    from src.costs.transaction_cost_calculator import TransactionCostCalculator
+    from src.costs.transaction_cost_profile import TransactionCostProfile
+
+    trade = _completed_trade(
+        pnl=400.0,
+    )
+    calculator = TransactionCostCalculator(
+        TransactionCostProfile(
+            brokerage_per_order=10.0,
+        )
+    )
+
+    row = trade_to_export_row(
+        trade=trade,
+        trade_number=1,
+        transaction_cost_calculator=calculator,
+    )
+
+    assert row["pnl"] == 400.0
+    assert row["brokerage"] == 20.0
+    assert row["total_charges"] == 20.0
+    assert row["net_pnl"] == 380.0
+
+
+def test_trade_to_equity_curve_row_uses_net_pnl_for_running_balance():
+    from src.costs.transaction_cost_calculator import TransactionCostCalculator
+    from src.costs.transaction_cost_profile import TransactionCostProfile
+
+    trade = _completed_trade(
+        pnl=200.0,
+    )
+    calculator = TransactionCostCalculator(
+        TransactionCostProfile(
+            brokerage_per_order=10.0,
+        )
+    )
+
+    row = trade_to_equity_curve_row(
+        trade=trade,
+        trade_number=1,
+        starting_balance=10000.0,
+        current_peak=10000.0,
+        transaction_cost_calculator=calculator,
+    )
+
+    assert row["pnl"] == 200.0
+    assert row["brokerage"] == 20.0
+    assert row["total_charges"] == 20.0
+    assert row["net_pnl"] == 180.0
+    assert row["ending_balance"] == 10180.0
+    assert row["running_peak"] == 10180.0
+    assert row["drawdown"] == 0.0

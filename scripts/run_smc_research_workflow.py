@@ -8,7 +8,7 @@ One-command workflow for real-data SMC research:
 3. Run SMC diagnostics
 4. Run SMC backtest
 5. Export completed trades to CSV
-6. Export equity curve to CSV
+6. Export net equity curve to CSV
 """
 
 import argparse
@@ -22,6 +22,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
+from src.costs.transaction_cost_profile import TransactionCostProfile
 from scripts.diagnose_smc_backtest import (
     DiagnosticSummary,
     build_report as build_diagnostic_report,
@@ -38,11 +39,21 @@ from scripts.normalize_csv_data import (
     normalize_csv,
 )
 from scripts.run_smc_backtest import (
+    DEFAULT_BROKERAGE_PER_ORDER,
+    DEFAULT_EXCHANGE_TRANSACTION_CHARGE_RATE,
+    DEFAULT_GST_RATE,
+    DEFAULT_SEBI_CHARGE_RATE,
+    DEFAULT_STAMP_DUTY_RATE,
+    DEFAULT_STT_RATE,
     build_pipeline,
     build_report as build_backtest_report,
     build_risk_profile,
+    build_transaction_cost_calculator,
+    build_transaction_cost_profile,
     export_equity_curve_to_csv,
     export_trades_to_csv,
+    net_total_pnl,
+    total_transaction_charges,
 )
 
 
@@ -75,6 +86,7 @@ class SMCResearchWorkflowSummary:
     equity_output_path: Path
     symbol: str
     timeframe: str
+    transaction_cost_profile: TransactionCostProfile
     normalization_summary: NormalizationSummary
     inspection_summary: CSVInspectionSummary
     diagnostic_summary: DiagnosticSummary
@@ -110,7 +122,7 @@ def build_argument_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--equity-output",
         default=str(DEFAULT_EQUITY_OUTPUT_PATH),
-        help="Output path for trade-by-trade equity curve CSV.",
+        help="Output path for trade-by-trade net equity curve CSV.",
     )
     parser.add_argument(
         "--symbol",
@@ -139,6 +151,42 @@ def build_argument_parser() -> argparse.ArgumentParser:
         type=float,
         default=DEFAULT_REWARD_TO_RISK,
         help="Reward-to-risk multiple used for take-profit planning.",
+    )
+    parser.add_argument(
+        "--brokerage-per-order",
+        type=float,
+        default=DEFAULT_BROKERAGE_PER_ORDER,
+        help="Brokerage charged per order. Round trip applies it twice.",
+    )
+    parser.add_argument(
+        "--stt-rate",
+        type=float,
+        default=DEFAULT_STT_RATE,
+        help="STT/CTT rate as decimal applied on exit turnover.",
+    )
+    parser.add_argument(
+        "--exchange-transaction-charge-rate",
+        type=float,
+        default=DEFAULT_EXCHANGE_TRANSACTION_CHARGE_RATE,
+        help="Exchange transaction charge rate as decimal on total turnover.",
+    )
+    parser.add_argument(
+        "--sebi-charge-rate",
+        type=float,
+        default=DEFAULT_SEBI_CHARGE_RATE,
+        help="SEBI charge rate as decimal on total turnover.",
+    )
+    parser.add_argument(
+        "--stamp-duty-rate",
+        type=float,
+        default=DEFAULT_STAMP_DUTY_RATE,
+        help="Stamp duty rate as decimal on entry turnover.",
+    )
+    parser.add_argument(
+        "--gst-rate",
+        type=float,
+        default=DEFAULT_GST_RATE,
+        help="GST rate as decimal on brokerage plus exchange and SEBI charges.",
     )
 
     parser.add_argument(
@@ -210,29 +258,15 @@ def run_workflow(
     close_column: str | None = None,
     volume_column: str | None = None,
     default_volume: float = 0.0,
+    brokerage_per_order: float = DEFAULT_BROKERAGE_PER_ORDER,
+    stt_rate: float = DEFAULT_STT_RATE,
+    exchange_transaction_charge_rate: float = DEFAULT_EXCHANGE_TRANSACTION_CHARGE_RATE,
+    sebi_charge_rate: float = DEFAULT_SEBI_CHARGE_RATE,
+    stamp_duty_rate: float = DEFAULT_STAMP_DUTY_RATE,
+    gst_rate: float = DEFAULT_GST_RATE,
 ) -> SMCResearchWorkflowSummary:
     """
     Run the full SMC research workflow.
-
-    Args:
-        input_path: Raw input CSV path.
-        normalized_output_path: Normalized output CSV path.
-        trades_output_path: Completed trades export CSV path.
-        equity_output_path: Equity curve export CSV path.
-        symbol: Market symbol.
-        timeframe: Market timeframe.
-        account_balance: Account balance.
-        risk_per_trade: Risk per trade as decimal.
-        reward_to_risk: Reward-to-risk multiple.
-        datetime_column: Optional explicit datetime column.
-        date_column: Optional explicit date column.
-        time_column: Optional explicit time column.
-        open_column: Optional explicit open column.
-        high_column: Optional explicit high column.
-        low_column: Optional explicit low column.
-        close_column: Optional explicit close column.
-        volume_column: Optional explicit volume column.
-        default_volume: Default volume when no volume column exists.
 
     Returns:
         Immutable SMCResearchWorkflowSummary.
@@ -264,6 +298,17 @@ def run_workflow(
         risk_per_trade=risk_per_trade,
         reward_to_risk=reward_to_risk,
     )
+    transaction_cost_profile = build_transaction_cost_profile(
+        brokerage_per_order=brokerage_per_order,
+        stt_rate=stt_rate,
+        exchange_transaction_charge_rate=exchange_transaction_charge_rate,
+        sebi_charge_rate=sebi_charge_rate,
+        stamp_duty_rate=stamp_duty_rate,
+        gst_rate=gst_rate,
+    )
+    transaction_cost_calculator = build_transaction_cost_calculator(
+        transaction_cost_profile
+    )
 
     diagnostic_summary = diagnose(
         csv_path=normalization_summary.output_path,
@@ -283,11 +328,13 @@ def run_workflow(
     export_trades_to_csv(
         trades=tuple(backtest_result.trades),
         output_path=trades_output_path,
+        transaction_cost_calculator=transaction_cost_calculator,
     )
     export_equity_curve_to_csv(
         trades=tuple(backtest_result.trades),
         output_path=equity_output_path,
         starting_balance=account_balance,
+        transaction_cost_calculator=transaction_cost_calculator,
     )
 
     return SMCResearchWorkflowSummary(
@@ -297,6 +344,7 @@ def run_workflow(
         equity_output_path=Path(equity_output_path),
         symbol=symbol,
         timeframe=timeframe,
+        transaction_cost_profile=transaction_cost_profile,
         normalization_summary=normalization_summary,
         inspection_summary=inspection_summary,
         diagnostic_summary=diagnostic_summary,
@@ -310,13 +358,6 @@ def format_metric(
 ) -> str:
     """
     Format workflow metric line.
-
-    Args:
-        label: Metric label.
-        value: Metric value.
-
-    Returns:
-        Formatted metric line.
     """
     return f"{label}: {value}"
 
@@ -326,14 +367,21 @@ def build_workflow_summary_report(
 ) -> str:
     """
     Build compact workflow summary report.
-
-    Args:
-        summary: Immutable workflow summary.
-
-    Returns:
-        Multiline workflow report.
     """
     performance_summary = summary.backtest_result.performance_summary
+    transaction_cost_calculator = build_transaction_cost_calculator(
+        summary.transaction_cost_profile
+    )
+    trades = tuple(summary.backtest_result.trades)
+    charges = total_transaction_charges(
+        trades=trades,
+        transaction_cost_calculator=transaction_cost_calculator,
+    )
+    net_pnl = net_total_pnl(
+        gross_total_pnl=performance_summary.total_pnl,
+        trades=trades,
+        transaction_cost_calculator=transaction_cost_calculator,
+    )
 
     lines = [
         "",
@@ -369,6 +417,8 @@ def build_workflow_summary_report(
         "------------------------------------------------------------",
         format_metric("Total Trades", performance_summary.total_trades),
         format_metric("Total PnL", performance_summary.total_pnl),
+        format_metric("Total Charges", charges),
+        format_metric("Net PnL", net_pnl),
         "============================================================",
         "",
     ]
@@ -402,6 +452,16 @@ def main() -> None:
         close_column=args.close_column,
         volume_column=args.volume_column,
         default_volume=args.default_volume,
+        brokerage_per_order=args.brokerage_per_order,
+        stt_rate=args.stt_rate,
+        exchange_transaction_charge_rate=args.exchange_transaction_charge_rate,
+        sebi_charge_rate=args.sebi_charge_rate,
+        stamp_duty_rate=args.stamp_duty_rate,
+        gst_rate=args.gst_rate,
+    )
+
+    transaction_cost_calculator = build_transaction_cost_calculator(
+        summary.transaction_cost_profile
     )
 
     print(build_normalization_report(summary.normalization_summary))
@@ -413,6 +473,7 @@ def main() -> None:
             csv_path=summary.normalized_output_path,
             symbol=summary.symbol,
             timeframe=summary.timeframe,
+            transaction_cost_calculator=transaction_cost_calculator,
         )
     )
     print(build_workflow_summary_report(summary))

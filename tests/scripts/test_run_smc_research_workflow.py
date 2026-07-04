@@ -231,3 +231,28 @@ def test_build_workflow_summary_report_includes_key_metrics(tmp_path):
     assert "Candles Loaded: 1" in report
     assert "Total Trades: 0" in report
     assert "Total PnL: 0.0" in report
+
+def test_build_argument_parser_accepts_transaction_cost_values():
+    args = build_argument_parser().parse_args(
+        [
+            "--brokerage-per-order",
+            "20",
+            "--stt-rate",
+            "0.00025",
+            "--exchange-transaction-charge-rate",
+            "0.0000325",
+            "--sebi-charge-rate",
+            "0.000001",
+            "--stamp-duty-rate",
+            "0.00003",
+            "--gst-rate",
+            "0.18",
+        ]
+    )
+
+    assert args.brokerage_per_order == 20.0
+    assert args.stt_rate == 0.00025
+    assert args.exchange_transaction_charge_rate == 0.0000325
+    assert args.sebi_charge_rate == 0.000001
+    assert args.stamp_duty_rate == 0.00003
+    assert args.gst_rate == 0.18

@@ -17,6 +17,8 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 from src.backtesting.backtest_pipeline import BacktestPipeline
+from src.costs.transaction_cost_calculator import TransactionCostCalculator
+from src.costs.transaction_cost_profile import TransactionCostProfile
 from src.historical_data.providers.csv_historical_data_provider import (
     CSVHistoricalDataProvider,
 )
@@ -39,6 +41,13 @@ DEFAULT_ACCOUNT_BALANCE = 10000.0
 DEFAULT_RISK_PER_TRADE = 0.01
 DEFAULT_REWARD_TO_RISK = 2.0
 
+DEFAULT_BROKERAGE_PER_ORDER = 0.0
+DEFAULT_STT_RATE = 0.0
+DEFAULT_EXCHANGE_TRANSACTION_CHARGE_RATE = 0.0
+DEFAULT_SEBI_CHARGE_RATE = 0.0
+DEFAULT_STAMP_DUTY_RATE = 0.0
+DEFAULT_GST_RATE = 0.0
+
 EXIT_REASON_TAKE_PROFIT = "take_profit"
 EXIT_REASON_STOP_LOSS = "stop_loss"
 EXIT_REASON_UNKNOWN = "unknown"
@@ -57,6 +66,14 @@ TRADE_EXPORT_COLUMNS = (
     "exit_reason",
     "position_size",
     "pnl",
+    "brokerage",
+    "stt",
+    "exchange_transaction_charge",
+    "sebi_charge",
+    "stamp_duty",
+    "gst",
+    "total_charges",
+    "net_pnl",
     "risk_multiple",
     "entry_logic",
     "stop_loss_logic",
@@ -72,6 +89,14 @@ EQUITY_CURVE_EXPORT_COLUMNS = (
     "direction",
     "starting_balance",
     "pnl",
+    "brokerage",
+    "stt",
+    "exchange_transaction_charge",
+    "sebi_charge",
+    "stamp_duty",
+    "gst",
+    "total_charges",
+    "net_pnl",
     "ending_balance",
     "running_peak",
     "drawdown",
@@ -126,6 +151,42 @@ def build_argument_parser() -> argparse.ArgumentParser:
         help="Reward-to-risk multiple used for take-profit planning.",
     )
     parser.add_argument(
+        "--brokerage-per-order",
+        type=float,
+        default=DEFAULT_BROKERAGE_PER_ORDER,
+        help="Brokerage charged per order. Round trip applies it twice.",
+    )
+    parser.add_argument(
+        "--stt-rate",
+        type=float,
+        default=DEFAULT_STT_RATE,
+        help="STT/CTT rate as decimal applied on exit turnover.",
+    )
+    parser.add_argument(
+        "--exchange-transaction-charge-rate",
+        type=float,
+        default=DEFAULT_EXCHANGE_TRANSACTION_CHARGE_RATE,
+        help="Exchange transaction charge rate as decimal on total turnover.",
+    )
+    parser.add_argument(
+        "--sebi-charge-rate",
+        type=float,
+        default=DEFAULT_SEBI_CHARGE_RATE,
+        help="SEBI charge rate as decimal on total turnover.",
+    )
+    parser.add_argument(
+        "--stamp-duty-rate",
+        type=float,
+        default=DEFAULT_STAMP_DUTY_RATE,
+        help="Stamp duty rate as decimal on entry turnover.",
+    )
+    parser.add_argument(
+        "--gst-rate",
+        type=float,
+        default=DEFAULT_GST_RATE,
+        help="GST rate as decimal on brokerage plus exchange and SEBI charges.",
+    )
+    parser.add_argument(
         "--trades-output",
         default=None,
         help="Optional CSV path for exporting completed trade details.",
@@ -154,6 +215,36 @@ def build_risk_profile(
     )
 
 
+def build_transaction_cost_profile(
+    brokerage_per_order: float,
+    stt_rate: float,
+    exchange_transaction_charge_rate: float,
+    sebi_charge_rate: float,
+    stamp_duty_rate: float,
+    gst_rate: float,
+) -> TransactionCostProfile:
+    """
+    Build immutable transaction cost profile.
+    """
+    return TransactionCostProfile(
+        brokerage_per_order=brokerage_per_order,
+        stt_rate=stt_rate,
+        exchange_transaction_charge_rate=exchange_transaction_charge_rate,
+        sebi_charge_rate=sebi_charge_rate,
+        stamp_duty_rate=stamp_duty_rate,
+        gst_rate=gst_rate,
+    )
+
+
+def build_transaction_cost_calculator(
+    transaction_cost_profile: TransactionCostProfile,
+) -> TransactionCostCalculator:
+    """
+    Build transaction cost calculator.
+    """
+    return TransactionCostCalculator(transaction_cost_profile)
+
+
 def build_pipeline(
     csv_path: str | Path,
     symbol: str,
@@ -172,6 +263,44 @@ def build_pipeline(
         symbol=symbol,
         timeframe=timeframe,
         strategy_context_factory=DefaultStrategyContextFactory(),
+    )
+
+
+def _cost_calculator_or_default(
+    transaction_cost_calculator: TransactionCostCalculator | None,
+) -> TransactionCostCalculator:
+    if transaction_cost_calculator is not None:
+        return transaction_cost_calculator
+
+    return TransactionCostCalculator()
+
+
+def total_transaction_charges(
+    trades: tuple[Any, ...],
+    transaction_cost_calculator: TransactionCostCalculator | None = None,
+) -> float:
+    """
+    Calculate total charges for completed trades.
+    """
+    calculator = _cost_calculator_or_default(transaction_cost_calculator)
+
+    return sum(
+        calculator.calculate(trade).total_charges
+        for trade in trades
+    )
+
+
+def net_total_pnl(
+    gross_total_pnl: float,
+    trades: tuple[Any, ...],
+    transaction_cost_calculator: TransactionCostCalculator | None = None,
+) -> float:
+    """
+    Calculate net total PnL after all charges.
+    """
+    return gross_total_pnl - total_transaction_charges(
+        trades=trades,
+        transaction_cost_calculator=transaction_cost_calculator,
     )
 
 
@@ -329,10 +458,13 @@ def _is_short_signal(
 def build_trade_detail_lines(
     trade: Any,
     trade_number: int,
+    transaction_cost_calculator: TransactionCostCalculator | None = None,
 ) -> list[str]:
     """
     Build detailed explainable report lines for one completed trade.
     """
+    calculator = _cost_calculator_or_default(transaction_cost_calculator)
+    cost_breakdown = calculator.calculate(trade)
     direction = format_signal_type(trade.signal_type)
     exit_reason = infer_exit_reason(trade)
 
@@ -348,6 +480,8 @@ def build_trade_detail_lines(
         format_metric("Exit Reason", exit_reason),
         format_metric("Position Size", trade.position_size),
         format_metric("PnL", trade.pnl),
+        format_metric("Total Charges", cost_breakdown.total_charges),
+        format_metric("Net PnL", cost_breakdown.net_pnl),
         format_metric("Risk Multiple", trade.risk_multiple),
         "Logic",
     ]
@@ -369,6 +503,7 @@ def build_trade_detail_lines(
 
 def build_trade_details_section(
     trades: tuple[Any, ...],
+    transaction_cost_calculator: TransactionCostCalculator | None = None,
 ) -> list[str]:
     """
     Build detailed explainable trade report section.
@@ -390,6 +525,7 @@ def build_trade_details_section(
             build_trade_detail_lines(
                 trade=trade,
                 trade_number=index,
+                transaction_cost_calculator=transaction_cost_calculator,
             )
         )
 
@@ -399,10 +535,13 @@ def build_trade_details_section(
 def trade_to_export_row(
     trade: Any,
     trade_number: int,
+    transaction_cost_calculator: TransactionCostCalculator | None = None,
 ) -> dict[str, Any]:
     """
     Convert a completed trade into a CSV export row.
     """
+    calculator = _cost_calculator_or_default(transaction_cost_calculator)
+    cost_breakdown = calculator.calculate(trade)
     logic_fields = trade_export_logic_fields(trade.signal_type)
 
     return {
@@ -417,6 +556,14 @@ def trade_to_export_row(
         "exit_reason": infer_exit_reason(trade),
         "position_size": trade.position_size,
         "pnl": trade.pnl,
+        "brokerage": cost_breakdown.brokerage,
+        "stt": cost_breakdown.stt,
+        "exchange_transaction_charge": cost_breakdown.exchange_transaction_charge,
+        "sebi_charge": cost_breakdown.sebi_charge,
+        "stamp_duty": cost_breakdown.stamp_duty,
+        "gst": cost_breakdown.gst,
+        "total_charges": cost_breakdown.total_charges,
+        "net_pnl": cost_breakdown.net_pnl,
         "risk_multiple": trade.risk_multiple,
         **logic_fields,
     }
@@ -425,6 +572,7 @@ def trade_to_export_row(
 def export_trades_to_csv(
     trades: tuple[Any, ...],
     output_path: str | Path,
+    transaction_cost_calculator: TransactionCostCalculator | None = None,
 ) -> Path:
     """
     Export completed trades to CSV.
@@ -451,6 +599,7 @@ def export_trades_to_csv(
                 trade_to_export_row(
                     trade=trade,
                     trade_number=index,
+                    transaction_cost_calculator=transaction_cost_calculator,
                 )
             )
 
@@ -463,13 +612,6 @@ def calculate_drawdown(
 ) -> tuple[float, float]:
     """
     Calculate drawdown amount and percentage.
-
-    Args:
-        ending_balance: Balance after trade.
-        running_peak: Highest balance reached so far.
-
-    Returns:
-        Drawdown amount and drawdown percentage.
     """
     drawdown = max(running_peak - ending_balance, 0.0)
 
@@ -484,11 +626,14 @@ def trade_to_equity_curve_row(
     trade_number: int,
     starting_balance: float,
     current_peak: float,
+    transaction_cost_calculator: TransactionCostCalculator | None = None,
 ) -> dict[str, Any]:
     """
     Convert a completed trade into an equity curve CSV row.
     """
-    ending_balance = starting_balance + trade.pnl
+    calculator = _cost_calculator_or_default(transaction_cost_calculator)
+    cost_breakdown = calculator.calculate(trade)
+    ending_balance = starting_balance + cost_breakdown.net_pnl
     running_peak = max(current_peak, ending_balance)
     drawdown, drawdown_percent = calculate_drawdown(
         ending_balance=ending_balance,
@@ -502,6 +647,14 @@ def trade_to_equity_curve_row(
         "direction": format_signal_type(trade.signal_type),
         "starting_balance": starting_balance,
         "pnl": trade.pnl,
+        "brokerage": cost_breakdown.brokerage,
+        "stt": cost_breakdown.stt,
+        "exchange_transaction_charge": cost_breakdown.exchange_transaction_charge,
+        "sebi_charge": cost_breakdown.sebi_charge,
+        "stamp_duty": cost_breakdown.stamp_duty,
+        "gst": cost_breakdown.gst,
+        "total_charges": cost_breakdown.total_charges,
+        "net_pnl": cost_breakdown.net_pnl,
         "ending_balance": ending_balance,
         "running_peak": running_peak,
         "drawdown": drawdown,
@@ -515,6 +668,7 @@ def export_equity_curve_to_csv(
     trades: tuple[Any, ...],
     output_path: str | Path,
     starting_balance: float,
+    transaction_cost_calculator: TransactionCostCalculator | None = None,
 ) -> Path:
     """
     Export trade-by-trade equity curve to CSV.
@@ -545,6 +699,7 @@ def export_equity_curve_to_csv(
                 trade_number=index,
                 starting_balance=running_balance,
                 current_peak=running_peak,
+                transaction_cost_calculator=transaction_cost_calculator,
             )
             writer.writerow(row)
             running_balance = row["ending_balance"]
@@ -558,11 +713,22 @@ def build_report(
     csv_path: str | Path,
     symbol: str,
     timeframe: str,
+    transaction_cost_calculator: TransactionCostCalculator | None = None,
 ) -> str:
     """
     Build a human-readable backtest report.
     """
     summary = result.performance_summary
+    trades = tuple(result.trades)
+    charges = total_transaction_charges(
+        trades=trades,
+        transaction_cost_calculator=transaction_cost_calculator,
+    )
+    net_pnl = net_total_pnl(
+        gross_total_pnl=summary.total_pnl,
+        trades=trades,
+        transaction_cost_calculator=transaction_cost_calculator,
+    )
 
     lines = [
         "",
@@ -575,6 +741,8 @@ def build_report(
         "------------------------------------------------------------",
         format_metric("Total Trades", summary.total_trades),
         format_metric("Total PnL", summary.total_pnl),
+        format_metric("Total Charges", charges),
+        format_metric("Net PnL", net_pnl),
     ]
 
     optional_metrics = (
@@ -600,10 +768,15 @@ def build_report(
     lines.extend(
         [
             "------------------------------------------------------------",
-            format_metric("Closed Trades", len(result.trades)),
+            format_metric("Closed Trades", len(trades)),
         ]
     )
-    lines.extend(build_trade_details_section(tuple(result.trades)))
+    lines.extend(
+        build_trade_details_section(
+            trades=trades,
+            transaction_cost_calculator=transaction_cost_calculator,
+        )
+    )
     lines.extend(
         [
             "============================================================",
@@ -634,6 +807,17 @@ def main() -> None:
         risk_per_trade=args.risk_per_trade,
         reward_to_risk=args.reward_to_risk,
     )
+    transaction_cost_profile = build_transaction_cost_profile(
+        brokerage_per_order=args.brokerage_per_order,
+        stt_rate=args.stt_rate,
+        exchange_transaction_charge_rate=args.exchange_transaction_charge_rate,
+        sebi_charge_rate=args.sebi_charge_rate,
+        stamp_duty_rate=args.stamp_duty_rate,
+        gst_rate=args.gst_rate,
+    )
+    transaction_cost_calculator = build_transaction_cost_calculator(
+        transaction_cost_profile
+    )
     pipeline = build_pipeline(
         csv_path=csv_path,
         symbol=args.symbol,
@@ -649,6 +833,7 @@ def main() -> None:
             csv_path=csv_path,
             symbol=args.symbol,
             timeframe=args.timeframe,
+            transaction_cost_calculator=transaction_cost_calculator,
         )
     )
 
@@ -656,6 +841,7 @@ def main() -> None:
         exported_path = export_trades_to_csv(
             trades=tuple(result.trades),
             output_path=args.trades_output,
+            transaction_cost_calculator=transaction_cost_calculator,
         )
 
         print(format_metric("Trades Exported", exported_path))
@@ -665,6 +851,7 @@ def main() -> None:
             trades=tuple(result.trades),
             output_path=args.equity_output,
             starting_balance=args.account_balance,
+            transaction_cost_calculator=transaction_cost_calculator,
         )
 
         print(format_metric("Equity Curve Exported", exported_path))
