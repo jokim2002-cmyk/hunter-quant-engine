@@ -1,11 +1,13 @@
 """
 Default Strategy Context Factory
 
-Builds minimal StrategyContext snapshots.
+Builds StrategyContext snapshots from walk-forward market data.
 """
 
 from datetime import datetime
 
+from src.engines.market_structure_builder import MarketStructureBuilder
+from src.engines.swing_detection_engine import SwingDetectionEngine
 from src.models.candle import Candle
 from src.strategy.context_factories.base_strategy_context_factory import (
     BaseStrategyContextFactory,
@@ -17,9 +19,21 @@ class DefaultStrategyContextFactory(BaseStrategyContextFactory):
     """
     Default StrategyContext factory.
 
-    Version 1 builds context with candles and metadata only.
-    Detection event collections remain empty until detection integration.
+    Builds context with candles, metadata, and detected market structure points.
+    Other detection event collections remain empty until further integration.
     """
+
+    def __init__(
+        self,
+        swing_detection_engine: SwingDetectionEngine | None = None,
+        market_structure_builder: MarketStructureBuilder | None = None,
+    ):
+        self._swing_detection_engine = (
+            swing_detection_engine or SwingDetectionEngine()
+        )
+        self._market_structure_builder = (
+            market_structure_builder or MarketStructureBuilder()
+        )
 
     def create(
         self,
@@ -29,7 +43,7 @@ class DefaultStrategyContextFactory(BaseStrategyContextFactory):
         candles: tuple[Candle, ...],
     ) -> StrategyContext:
         """
-        Create a minimal StrategyContext snapshot.
+        Create a StrategyContext snapshot.
 
         Args:
             symbol: Market symbol.
@@ -38,14 +52,21 @@ class DefaultStrategyContextFactory(BaseStrategyContextFactory):
             candles: Walk-forward candles available at analysis time.
 
         Returns:
-            Immutable StrategyContext with empty detection event collections.
+            Immutable StrategyContext with detected market structure points.
         """
+        swing_points = self._swing_detection_engine.detect_swings(
+            list(candles),
+        )
+        market_structure_points = self._market_structure_builder.build(
+            swing_points,
+        )
+
         return StrategyContext(
             symbol=symbol,
             timeframe=timeframe,
             analysis_time=analysis_time,
             candles=candles,
-            market_structure_points=(),
+            market_structure_points=tuple(market_structure_points),
             bos_events=(),
             choch_events=(),
             liquidity_points=(),
