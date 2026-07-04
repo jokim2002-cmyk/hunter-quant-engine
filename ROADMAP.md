@@ -7,9 +7,14 @@ HQE is not a timepass script. It is a serious market research and execution foun
 HQE v0.1 Foundation:
 
 - Clean Python architecture
-- 562 tests passing
+- 596 tests passing
 - FYERS NIFTY 5m historical data download
 - SMC detections: BOS, CHOCH, FVG, Order Blocks, Liquidity, Sweeps
+- Strategy config system
+- Strict/Balanced/Relaxed strategy modes
+- Strategy mode CLI support
+- Strategy mode benchmark runner
+- PC-only strategy mode benchmark shortcut
 - Backtest pipeline
 - Trades CSV export
 - Equity curve export
@@ -24,8 +29,11 @@ Current benchmark truth:
 - Buy & Hold Return: 2.6990%
 - Alpha: -1.7107%
 - Result: HQE underperformed buy-and-hold
+- Strict/Balanced/Relaxed benchmark runner: built and tested
+- Full real-data strategy mode benchmark: pending PC run
 
 This is not a failure. This is the first honest baseline.
+Mode comparison must be judged only after costs and only after the PC benchmark run.
 
 ---
 
@@ -41,6 +49,32 @@ This is not a failure. This is the first honest baseline.
 8. UI must show the truth, not hide weak results.
 9. Avoid overfitting.
 10. No milestone is complete unless tests pass and Git is clean.
+
+---
+
+## Current Machine Workflow
+
+Laptop role:
+
+- Coding
+- Unit tests
+- Full pytest
+- Small sample-data validation
+- Git commit and push
+- No full real-data mode benchmark runs
+
+PC role:
+
+- Pull latest code
+- Full pytest after pull
+- Full FYERS real-data backtests
+- Strict/Balanced/Relaxed mode benchmark
+- Heavy research runs
+
+Reason:
+
+- Laptop shut down during full real-data strategy mode benchmark.
+- HQE core is not considered broken or unusable; heavy research runs are PC-only until optimization work is added.
 
 ---
 
@@ -426,18 +460,19 @@ Definition of Done:
 
 ## Immediate Priority Order
 
-1. Create and commit ROADMAP.md
-2. Strategy Config System
-3. Strict/Balanced/Relaxed modes
-4. Benchmark each mode
-5. Experiment runner
-6. Walk-forward testing
-7. Streamlit UI dashboard
-8. Broker gateway interfaces
-9. Live market observer
-10. Paper trading
-11. Risk gateway
-12. Micro live execution
+1. Create and commit ROADMAP.md ? DONE
+2. Strategy Config System ? DONE
+3. Strict/Balanced/Relaxed modes ? DONE
+4. Strategy mode benchmark runner ? DONE
+5. Full real-data mode benchmark on PC ? PENDING
+6. Experiment runner
+7. Walk-forward testing
+8. Streamlit UI dashboard
+9. Broker gateway interfaces
+10. Live market observer
+11. Paper trading
+12. Risk gateway
+13. Micro live execution
 
 ---
 
