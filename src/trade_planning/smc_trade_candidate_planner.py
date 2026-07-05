@@ -22,11 +22,13 @@ class SMCTradeCandidatePlanner(BaseTradeCandidatePlanner):
     Creates trade candidates from Smart Money Concept entry zones.
 
     LONG:
-        Entry = bullish order block midpoint, falling back to bullish FVG midpoint.
+        Entry = latest bullish order block midpoint, falling back to latest
+        bullish FVG midpoint.
         Stop loss = selected zone low.
 
     SHORT:
-        Entry = bearish order block midpoint, falling back to bearish FVG midpoint.
+        Entry = latest bearish order block midpoint, falling back to latest
+        bearish FVG midpoint.
         Stop loss = selected zone high.
 
     NEUTRAL:
@@ -106,63 +108,95 @@ class SMCTradeCandidatePlanner(BaseTradeCandidatePlanner):
         self,
         context: StrategyContext,
     ) -> EntryZone | None:
-        bullish_order_block = self._first_bullish_order_block(context)
+        bullish_order_block = self._latest_bullish_order_block(context)
 
         if bullish_order_block is not None:
             return bullish_order_block
 
-        return self._first_bullish_fair_value_gap(context)
+        return self._latest_bullish_fair_value_gap(context)
 
     def _select_bearish_entry_zone(
         self,
         context: StrategyContext,
     ) -> EntryZone | None:
-        bearish_order_block = self._first_bearish_order_block(context)
+        bearish_order_block = self._latest_bearish_order_block(context)
 
         if bearish_order_block is not None:
             return bearish_order_block
 
-        return self._first_bearish_fair_value_gap(context)
+        return self._latest_bearish_fair_value_gap(context)
 
-    def _first_bullish_order_block(
+    def _latest_bullish_order_block(
         self,
         context: StrategyContext,
     ) -> OrderBlock | None:
-        for order_block in context.order_blocks:
-            if order_block.is_bullish():
-                return order_block
+        matching_order_blocks = [
+            order_block
+            for order_block in context.order_blocks
+            if order_block.is_bullish()
+        ]
 
-        return None
+        if not matching_order_blocks:
+            return None
 
-    def _first_bearish_order_block(
+        return max(
+            matching_order_blocks,
+            key=lambda order_block: order_block.created_at,
+        )
+
+    def _latest_bearish_order_block(
         self,
         context: StrategyContext,
     ) -> OrderBlock | None:
-        for order_block in context.order_blocks:
-            if order_block.is_bearish():
-                return order_block
+        matching_order_blocks = [
+            order_block
+            for order_block in context.order_blocks
+            if order_block.is_bearish()
+        ]
 
-        return None
+        if not matching_order_blocks:
+            return None
 
-    def _first_bullish_fair_value_gap(
+        return max(
+            matching_order_blocks,
+            key=lambda order_block: order_block.created_at,
+        )
+
+    def _latest_bullish_fair_value_gap(
         self,
         context: StrategyContext,
     ) -> FairValueGap | None:
-        for fair_value_gap in context.fair_value_gaps:
-            if fair_value_gap.is_bullish():
-                return fair_value_gap
+        matching_fair_value_gaps = [
+            fair_value_gap
+            for fair_value_gap in context.fair_value_gaps
+            if fair_value_gap.is_bullish()
+        ]
 
-        return None
+        if not matching_fair_value_gaps:
+            return None
 
-    def _first_bearish_fair_value_gap(
+        return max(
+            matching_fair_value_gaps,
+            key=lambda fair_value_gap: fair_value_gap.created_at,
+        )
+
+    def _latest_bearish_fair_value_gap(
         self,
         context: StrategyContext,
     ) -> FairValueGap | None:
-        for fair_value_gap in context.fair_value_gaps:
-            if fair_value_gap.is_bearish():
-                return fair_value_gap
+        matching_fair_value_gaps = [
+            fair_value_gap
+            for fair_value_gap in context.fair_value_gaps
+            if fair_value_gap.is_bearish()
+        ]
 
-        return None
+        if not matching_fair_value_gaps:
+            return None
+
+        return max(
+            matching_fair_value_gaps,
+            key=lambda fair_value_gap: fair_value_gap.created_at,
+        )
 
     def _midpoint(
         self,

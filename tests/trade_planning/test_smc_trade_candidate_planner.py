@@ -2,6 +2,8 @@
 SMC Trade Candidate Planner Tests
 """
 
+from datetime import datetime
+
 from src.strategy.signal_type import SignalType
 from src.trade_planning.base_trade_candidate_planner import (
     BaseTradeCandidatePlanner,
@@ -209,3 +211,139 @@ def test_plan_preserves_signal_type():
     )
 
     assert candidates[0].signal.signal_type is SignalType.SHORT
+
+def test_plan_uses_latest_bullish_order_block_for_long_signal():
+    signal = TradeSignalBuilder().long().build()
+    older_order_block = (
+        OrderBlockBuilder()
+        .bullish()
+        .with_high(110.0)
+        .with_low(100.0)
+        .created_at(datetime(2026, 1, 1, 9, 15))
+        .build()
+    )
+    latest_order_block = (
+        OrderBlockBuilder()
+        .bullish()
+        .with_high(130.0)
+        .with_low(120.0)
+        .created_at(datetime(2026, 1, 1, 9, 30))
+        .build()
+    )
+    context = (
+        StrategyContextBuilder()
+        .with_order_blocks(older_order_block, latest_order_block)
+        .build()
+    )
+
+    candidates = SMCTradeCandidatePlanner().plan(
+        signal=signal,
+        context=context,
+    )
+
+    assert len(candidates) == 1
+    assert candidates[0].entry_price == 125.0
+    assert candidates[0].stop_loss == 120.0
+
+
+def test_plan_uses_latest_bearish_order_block_for_short_signal():
+    signal = TradeSignalBuilder().short().build()
+    older_order_block = (
+        OrderBlockBuilder()
+        .bearish()
+        .with_high(110.0)
+        .with_low(100.0)
+        .created_at(datetime(2026, 1, 1, 9, 15))
+        .build()
+    )
+    latest_order_block = (
+        OrderBlockBuilder()
+        .bearish()
+        .with_high(130.0)
+        .with_low(120.0)
+        .created_at(datetime(2026, 1, 1, 9, 30))
+        .build()
+    )
+    context = (
+        StrategyContextBuilder()
+        .with_order_blocks(older_order_block, latest_order_block)
+        .build()
+    )
+
+    candidates = SMCTradeCandidatePlanner().plan(
+        signal=signal,
+        context=context,
+    )
+
+    assert len(candidates) == 1
+    assert candidates[0].entry_price == 125.0
+    assert candidates[0].stop_loss == 130.0
+
+
+def test_plan_uses_latest_bullish_fvg_for_long_signal_when_order_block_missing():
+    signal = TradeSignalBuilder().long().build()
+    older_fvg = (
+        FairValueGapBuilder()
+        .bullish()
+        .with_high(110.0)
+        .with_low(100.0)
+        .created_at(10)
+        .build()
+    )
+    latest_fvg = (
+        FairValueGapBuilder()
+        .bullish()
+        .with_high(130.0)
+        .with_low(120.0)
+        .created_at(20)
+        .build()
+    )
+    context = (
+        StrategyContextBuilder()
+        .with_fair_value_gaps(older_fvg, latest_fvg)
+        .build()
+    )
+
+    candidates = SMCTradeCandidatePlanner().plan(
+        signal=signal,
+        context=context,
+    )
+
+    assert len(candidates) == 1
+    assert candidates[0].entry_price == 125.0
+    assert candidates[0].stop_loss == 120.0
+
+
+def test_plan_uses_latest_bearish_fvg_for_short_signal_when_order_block_missing():
+    signal = TradeSignalBuilder().short().build()
+    older_fvg = (
+        FairValueGapBuilder()
+        .bearish()
+        .with_high(110.0)
+        .with_low(100.0)
+        .created_at(10)
+        .build()
+    )
+    latest_fvg = (
+        FairValueGapBuilder()
+        .bearish()
+        .with_high(130.0)
+        .with_low(120.0)
+        .created_at(20)
+        .build()
+    )
+    context = (
+        StrategyContextBuilder()
+        .with_fair_value_gaps(older_fvg, latest_fvg)
+        .build()
+    )
+
+    candidates = SMCTradeCandidatePlanner().plan(
+        signal=signal,
+        context=context,
+    )
+
+    assert len(candidates) == 1
+    assert candidates[0].entry_price == 125.0
+    assert candidates[0].stop_loss == 130.0
+
