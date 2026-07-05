@@ -16,7 +16,7 @@ def test_readme_documents_current_hqe_workflow():
     text = readme_path.read_text(encoding="utf-8")
 
     assert "Hunter Quant Engine (HQE)" in text
-    assert "616 tests passing" in text
+    assert "648 tests passing" in text
     assert "Strict/Balanced/Relaxed strategy modes" in text
     assert "Strategy mode benchmark runner" in text
     assert "Strategy experiment dry-run planner" in text
@@ -33,3 +33,5 @@ def test_readme_no_longer_contains_old_architecture_typos():
     assert "vDetection" not in text
     assert "Mmutable" not in text
     assert "Backtesting Engine will consume" not in text
+
+
