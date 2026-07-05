@@ -10,8 +10,10 @@ from __future__ import annotations
 import argparse
 import csv
 import sys
+from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
+from time import perf_counter
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
@@ -76,6 +78,7 @@ class ModeBenchmarkResult:
     alpha_percent: float
     outperformed: bool
     total_trades: int
+    runtime_seconds: float = 0.0
 
 
 def load_trade_cost_summary(
@@ -138,6 +141,8 @@ def benchmark_strategy_modes(
     close_column: str | None = None,
     volume_column: str | None = None,
     default_volume: float = 0.0,
+    progress_callback: Callable[[str], None] | None = None,
+    clock: Callable[[], float] = perf_counter,
 ) -> tuple[ModeBenchmarkResult, ...]:
     """
     Run each strategy mode and compare it against buy-and-hold.
@@ -145,6 +150,10 @@ def benchmark_strategy_modes(
     results: list[ModeBenchmarkResult] = []
 
     for mode in modes:
+        if progress_callback is not None:
+            progress_callback(f"Running mode: {mode}")
+
+        mode_started_at = clock()
         mode_output_prefix = f"{output_prefix}_{mode}"
         output_paths = build_output_paths(
             output_dir=output_dir,
@@ -186,6 +195,12 @@ def benchmark_strategy_modes(
             benchmark=benchmark,
         )
         trade_cost_summary = load_trade_cost_summary(output_paths.trades_output_path)
+        runtime_seconds = clock() - mode_started_at
+
+        if progress_callback is not None:
+            progress_callback(
+                f"Finished mode: {mode} in {runtime_seconds:.2f} seconds"
+            )
 
         results.append(
             ModeBenchmarkResult(
@@ -202,6 +217,7 @@ def benchmark_strategy_modes(
                 alpha_percent=comparison.alpha_percent,
                 outperformed=comparison.outperformed,
                 total_trades=trade_cost_summary.total_trades,
+                runtime_seconds=runtime_seconds,
             )
         )
 
@@ -220,6 +236,15 @@ def result_status(
     return "UNDERPERFORMED"
 
 
+def total_runtime_seconds(
+    results: tuple[ModeBenchmarkResult, ...],
+) -> float:
+    """
+    Return total runtime across all benchmarked modes.
+    """
+    return sum(result.runtime_seconds for result in results)
+
+
 def build_report(
     results: tuple[ModeBenchmarkResult, ...],
 ) -> str:
@@ -236,7 +261,7 @@ def build_report(
         "------------------------------------------------------------",
         (
             "Mode | Trades | Gross PnL | Charges | Net PnL | "
-            "HQE Return % | BuyHold Return % | Alpha % | Result"
+            "HQE Return % | BuyHold Return % | Alpha % | Result | Runtime Seconds"
         ),
         "------------------------------------------------------------",
     ]
@@ -252,12 +277,15 @@ def build_report(
                 f"{result.strategy_return_percent:.4f} | "
                 f"{result.benchmark_return_percent:.4f} | "
                 f"{result.alpha_percent:.4f} | "
-                f"HQE {result_status(result)} buy-and-hold"
+                f"HQE {result_status(result)} buy-and-hold | "
+                f"{result.runtime_seconds:.2f}"
             )
         )
 
     lines.extend(
         [
+            "------------------------------------------------------------",
+            f"Total Runtime Seconds: {total_runtime_seconds(results):.2f}",
             "============================================================",
             "",
         ]
@@ -304,6 +332,7 @@ def write_summary_csv(
                 "normalized_output_path",
                 "trades_output_path",
                 "equity_output_path",
+                "runtime_seconds",
             ]
         )
 
@@ -323,6 +352,7 @@ def write_summary_csv(
                     result.normalized_output_path,
                     result.trades_output_path,
                     result.equity_output_path,
+                    result.runtime_seconds,
                 ]
             )
 
@@ -471,6 +501,7 @@ def main() -> None:
         close_column=args.close_column,
         volume_column=args.volume_column,
         default_volume=args.default_volume,
+        progress_callback=print,
     )
 
     report = build_report(results)

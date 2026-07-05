@@ -246,3 +246,95 @@ def test_benchmark_script_can_run_as_direct_file():
     assert "Benchmark strict, balanced, and relaxed HQE strategy modes." in (
         completed.stdout
     )
+
+def test_build_report_includes_runtime_metrics():
+    result = ModeBenchmarkResult(
+        strategy_mode="strict",
+        normalized_output_path=Path("strict_normalized.csv"),
+        trades_output_path=Path("strict_trades.csv"),
+        equity_output_path=Path("strict_equity.csv"),
+        gross_pnl=100.0,
+        total_charges=10.0,
+        net_pnl=90.0,
+        strategy_return_percent=0.9,
+        benchmark_return_percent=1.2,
+        alpha_amount=-30.0,
+        alpha_percent=-0.3,
+        outperformed=False,
+        total_trades=1,
+        runtime_seconds=12.345,
+    )
+
+    report = build_report((result,))
+
+    assert "Runtime Seconds" in report
+    assert "strict | 1 | 100.00 | 10.00 | 90.00" in report
+    assert "12.35" in report
+    assert "Total Runtime Seconds: 12.35" in report
+
+
+def test_write_summary_csv_includes_runtime_seconds(tmp_path: Path):
+    output_path = tmp_path / "summary.csv"
+    result = ModeBenchmarkResult(
+        strategy_mode="balanced",
+        normalized_output_path=Path("balanced_normalized.csv"),
+        trades_output_path=Path("balanced_trades.csv"),
+        equity_output_path=Path("balanced_equity.csv"),
+        gross_pnl=100.0,
+        total_charges=10.0,
+        net_pnl=90.0,
+        strategy_return_percent=0.9,
+        benchmark_return_percent=1.2,
+        alpha_amount=-30.0,
+        alpha_percent=-0.3,
+        outperformed=False,
+        total_trades=1,
+        runtime_seconds=7.5,
+    )
+
+    write_summary_csv((result,), output_path)
+
+    lines = output_path.read_text(encoding="utf-8").splitlines()
+
+    assert lines[0].endswith(",runtime_seconds")
+    assert lines[1].endswith(",7.5")
+
+
+def test_benchmark_strategy_modes_emits_progress_and_runtime(tmp_path: Path):
+    input_path = tmp_path / "raw.csv"
+    output_dir = tmp_path / "processed"
+
+    input_path.write_text(
+        "\n".join(
+            [
+                "datetime,open,high,low,close,volume",
+                "2026-01-01T09:15:00,100.0,105.0,95.0,100.0,1000",
+                "2026-01-01T09:20:00,100.0,106.0,99.0,105.0,1000",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    progress_messages = []
+    clock_values = iter([10.0, 11.5])
+
+    results = benchmark_strategy_modes(
+        input_path=input_path,
+        output_dir=output_dir,
+        output_prefix="mode_test",
+        symbol="TEST",
+        timeframe="5m",
+        account_balance=10000.0,
+        risk_per_trade=0.01,
+        reward_to_risk=2.0,
+        modes=("strict",),
+        progress_callback=progress_messages.append,
+        clock=lambda: next(clock_values),
+    )
+
+    assert len(results) == 1
+    assert results[0].runtime_seconds == 1.5
+    assert progress_messages == [
+        "Running mode: strict",
+        "Finished mode: strict in 1.50 seconds",
+    ]
