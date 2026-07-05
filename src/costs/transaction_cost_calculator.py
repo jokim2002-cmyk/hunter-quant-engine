@@ -47,8 +47,16 @@ class TransactionCostCalculator:
         )
         sebi_charge = total_turnover * self._profile.sebi_charge_rate
         stamp_duty = entry_turnover * self._profile.stamp_duty_rate
+        clearing_charge = total_turnover * self._profile.clearing_charge_rate
+        investor_protection_fund = (
+            total_turnover * self._profile.investor_protection_fund_rate
+        )
         gst = (
-            brokerage + exchange_transaction_charge + sebi_charge
+            brokerage
+            + exchange_transaction_charge
+            + sebi_charge
+            + clearing_charge
+            + investor_protection_fund
         ) * self._profile.gst_rate
 
         total_charges = (
@@ -57,6 +65,8 @@ class TransactionCostCalculator:
             + exchange_transaction_charge
             + sebi_charge
             + stamp_duty
+            + clearing_charge
+            + investor_protection_fund
             + gst
         )
         gross_pnl = float(trade.pnl)
@@ -69,6 +79,8 @@ class TransactionCostCalculator:
             exchange_transaction_charge=exchange_transaction_charge,
             sebi_charge=sebi_charge,
             stamp_duty=stamp_duty,
+            clearing_charge=clearing_charge,
+            investor_protection_fund=investor_protection_fund,
             gst=gst,
             total_charges=total_charges,
             net_pnl=net_pnl,

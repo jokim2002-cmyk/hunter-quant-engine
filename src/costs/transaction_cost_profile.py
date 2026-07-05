@@ -30,6 +30,8 @@ class TransactionCostProfile:
     exchange_transaction_charge_rate: float = 0.0
     sebi_charge_rate: float = 0.0
     stamp_duty_rate: float = 0.0
+    clearing_charge_rate: float = 0.0
+    investor_protection_fund_rate: float = 0.0
     gst_rate: float = 0.0
 
     def __post_init__(self):
@@ -44,6 +46,8 @@ class TransactionCostProfile:
             "exchange_transaction_charge_rate": self.exchange_transaction_charge_rate,
             "sebi_charge_rate": self.sebi_charge_rate,
             "stamp_duty_rate": self.stamp_duty_rate,
+            "clearing_charge_rate": self.clearing_charge_rate,
+            "investor_protection_fund_rate": self.investor_protection_fund_rate,
             "gst_rate": self.gst_rate,
         }
 
