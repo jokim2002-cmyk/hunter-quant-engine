@@ -148,6 +148,15 @@ def build_argument_parser() -> argparse.ArgumentParser:
         choices=supported_strategy_mode_names(),
         help="SMC strategy mode: strict, balanced, or relaxed.",
     )
+    parser.add_argument(
+        "--max-candles",
+        type=int,
+        default=None,
+        help=(
+            "Limit research to the latest N normalized candles. "
+            "Useful for safe partial runs before full-data benchmarks."
+        ),
+    )
 
     parser.add_argument(
         "--datetime-column",
@@ -218,6 +227,7 @@ def run_fyers_nifty_research(
     close_column: str | None = None,
     volume_column: str | None = None,
     default_volume: float = 0.0,
+    max_candles: int | None = None,
 ):
     """
     Run FYERS NIFTY research workflow.
@@ -240,6 +250,7 @@ def run_fyers_nifty_research(
         close_column: Optional explicit close column.
         volume_column: Optional explicit volume column.
         default_volume: Default volume when no volume column exists.
+        max_candles: Optional latest-candle row limit for safe research runs.
 
     Returns:
         SMCResearchWorkflowSummary.
@@ -269,6 +280,7 @@ def run_fyers_nifty_research(
         close_column=close_column,
         volume_column=volume_column,
         default_volume=default_volume,
+        max_candles=max_candles,
         cost_profile=COST_PROFILE_FYERS_EQUITY_INTRADAY,
     )
 
@@ -299,6 +311,7 @@ def main() -> None:
         close_column=args.close_column,
         volume_column=args.volume_column,
         default_volume=args.default_volume,
+        max_candles=args.max_candles,
     )
     transaction_cost_calculator = build_transaction_cost_calculator(
         summary.transaction_cost_profile

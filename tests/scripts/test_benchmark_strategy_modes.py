@@ -2,6 +2,7 @@
 Strategy Mode Benchmark Script Tests
 """
 
+import csv
 from pathlib import Path
 import subprocess
 import sys
@@ -338,3 +339,54 @@ def test_benchmark_strategy_modes_emits_progress_and_runtime(tmp_path: Path):
         "Running mode: strict",
         "Finished mode: strict in 1.50 seconds",
     ]
+
+def test_build_argument_parser_accepts_max_candles():
+    args = build_argument_parser().parse_args(
+        [
+            "--max-candles",
+            "300",
+        ]
+    )
+
+    assert args.max_candles == 300
+
+
+def test_benchmark_strategy_modes_limits_to_latest_max_candles(tmp_path: Path):
+    input_path = tmp_path / "raw.csv"
+    output_dir = tmp_path / "processed"
+
+    input_path.write_text(
+        "\n".join(
+            [
+                "datetime,open,high,low,close,volume",
+                "2026-01-01T09:15:00,100.0,105.0,95.0,100.0,1000",
+                "2026-01-01T09:20:00,100.0,106.0,99.0,105.0,1000",
+                "2026-01-01T09:25:00,105.0,107.0,104.0,106.0,1000",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    results = benchmark_strategy_modes(
+        input_path=input_path,
+        output_dir=output_dir,
+        output_prefix="mode_test",
+        symbol="TEST",
+        timeframe="5m",
+        account_balance=10000.0,
+        risk_per_trade=0.01,
+        reward_to_risk=2.0,
+        modes=("relaxed",),
+        max_candles=2,
+    )
+
+    with results[0].normalized_output_path.open(
+        mode="r",
+        newline="",
+        encoding="utf-8",
+    ) as csv_file:
+        rows = tuple(csv.DictReader(csv_file))
+
+    assert len(rows) == 2
+    assert rows[0]["datetime"] == "2026-01-01T09:20:00"
+    assert rows[1]["datetime"] == "2026-01-01T09:25:00"

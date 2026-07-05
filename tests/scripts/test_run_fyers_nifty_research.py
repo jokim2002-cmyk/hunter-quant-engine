@@ -168,3 +168,54 @@ def test_run_fyers_nifty_research_uses_fyers_profile_and_creates_outputs(tmp_pat
     assert trade_rows == ()
     assert equity_rows == ()
     assert COST_PROFILE_FYERS_EQUITY_INTRADAY == "fyers-equity-intraday"
+
+def test_build_argument_parser_accepts_max_candles():
+    args = build_argument_parser().parse_args(
+        [
+            "--max-candles",
+            "250",
+        ]
+    )
+
+    assert args.max_candles == 250
+
+
+def test_run_fyers_nifty_research_limits_to_latest_max_candles(tmp_path):
+    input_path = tmp_path / "fyers_raw.csv"
+    output_dir = tmp_path / "processed"
+
+    input_path.write_text(
+        "\n".join(
+            [
+                "datetime,open,high,low,close,volume",
+                "2026-01-01T09:15:00,100.0,105.0,95.0,101.0,1000",
+                "2026-01-01T09:20:00,101.0,106.0,96.0,102.0,1000",
+                "2026-01-01T09:25:00,102.0,107.0,97.0,103.0,1000",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    summary = run_fyers_nifty_research(
+        input_path=input_path,
+        output_dir=output_dir,
+        output_prefix="fyers_test",
+        symbol="NIFTY",
+        timeframe="5m",
+        account_balance=10000.0,
+        risk_per_trade=0.01,
+        reward_to_risk=2.0,
+        max_candles=2,
+    )
+    output_paths = build_output_paths(
+        output_dir=output_dir,
+        output_prefix="fyers_test",
+    )
+
+    rows = _read_rows(output_paths.normalized_output_path)
+
+    assert summary.max_candles == 2
+    assert summary.diagnostic_summary.candles_loaded == 2
+    assert len(rows) == 2
+    assert rows[0]["datetime"] == "2026-01-01T09:20:00"
+    assert rows[1]["datetime"] == "2026-01-01T09:25:00"

@@ -12,6 +12,7 @@ One-command workflow for real-data SMC research:
 """
 
 import argparse
+import csv
 import sys
 from dataclasses import dataclass
 from pathlib import Path
@@ -98,6 +99,7 @@ class SMCResearchWorkflowSummary:
     diagnostic_summary: DiagnosticSummary
     backtest_result: Any
     strategy_mode: str = DEFAULT_STRATEGY_MODE
+    max_candles: int | None = None
 
 
 def build_argument_parser() -> argparse.ArgumentParser:
@@ -164,6 +166,15 @@ def build_argument_parser() -> argparse.ArgumentParser:
         default=DEFAULT_STRATEGY_MODE,
         choices=supported_strategy_mode_names(),
         help="SMC strategy mode: strict, balanced, or relaxed.",
+    )
+    parser.add_argument(
+        "--max-candles",
+        type=int,
+        default=None,
+        help=(
+            "Limit research to the latest N normalized candles. "
+            "Useful for safe partial runs before full-data benchmarks."
+        ),
     )
     parser.add_argument(
         "--cost-profile",
@@ -285,6 +296,7 @@ def run_workflow(
     sebi_charge_rate: float = DEFAULT_SEBI_CHARGE_RATE,
     stamp_duty_rate: float = DEFAULT_STAMP_DUTY_RATE,
     gst_rate: float = DEFAULT_GST_RATE,
+    max_candles: int | None = None,
 ) -> SMCResearchWorkflowSummary:
     """
     Run the full SMC research workflow.
@@ -304,6 +316,11 @@ def run_workflow(
         close_column=close_column,
         volume_column=volume_column,
         default_volume=default_volume,
+    )
+
+    apply_max_candles_limit(
+        csv_path=normalization_summary.output_path,
+        max_candles=max_candles,
     )
 
     inspection_summary = inspect_csv(normalization_summary.output_path)
@@ -374,8 +391,55 @@ def run_workflow(
         diagnostic_summary=diagnostic_summary,
         backtest_result=backtest_result,
         strategy_mode=strategy_mode,
+        max_candles=max_candles,
     )
 
+
+
+def validate_max_candles(
+    max_candles: int | None,
+) -> None:
+    """
+    Validate optional max-candles safety limit.
+    """
+    if max_candles is None:
+        return
+
+    if max_candles <= 0:
+        raise ValueError("max_candles must be greater than 0")
+
+
+def apply_max_candles_limit(
+    csv_path: str | Path,
+    max_candles: int | None,
+) -> None:
+    """
+    Keep only the latest N normalized candle rows in a CSV.
+
+    The header is preserved. When max_candles is None, the file is unchanged.
+    """
+    validate_max_candles(max_candles)
+
+    if max_candles is None:
+        return
+
+    path = Path(csv_path)
+
+    with path.open("r", newline="", encoding="utf-8-sig") as csv_file:
+        reader = csv.reader(csv_file)
+        rows = list(reader)
+
+    if not rows:
+        return
+
+    header = rows[0]
+    data_rows = rows[1:]
+    limited_rows = data_rows[-max_candles:]
+
+    with path.open("w", newline="", encoding="utf-8") as csv_file:
+        writer = csv.writer(csv_file)
+        writer.writerow(header)
+        writer.writerows(limited_rows)
 
 def format_metric(
     label: str,
@@ -420,6 +484,7 @@ def build_workflow_summary_report(
         format_metric("Symbol", summary.symbol),
         format_metric("Timeframe", summary.timeframe),
         format_metric("Strategy Mode", summary.strategy_mode),
+        format_metric("Max Candles", summary.max_candles),
         "------------------------------------------------------------",
         format_metric("Rows Normalized", summary.normalization_summary.rows_written),
         format_metric("Ready For HQE", summary.inspection_summary.ready_for_hqe),
@@ -470,6 +535,7 @@ def main() -> None:
         risk_per_trade=args.risk_per_trade,
         reward_to_risk=args.reward_to_risk,
         strategy_mode=args.strategy_mode,
+        max_candles=args.max_candles,
         datetime_column=args.datetime_column,
         date_column=args.date_column,
         time_column=args.time_column,
