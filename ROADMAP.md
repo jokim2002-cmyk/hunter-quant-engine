@@ -1,5 +1,42 @@
 ﻿# Hunter Quant Engine — Master Roadmap
 
+
+## Corrected Product Direction
+
+HQE first product module is a dynamic NIFTY option-buy planning engine.
+
+Binding rules:
+
+- Signal source: NIFTY spot/index candles.
+- Execution target: NIFTY options.
+- Bullish signal maps to Call/CE buy planning.
+- Bearish signal maps to Put/PE buy planning.
+- First module allows option buying only.
+- First module does not allow option selling.
+- First module does not execute futures or equity trades.
+- HQE is not a fixed ATM option buyer.
+- Strike selection must be dynamic using option-chain evidence.
+- Current SMC benchmark results are underlying signal research only.
+- Current SMC benchmark results are not final NIFTY options profitability.
+
+The option-buy module must eventually check:
+
+- Strike selection.
+- Expiry.
+- Option premium.
+- OI.
+- Volume.
+- Liquidity/spread.
+- Delta.
+- Theta.
+- Vega.
+- Gamma.
+- Risk-reward.
+- SL and target.
+- FYERS NIFTY options charges.
+
+---
+
 HQE is not a timepass script. It is a serious market research and execution foundation.
 
 ## Current Base State
@@ -7,7 +44,7 @@ HQE is not a timepass script. It is a serious market research and execution foun
 HQE v0.1 Research Engine Foundation:
 
 - Clean Python architecture
-- 630 tests passing
+- 648 tests passing
 - FYERS NIFTY 5m historical data download
 - SMC detections: BOS, CHOCH, FVG, Order Blocks, Liquidity, Sweeps
 - Strategy config system
@@ -551,29 +588,27 @@ Definition of Done:
 
 ## Immediate Priority Order
 
-1. Create and commit ROADMAP.md - DONE
-2. Strategy Config System - DONE
-3. Strict/Balanced/Relaxed modes - DONE
-4. Strategy mode benchmark runner - DONE
-5. Full real-data mode benchmark on PC - DONE
-6. Latest SMC entry-zone selection - DONE
-7. SMC confluence freshness validation - DONE
-8. Strategy experiment runner dry-run - DONE
-9. Experiment ranking/report helpers - DONE
-10. PC-only strategy experiment shortcut - DONE
-11. ROADMAP checkpoint update with latest benchmark truth - CURRENT
-12. Benchmark progress logging and timing metrics - NEXT
-13. `--max-candles` / date-range safety controls
-14. Conflict diagnostics report
-15. Overtrading controls
-16. Full strategy experiment execution on PC
-17. Walk-forward testing
-18. Streamlit UI dashboard
-19. Broker gateway interfaces
-20. Live market observer
-21. Paper trading
-22. Risk gateway
-23. Micro live execution
+1. Roadmap correction for NIFTY option-buy first module - CURRENT
+2. README correction for NIFTY option-buy first module - CURRENT
+3. Option-buy assumptions document
+4. Option contract models
+5. Option chain snapshot models
+6. FYERS NIFTY options charge profile
+7. Dynamic strike selection engine
+8. OI / volume / liquidity filters
+9. Greeks model and checks
+10. Option-buy trade plan model
+11. Option premium backtest engine
+12. Conflict diagnostics report for underlying SMC signals
+13. Overtrading controls
+14. Strategy experiment execution on PC
+15. Walk-forward testing
+16. Streamlit UI dashboard
+17. Broker gateway interfaces
+18. Live market observer
+19. Paper trading
+20. Risk gateway
+21. Micro live execution
 
 ---
 

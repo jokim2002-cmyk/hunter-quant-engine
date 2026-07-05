@@ -2,11 +2,48 @@
 
 ## Mission Statement
 
-Build a production-grade quantitative trading research and execution foundation using clean architecture, rigorous testing, explainable logic, and honest benchmark results.
+Build a production-grade NIFTY option-buy research and execution foundation using clean architecture, rigorous testing, explainable logic, and honest benchmark results.
 
 HQE is not a fake-profit trading bot.
 
-HQE is a market research and execution framework designed to transform market data into immutable market events, strategy signals, risk-approved trade plans, backtest results, benchmark reports, and eventually paper/live execution decisions.
+HQE is a market research and execution framework designed to transform NIFTY spot/index data into strategy signals, option-chain analysis, CE/PE buy trade plans, backtest results, benchmark reports, and eventually paper/live execution decisions.
+
+---
+
+## Corrected First Module Direction
+
+HQE first product module is a dynamic NIFTY option-buy planning engine.
+
+Binding rules:
+
+- Signal source: NIFTY spot/index candles.
+- Execution target: NIFTY options.
+- Bullish signal maps to Call/CE buy planning.
+- Bearish signal maps to Put/PE buy planning.
+- Option buying only.
+- No option selling in the first module.
+- No futures execution in the first module.
+- No equity execution in the first module.
+- No fixed ATM-only assumption.
+- Strike selection must be dynamic.
+- Current SMC mode benchmarks are underlying signal research only.
+- Current SMC mode benchmarks are not final NIFTY options profitability.
+
+The final option-buy planning module must check:
+
+- Strike selection.
+- Expiry.
+- Option premium.
+- OI.
+- Volume.
+- Liquidity/spread.
+- Delta.
+- Theta.
+- Vega.
+- Gamma.
+- Risk-reward.
+- SL and target.
+- FYERS NIFTY options charges.
 
 ---
 
@@ -21,7 +58,7 @@ Engineer it right once. Improve it forever.
 HQE currently supports:
 
 - Clean Python architecture
-- 616 tests passing
+- 648 tests passing
 - Smart Money Concepts detection
 - SMC strategy signal generation
 - Strategy config presets
@@ -236,25 +273,20 @@ Paper Trading / Live Trading
 
 ## Current Priority
 
-Immediate PC pending work:
+Immediate engineering milestones:
 
-- Pull latest code on PC
-- Run full tests on PC
-- Run strict/balanced/relaxed strategy mode benchmark
-- Run strategy experiment execution
-- Review net PnL after costs
-- Compare against buy-and-hold
+- Roadmap and README correction for NIFTY option-buy direction.
+- Option-buy assumptions document.
+- Option contract models.
+- Option chain snapshot models.
+- FYERS NIFTY options charge profile.
+- Dynamic strike selection engine.
+- OI / volume / liquidity filters.
+- Greeks model and checks.
+- Option-buy trade plan model.
+- Option premium backtest engine.
 
-Next engineering milestones:
-
-- Full experiment execution review
-- Walk-forward testing
-- Streamlit UI dashboard
-- Broker gateway interfaces
-- Live market observer
-- Paper trading
-- Risk gateway
-- Micro live execution
+Current SMC strict/balanced/relaxed benchmarks remain useful as underlying signal research, but they are not final NIFTY options profitability results.
 
 ---
 
