@@ -15,11 +15,15 @@ from src.strategy.signal_type import SignalType
 from src.strategy.trade_signal import TradeSignal
 from src.trade_planning.dynamic_option_strike_selector import (
     DynamicOptionStrikeSelector,
+    OptionLiquidityFilterConfig,
 )
 from src.trade_planning.option_strike_selection_result import (
     OptionStrikeSelectionRejection,
     OptionStrikeSelectionResult,
 )
+
+
+_UNSET = object()
 
 
 def _signal(signal_type):
@@ -43,14 +47,28 @@ def _contract(option_type, strike_price):
     )
 
 
-def _entry(option_type, strike_price, last_traded_price=100.0):
+def _entry(
+    option_type,
+    strike_price,
+    last_traded_price=100.0,
+    bid_price=_UNSET,
+    ask_price=_UNSET,
+    volume=10000,
+    open_interest=50000,
+):
+    if bid_price is _UNSET:
+        bid_price = last_traded_price - 1.0
+
+    if ask_price is _UNSET:
+        ask_price = last_traded_price + 1.0
+
     return OptionChainEntry(
         contract=_contract(option_type, strike_price),
         last_traded_price=last_traded_price,
-        bid_price=last_traded_price - 1.0,
-        ask_price=last_traded_price + 1.0,
-        volume=10000,
-        open_interest=50000,
+        bid_price=bid_price,
+        ask_price=ask_price,
+        volume=volume,
+        open_interest=open_interest,
     )
 
 
@@ -159,6 +177,161 @@ def test_selector_uses_lower_strike_as_deterministic_tie_breaker():
     )
 
     assert result.selected_entry == ce_24200
+
+
+def test_default_liquidity_config_preserves_closest_strike_behavior():
+    ce_24200 = _entry(OptionType.CE, 24200, volume=0, open_interest=0)
+    ce_24300 = _entry(OptionType.CE, 24300, volume=0, open_interest=0)
+
+    selector = DynamicOptionStrikeSelector()
+    result = selector.select(
+        signal=_signal(SignalType.LONG),
+        snapshot=_snapshot((ce_24300, ce_24200), 24210.0),
+    )
+
+    assert result.has_selection is True
+    assert result.selected_entry == ce_24200
+
+
+def test_selector_rejects_low_volume():
+    ce_24200 = _entry(OptionType.CE, 24200, volume=99)
+    ce_24300 = _entry(OptionType.CE, 24300, volume=100)
+
+    selector = DynamicOptionStrikeSelector(
+        liquidity_config=OptionLiquidityFilterConfig(min_volume=100)
+    )
+    result = selector.select(
+        signal=_signal(SignalType.LONG),
+        snapshot=_snapshot((ce_24200, ce_24300), 24210.0),
+    )
+
+    assert result.selected_entry == ce_24300
+    assert any(
+        rejection.entry == ce_24200
+        and rejection.reason
+        == "CE strike 24200.0 rejected because volume below minimum 100"
+        for rejection in result.rejected_entries
+    )
+
+
+def test_selector_rejects_low_open_interest():
+    ce_24200 = _entry(OptionType.CE, 24200, open_interest=499)
+    ce_24300 = _entry(OptionType.CE, 24300, open_interest=500)
+
+    selector = DynamicOptionStrikeSelector(
+        liquidity_config=OptionLiquidityFilterConfig(min_open_interest=500)
+    )
+    result = selector.select(
+        signal=_signal(SignalType.LONG),
+        snapshot=_snapshot((ce_24200, ce_24300), 24210.0),
+    )
+
+    assert result.selected_entry == ce_24300
+    assert any(
+        rejection.entry == ce_24200
+        and rejection.reason
+        == "CE strike 24200.0 rejected because open interest below minimum 500"
+        for rejection in result.rejected_entries
+    )
+
+
+def test_selector_rejects_missing_bid_ask_when_required():
+    ce_24200 = _entry(OptionType.CE, 24200, bid_price=None, ask_price=None)
+    ce_24300 = _entry(OptionType.CE, 24300)
+
+    selector = DynamicOptionStrikeSelector(
+        liquidity_config=OptionLiquidityFilterConfig(require_bid_ask_quote=True)
+    )
+    result = selector.select(
+        signal=_signal(SignalType.LONG),
+        snapshot=_snapshot((ce_24200, ce_24300), 24210.0),
+    )
+
+    assert result.selected_entry == ce_24300
+    assert any(
+        rejection.entry == ce_24200
+        and rejection.reason
+        == "CE strike 24200.0 rejected because missing bid/ask quote"
+        for rejection in result.rejected_entries
+    )
+
+
+def test_selector_rejects_wide_spread():
+    ce_24200 = _entry(OptionType.CE, 24200, bid_price=98.0, ask_price=101.0)
+    ce_24300 = _entry(OptionType.CE, 24300, bid_price=99.0, ask_price=100.0)
+
+    selector = DynamicOptionStrikeSelector(
+        liquidity_config=OptionLiquidityFilterConfig(max_spread=2.0)
+    )
+    result = selector.select(
+        signal=_signal(SignalType.LONG),
+        snapshot=_snapshot((ce_24200, ce_24300), 24210.0),
+    )
+
+    assert result.selected_entry == ce_24300
+    assert any(
+        rejection.entry == ce_24200
+        and rejection.reason == "CE strike 24200.0 rejected because spread above maximum 2.0"
+        for rejection in result.rejected_entries
+    )
+
+
+def test_selector_selects_farther_strike_when_closest_fails_liquidity():
+    closest_ce = _entry(OptionType.CE, 24200, volume=10)
+    farther_ce = _entry(OptionType.CE, 24300, volume=1000)
+
+    selector = DynamicOptionStrikeSelector(
+        liquidity_config=OptionLiquidityFilterConfig(min_volume=100)
+    )
+    result = selector.select(
+        signal=_signal(SignalType.LONG),
+        snapshot=_snapshot((closest_ce, farther_ce), 24210.0),
+    )
+
+    assert result.has_selection is True
+    assert result.selected_entry == farther_ce
+    assert result.selected_reason == (
+        "Selected CE strike closest to underlying price 24210.0"
+    )
+
+
+def test_selector_returns_no_selection_when_all_matching_strikes_fail_liquidity():
+    ce_24200 = _entry(OptionType.CE, 24200, volume=10)
+    ce_24300 = _entry(OptionType.CE, 24300, volume=20)
+    pe_24200 = _entry(OptionType.PE, 24200, volume=1000)
+
+    selector = DynamicOptionStrikeSelector(
+        liquidity_config=OptionLiquidityFilterConfig(min_volume=100)
+    )
+    result = selector.select(
+        signal=_signal(SignalType.LONG),
+        snapshot=_snapshot((ce_24200, pe_24200, ce_24300), 24210.0),
+    )
+
+    assert result.has_selection is False
+    assert result.selected_entry is None
+    assert result.selected_reason == (
+        "No CE entries passed liquidity filters for long signal"
+    )
+    assert result.rejection_reasons == (
+        "PE entry rejected because long signal requires CE",
+        "CE strike 24200.0 rejected because volume below minimum 100",
+        "CE strike 24300.0 rejected because volume below minimum 100",
+    )
+
+
+def test_option_liquidity_filter_config_validates_values():
+    with pytest.raises(ValueError, match="min_volume cannot be negative"):
+        OptionLiquidityFilterConfig(min_volume=-1)
+
+    with pytest.raises(ValueError, match="min_open_interest cannot be negative"):
+        OptionLiquidityFilterConfig(min_open_interest=-1)
+
+    with pytest.raises(
+        ValueError,
+        match="max_spread must be greater than 0 when provided",
+    ):
+        OptionLiquidityFilterConfig(max_spread=0)
 
 
 def test_option_strike_selection_rejection_requires_reason():
