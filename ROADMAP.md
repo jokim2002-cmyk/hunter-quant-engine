@@ -4,10 +4,10 @@ HQE is not a timepass script. It is a serious market research and execution foun
 
 ## Current Base State
 
-HQE v0.1 Foundation:
+HQE v0.1 Research Engine Foundation:
 
 - Clean Python architecture
-- 615 tests passing
+- 630 tests passing
 - FYERS NIFTY 5m historical data download
 - SMC detections: BOS, CHOCH, FVG, Order Blocks, Liquidity, Sweeps
 - Strategy config system
@@ -15,6 +15,9 @@ HQE v0.1 Foundation:
 - Strategy mode CLI support
 - Strategy mode benchmark runner
 - PC-only strategy mode benchmark shortcut
+- Strategy experiment dry-run runner
+- Experiment ranking/report helpers
+- PC-only experiment shortcut
 - Backtest pipeline
 - Trades CSV export
 - Equity curve export
@@ -23,17 +26,33 @@ HQE v0.1 Foundation:
 - PC + Laptop GitHub sync
 - Private GitHub repository
 
-Current benchmark truth:
+Latest completed research checkpoints:
 
-- HQE Strategy Return: 0.9883%
-- Buy & Hold Return: 2.6990%
-- Alpha: -1.7107%
-- Result: HQE underperformed buy-and-hold
-- Strict/Balanced/Relaxed benchmark runner: built and tested
-- Full real-data strategy mode benchmark: pending PC run
+- Latest-zone SMC entry-zone selection added.
+- SMC confluence freshness validation added.
+- Strict/Balanced/Relaxed modes now produce different behavior.
+- Full real-data mode benchmark completed on PC.
+- Benchmark outputs remain ignored and Git stays clean after research runs.
 
-This is not a failure. This is the first honest baseline.
-Mode comparison must be judged only after costs and only after the PC benchmark run.
+Latest benchmark truth after costs:
+
+- Strict: 394 trades, Gross PnL 24,500.00, Charges 55,224.43, Net PnL -30,724.43, HQE Return -307.2443%, Alpha -309.9432%.
+- Balanced: 54 trades, Gross PnL 3,000.00, Charges 7,510.19, Net PnL -4,510.19, HQE Return -45.1019%, Alpha -47.8009%.
+- Relaxed: 4 trades, Gross PnL 500.00, Charges 426.73, Net PnL 73.27, HQE Return 0.7327%, Alpha -1.9662%.
+- Buy & Hold Return: 2.6990%.
+- All modes underperformed buy-and-hold after transaction costs.
+
+Important research conclusion:
+
+- Mode separation is achieved.
+- Strict mode currently overtrades badly.
+- Balanced mode still overtrades after costs.
+- Relaxed mode has low trade count and positive net PnL, but still underperforms buy-and-hold.
+- Transaction costs dominate high-frequency trade generation.
+- No 1-year backtest should be attempted until performance optimization and run-safety controls are added.
+
+This is not a failure. This is honest research output.
+HQE must now prioritize diagnostics, performance, and overtrading control before more strategy tuning.
 
 ---
 
@@ -125,6 +144,60 @@ Definition of Done:
 - Each mode backtested
 - Benchmark comparison for each mode
 - No fake optimization
+
+### 1.4 Research Safety and Performance Checkpoint
+
+Reason:
+
+- Full mode benchmarks are slow on current architecture.
+- Laptop already shut down during full real-data benchmark.
+- One-year 5m backtests may be unsafe or too slow without optimization.
+- Strict mode overtrading shows that more signals are not automatically better.
+- Transaction costs can destroy gross edge.
+
+Work:
+
+- Add benchmark progress logging.
+- Add timing summary per strategy mode.
+- Add `--max-candles` support for safe partial research runs.
+- Add date-range filters for controlled backtests.
+- Add conflict diagnostics: bullish-only, bearish-only, both-valid neutral conflict, neither-valid.
+- Add trade frequency diagnostics.
+- Document when PC-only runs are required.
+- Do not tune strategy modes again until diagnostics explain overtrading behavior.
+
+Definition of Done:
+
+- Full benchmark shows progress while running.
+- Research scripts can run on limited candle ranges.
+- Reports include timing and signal/conflict counts.
+- One-year backtest is blocked or warned until safe controls exist.
+- Tests pass.
+- Git is clean.
+
+### 1.5 Overtrading Control
+
+Reason:
+
+- Strict mode currently generates too many trades.
+- Gross PnL can look positive while net PnL is deeply negative after costs.
+
+Work:
+
+- Max trades per day/session.
+- Minimum candles between same-direction trades.
+- Re-entry cooldown after TP/SL.
+- Optional session filter.
+- Optional minimum expected reward after charges.
+- Trade frequency warnings in reports.
+
+Definition of Done:
+
+- Overtrading controls are configurable.
+- Strict/Balanced/Relaxed modes remain benchmarked after costs.
+- Reports show gross PnL, charges, and net PnL clearly.
+- No fake profit claims.
+
 
 ### 1.3 Baseline Strategy Comparisons
 
@@ -478,22 +551,29 @@ Definition of Done:
 
 ## Immediate Priority Order
 
-1. Create and commit ROADMAP.md ? DONE
-2. Strategy Config System ? DONE
-3. Strict/Balanced/Relaxed modes ? DONE
-4. Strategy mode benchmark runner ? DONE
-5. Full real-data mode benchmark on PC ? PENDING
-6. Strategy experiment runner dry-run ? DONE
-7. Experiment ranking/report helpers ? DONE
-8. PC-only strategy experiment shortcut ? DONE
-9. Full strategy experiment execution on PC ? PENDING
-10. Walk-forward testing
-11. Streamlit UI dashboard
-12. Broker gateway interfaces
-13. Live market observer
-14. Paper trading
-15. Risk gateway
-16. Micro live execution
+1. Create and commit ROADMAP.md - DONE
+2. Strategy Config System - DONE
+3. Strict/Balanced/Relaxed modes - DONE
+4. Strategy mode benchmark runner - DONE
+5. Full real-data mode benchmark on PC - DONE
+6. Latest SMC entry-zone selection - DONE
+7. SMC confluence freshness validation - DONE
+8. Strategy experiment runner dry-run - DONE
+9. Experiment ranking/report helpers - DONE
+10. PC-only strategy experiment shortcut - DONE
+11. ROADMAP checkpoint update with latest benchmark truth - CURRENT
+12. Benchmark progress logging and timing metrics - NEXT
+13. `--max-candles` / date-range safety controls
+14. Conflict diagnostics report
+15. Overtrading controls
+16. Full strategy experiment execution on PC
+17. Walk-forward testing
+18. Streamlit UI dashboard
+19. Broker gateway interfaces
+20. Live market observer
+21. Paper trading
+22. Risk gateway
+23. Micro live execution
 
 ---
 
