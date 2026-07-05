@@ -42,6 +42,46 @@ class OptionLiquidityFilterConfig:
             raise ValueError("max_spread must be greater than 0 when provided")
 
 
+@dataclass(frozen=True)
+class OptionGreekFilterConfig:
+    """
+    Defines broker-agnostic Greek requirements for option strike selection.
+    """
+
+    require_greeks: bool = False
+    min_abs_delta: float | None = None
+    max_abs_delta: float | None = None
+    max_abs_theta: float | None = None
+    max_vega: float | None = None
+    max_gamma: float | None = None
+
+    def __post_init__(self):
+        """
+        Validate Greek filter settings.
+        """
+        if self.min_abs_delta is not None and not 0 < self.min_abs_delta <= 1:
+            raise ValueError("min_abs_delta must be greater than 0 and <= 1")
+
+        if self.max_abs_delta is not None and not 0 < self.max_abs_delta <= 1:
+            raise ValueError("max_abs_delta must be greater than 0 and <= 1")
+
+        if (
+            self.min_abs_delta is not None
+            and self.max_abs_delta is not None
+            and self.min_abs_delta > self.max_abs_delta
+        ):
+            raise ValueError("min_abs_delta cannot be greater than max_abs_delta")
+
+        if self.max_abs_theta is not None and self.max_abs_theta <= 0:
+            raise ValueError("max_abs_theta must be greater than 0 when provided")
+
+        if self.max_vega is not None and self.max_vega <= 0:
+            raise ValueError("max_vega must be greater than 0 when provided")
+
+        if self.max_gamma is not None and self.max_gamma <= 0:
+            raise ValueError("max_gamma must be greater than 0 when provided")
+
+
 class DynamicOptionStrikeSelector:
     """
     Selects CE/PE option strikes from an option chain snapshot.
@@ -51,17 +91,20 @@ class DynamicOptionStrikeSelector:
     - SHORT signal maps to PE buy candidates.
     - NEUTRAL signal does not create an option selection.
     - Liquidity filters are applied before closest-strike selection.
+    - Greek filters are applied after liquidity filters.
     - Selection chooses the liquid strike closest to underlying spot price.
     """
 
     def __init__(
         self,
         liquidity_config: OptionLiquidityFilterConfig | None = None,
+        greek_config: OptionGreekFilterConfig | None = None,
     ):
         """
-        Initialize selector with liquidity rules.
+        Initialize selector with liquidity and Greek rules.
         """
         self.liquidity_config = liquidity_config or OptionLiquidityFilterConfig()
+        self.greek_config = greek_config or OptionGreekFilterConfig()
 
     def select(
         self,
@@ -141,8 +184,32 @@ class DynamicOptionStrikeSelector:
                 rejected_entries=tuple(rejected_entries),
             )
 
+        greek_checked_entries = []
+        for entry in liquid_entries:
+            rejection_reason = self._greek_rejection_reason(entry)
+            if rejection_reason is None:
+                greek_checked_entries.append(entry)
+            else:
+                rejected_entries.append(
+                    OptionStrikeSelectionRejection(
+                        entry=entry,
+                        reason=rejection_reason,
+                    )
+                )
+
+        if not greek_checked_entries:
+            return OptionStrikeSelectionResult(
+                signal=signal,
+                selected_entry=None,
+                selected_reason=(
+                    f"No {target_option_type.value} entries passed Greek filters "
+                    f"for {signal.signal_type.value} signal"
+                ),
+                rejected_entries=tuple(rejected_entries),
+            )
+
         selected_entry = self._closest_to_underlying(
-            entries=tuple(liquid_entries),
+            entries=tuple(greek_checked_entries),
             underlying_price=snapshot.underlying_price,
         )
 
@@ -154,7 +221,7 @@ class DynamicOptionStrikeSelector:
                     "matching strike is closer to underlying price"
                 ),
             )
-            for entry in liquid_entries
+            for entry in greek_checked_entries
             if entry != selected_entry
         )
 
@@ -220,6 +287,92 @@ class DynamicOptionStrikeSelector:
                 f"rejected because spread above maximum "
                 f"{self.liquidity_config.max_spread}"
             )
+
+        return None
+
+    def _greek_rejection_reason(
+        self,
+        entry: OptionChainEntry,
+    ) -> str | None:
+        """
+        Return a clear Greek rejection reason, or None when entry passes.
+        """
+        greeks = entry.greeks
+
+        if self.greek_config.require_greeks and greeks is None:
+            return (
+                f"{entry.option_type.value} strike {entry.contract.strike_price} "
+                "rejected because Greeks are missing"
+            )
+
+        if self.greek_config.min_abs_delta is not None:
+            if greeks is None or greeks.delta is None:
+                return (
+                    f"{entry.option_type.value} strike {entry.contract.strike_price} "
+                    "rejected because delta is missing"
+                )
+
+            if abs(greeks.delta) < self.greek_config.min_abs_delta:
+                return (
+                    f"{entry.option_type.value} strike {entry.contract.strike_price} "
+                    f"rejected because absolute delta below minimum "
+                    f"{self.greek_config.min_abs_delta}"
+                )
+
+        if self.greek_config.max_abs_delta is not None:
+            if greeks is None or greeks.delta is None:
+                return (
+                    f"{entry.option_type.value} strike {entry.contract.strike_price} "
+                    "rejected because delta is missing"
+                )
+
+            if abs(greeks.delta) > self.greek_config.max_abs_delta:
+                return (
+                    f"{entry.option_type.value} strike {entry.contract.strike_price} "
+                    f"rejected because absolute delta above maximum "
+                    f"{self.greek_config.max_abs_delta}"
+                )
+
+        if self.greek_config.max_abs_theta is not None:
+            if greeks is None or greeks.theta is None:
+                return (
+                    f"{entry.option_type.value} strike {entry.contract.strike_price} "
+                    "rejected because theta is missing"
+                )
+
+            if abs(greeks.theta) > self.greek_config.max_abs_theta:
+                return (
+                    f"{entry.option_type.value} strike {entry.contract.strike_price} "
+                    f"rejected because absolute theta above maximum "
+                    f"{self.greek_config.max_abs_theta}"
+                )
+
+        if self.greek_config.max_vega is not None:
+            if greeks is None or greeks.vega is None:
+                return (
+                    f"{entry.option_type.value} strike {entry.contract.strike_price} "
+                    "rejected because vega is missing"
+                )
+
+            if greeks.vega > self.greek_config.max_vega:
+                return (
+                    f"{entry.option_type.value} strike {entry.contract.strike_price} "
+                    f"rejected because vega above maximum {self.greek_config.max_vega}"
+                )
+
+        if self.greek_config.max_gamma is not None:
+            if greeks is None or greeks.gamma is None:
+                return (
+                    f"{entry.option_type.value} strike {entry.contract.strike_price} "
+                    "rejected because gamma is missing"
+                )
+
+            if greeks.gamma > self.greek_config.max_gamma:
+                return (
+                    f"{entry.option_type.value} strike {entry.contract.strike_price} "
+                    f"rejected because gamma above maximum "
+                    f"{self.greek_config.max_gamma}"
+                )
 
         return None
 

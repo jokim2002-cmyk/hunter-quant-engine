@@ -9,12 +9,14 @@ import pytest
 from src.models.option_chain_entry import OptionChainEntry
 from src.models.option_chain_snapshot import OptionChainSnapshot
 from src.models.option_contract import OptionContract
+from src.models.option_greeks import OptionGreeks
 from src.models.option_type import OptionType
 from src.strategy.signal_strength import SignalStrength
 from src.strategy.signal_type import SignalType
 from src.strategy.trade_signal import TradeSignal
 from src.trade_planning.dynamic_option_strike_selector import (
     DynamicOptionStrikeSelector,
+    OptionGreekFilterConfig,
     OptionLiquidityFilterConfig,
 )
 from src.trade_planning.option_strike_selection_result import (
@@ -55,6 +57,7 @@ def _entry(
     ask_price=_UNSET,
     volume=10000,
     open_interest=50000,
+    greeks=None,
 ):
     if bid_price is _UNSET:
         bid_price = last_traded_price - 1.0
@@ -69,6 +72,7 @@ def _entry(
         ask_price=ask_price,
         volume=volume,
         open_interest=open_interest,
+        greeks=greeks,
     )
 
 
@@ -332,6 +336,293 @@ def test_option_liquidity_filter_config_validates_values():
         match="max_spread must be greater than 0 when provided",
     ):
         OptionLiquidityFilterConfig(max_spread=0)
+
+
+def test_default_greek_config_preserves_closest_strike_behavior():
+    ce_24200 = _entry(OptionType.CE, 24200, greeks=None)
+    ce_24300 = _entry(
+        OptionType.CE,
+        24300,
+        greeks=OptionGreeks(delta=0.45, theta=-8.0, vega=12.0, gamma=0.04),
+    )
+
+    selector = DynamicOptionStrikeSelector()
+    result = selector.select(
+        signal=_signal(SignalType.LONG),
+        snapshot=_snapshot((ce_24300, ce_24200), 24210.0),
+    )
+
+    assert result.has_selection is True
+    assert result.selected_entry == ce_24200
+
+
+def test_selector_requires_greeks_when_configured():
+    ce_24200 = _entry(OptionType.CE, 24200, greeks=None)
+    ce_24300 = _entry(
+        OptionType.CE,
+        24300,
+        greeks=OptionGreeks(delta=0.45, theta=-8.0, vega=12.0, gamma=0.04),
+    )
+
+    selector = DynamicOptionStrikeSelector(
+        greek_config=OptionGreekFilterConfig(require_greeks=True)
+    )
+    result = selector.select(
+        signal=_signal(SignalType.LONG),
+        snapshot=_snapshot((ce_24200, ce_24300), 24210.0),
+    )
+
+    assert result.selected_entry == ce_24300
+    assert any(
+        rejection.entry == ce_24200
+        and rejection.reason == "CE strike 24200.0 rejected because Greeks are missing"
+        for rejection in result.rejected_entries
+    )
+
+
+def test_selector_rejects_weak_delta():
+    ce_24200 = _entry(
+        OptionType.CE,
+        24200,
+        greeks=OptionGreeks(delta=0.19, theta=-8.0, vega=12.0, gamma=0.04),
+    )
+    ce_24300 = _entry(
+        OptionType.CE,
+        24300,
+        greeks=OptionGreeks(delta=0.25, theta=-8.0, vega=12.0, gamma=0.04),
+    )
+
+    selector = DynamicOptionStrikeSelector(
+        greek_config=OptionGreekFilterConfig(min_abs_delta=0.2)
+    )
+    result = selector.select(
+        signal=_signal(SignalType.LONG),
+        snapshot=_snapshot((ce_24200, ce_24300), 24210.0),
+    )
+
+    assert result.selected_entry == ce_24300
+    assert any(
+        rejection.entry == ce_24200
+        and rejection.reason
+        == "CE strike 24200.0 rejected because absolute delta below minimum 0.2"
+        for rejection in result.rejected_entries
+    )
+
+
+def test_selector_rejects_delta_above_maximum():
+    ce_24200 = _entry(
+        OptionType.CE,
+        24200,
+        greeks=OptionGreeks(delta=0.81, theta=-8.0, vega=12.0, gamma=0.04),
+    )
+    ce_24300 = _entry(
+        OptionType.CE,
+        24300,
+        greeks=OptionGreeks(delta=0.65, theta=-8.0, vega=12.0, gamma=0.04),
+    )
+
+    selector = DynamicOptionStrikeSelector(
+        greek_config=OptionGreekFilterConfig(max_abs_delta=0.8)
+    )
+    result = selector.select(
+        signal=_signal(SignalType.LONG),
+        snapshot=_snapshot((ce_24200, ce_24300), 24210.0),
+    )
+
+    assert result.selected_entry == ce_24300
+    assert any(
+        rejection.entry == ce_24200
+        and rejection.reason
+        == "CE strike 24200.0 rejected because absolute delta above maximum 0.8"
+        for rejection in result.rejected_entries
+    )
+
+
+def test_selector_rejects_high_theta_risk_using_absolute_theta():
+    ce_24200 = _entry(
+        OptionType.CE,
+        24200,
+        greeks=OptionGreeks(delta=0.45, theta=-12.0, vega=12.0, gamma=0.04),
+    )
+    ce_24300 = _entry(
+        OptionType.CE,
+        24300,
+        greeks=OptionGreeks(delta=0.45, theta=-8.0, vega=12.0, gamma=0.04),
+    )
+
+    selector = DynamicOptionStrikeSelector(
+        greek_config=OptionGreekFilterConfig(max_abs_theta=10.0)
+    )
+    result = selector.select(
+        signal=_signal(SignalType.LONG),
+        snapshot=_snapshot((ce_24200, ce_24300), 24210.0),
+    )
+
+    assert result.selected_entry == ce_24300
+    assert any(
+        rejection.entry == ce_24200
+        and rejection.reason
+        == "CE strike 24200.0 rejected because absolute theta above maximum 10.0"
+        for rejection in result.rejected_entries
+    )
+
+
+def test_selector_rejects_high_vega():
+    ce_24200 = _entry(
+        OptionType.CE,
+        24200,
+        greeks=OptionGreeks(delta=0.45, theta=-8.0, vega=21.0, gamma=0.04),
+    )
+    ce_24300 = _entry(
+        OptionType.CE,
+        24300,
+        greeks=OptionGreeks(delta=0.45, theta=-8.0, vega=19.0, gamma=0.04),
+    )
+
+    selector = DynamicOptionStrikeSelector(
+        greek_config=OptionGreekFilterConfig(max_vega=20.0)
+    )
+    result = selector.select(
+        signal=_signal(SignalType.LONG),
+        snapshot=_snapshot((ce_24200, ce_24300), 24210.0),
+    )
+
+    assert result.selected_entry == ce_24300
+    assert any(
+        rejection.entry == ce_24200
+        and rejection.reason == "CE strike 24200.0 rejected because vega above maximum 20.0"
+        for rejection in result.rejected_entries
+    )
+
+
+def test_selector_rejects_high_gamma():
+    ce_24200 = _entry(
+        OptionType.CE,
+        24200,
+        greeks=OptionGreeks(delta=0.45, theta=-8.0, vega=12.0, gamma=0.07),
+    )
+    ce_24300 = _entry(
+        OptionType.CE,
+        24300,
+        greeks=OptionGreeks(delta=0.45, theta=-8.0, vega=12.0, gamma=0.04),
+    )
+
+    selector = DynamicOptionStrikeSelector(
+        greek_config=OptionGreekFilterConfig(max_gamma=0.05)
+    )
+    result = selector.select(
+        signal=_signal(SignalType.LONG),
+        snapshot=_snapshot((ce_24200, ce_24300), 24210.0),
+    )
+
+    assert result.selected_entry == ce_24300
+    assert any(
+        rejection.entry == ce_24200
+        and rejection.reason == "CE strike 24200.0 rejected because gamma above maximum 0.05"
+        for rejection in result.rejected_entries
+    )
+
+
+def test_selector_selects_farther_strike_when_closest_fails_greeks():
+    closest_ce = _entry(
+        OptionType.CE,
+        24200,
+        greeks=OptionGreeks(delta=0.1, theta=-8.0, vega=12.0, gamma=0.04),
+    )
+    farther_ce = _entry(
+        OptionType.CE,
+        24300,
+        greeks=OptionGreeks(delta=0.35, theta=-8.0, vega=12.0, gamma=0.04),
+    )
+
+    selector = DynamicOptionStrikeSelector(
+        greek_config=OptionGreekFilterConfig(min_abs_delta=0.2)
+    )
+    result = selector.select(
+        signal=_signal(SignalType.LONG),
+        snapshot=_snapshot((closest_ce, farther_ce), 24210.0),
+    )
+
+    assert result.has_selection is True
+    assert result.selected_entry == farther_ce
+    assert result.selected_reason == (
+        "Selected CE strike closest to underlying price 24210.0"
+    )
+
+
+def test_selector_returns_no_selection_when_all_matching_strikes_fail_greeks():
+    ce_24200 = _entry(
+        OptionType.CE,
+        24200,
+        greeks=OptionGreeks(delta=0.1, theta=-8.0, vega=12.0, gamma=0.04),
+    )
+    ce_24300 = _entry(
+        OptionType.CE,
+        24300,
+        greeks=OptionGreeks(delta=0.15, theta=-8.0, vega=12.0, gamma=0.04),
+    )
+    pe_24200 = _entry(
+        OptionType.PE,
+        24200,
+        greeks=OptionGreeks(delta=-0.35, theta=-8.0, vega=12.0, gamma=0.04),
+    )
+
+    selector = DynamicOptionStrikeSelector(
+        greek_config=OptionGreekFilterConfig(min_abs_delta=0.2)
+    )
+    result = selector.select(
+        signal=_signal(SignalType.LONG),
+        snapshot=_snapshot((ce_24200, pe_24200, ce_24300), 24210.0),
+    )
+
+    assert result.has_selection is False
+    assert result.selected_entry is None
+    assert result.selected_reason == (
+        "No CE entries passed Greek filters for long signal"
+    )
+    assert result.rejection_reasons == (
+        "PE entry rejected because long signal requires CE",
+        "CE strike 24200.0 rejected because absolute delta below minimum 0.2",
+        "CE strike 24300.0 rejected because absolute delta below minimum 0.2",
+    )
+
+
+def test_option_greek_filter_config_validates_values():
+    with pytest.raises(
+        ValueError,
+        match="min_abs_delta must be greater than 0 and <= 1",
+    ):
+        OptionGreekFilterConfig(min_abs_delta=0)
+
+    with pytest.raises(
+        ValueError,
+        match="max_abs_delta must be greater than 0 and <= 1",
+    ):
+        OptionGreekFilterConfig(max_abs_delta=1.1)
+
+    with pytest.raises(
+        ValueError,
+        match="min_abs_delta cannot be greater than max_abs_delta",
+    ):
+        OptionGreekFilterConfig(min_abs_delta=0.8, max_abs_delta=0.7)
+
+    with pytest.raises(
+        ValueError,
+        match="max_abs_theta must be greater than 0 when provided",
+    ):
+        OptionGreekFilterConfig(max_abs_theta=0)
+
+    with pytest.raises(
+        ValueError,
+        match="max_vega must be greater than 0 when provided",
+    ):
+        OptionGreekFilterConfig(max_vega=0)
+
+    with pytest.raises(
+        ValueError,
+        match="max_gamma must be greater than 0 when provided",
+    ):
+        OptionGreekFilterConfig(max_gamma=0)
 
 
 def test_option_strike_selection_rejection_requires_reason():
