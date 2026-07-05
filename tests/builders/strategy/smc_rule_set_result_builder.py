@@ -18,6 +18,7 @@ class SMCRuleSetResultBuilder:
         self._liquidity_sweeps = []
         self._fair_value_gaps = []
         self._order_blocks = []
+        self._analysis_index = 12
 
     def with_bos(self, *bos_events):
         self._bos_events.extend(bos_events)
@@ -39,6 +40,10 @@ class SMCRuleSetResultBuilder:
         self._order_blocks.extend(order_blocks)
         return self
 
+    def analysis_index(self, analysis_index: int | None):
+        self._analysis_index = analysis_index
+        return self
+
     def build(self):
         return SMCRuleSetResult(
             bos_events=tuple(self._bos_events),
@@ -46,4 +51,5 @@ class SMCRuleSetResultBuilder:
             liquidity_sweeps=tuple(self._liquidity_sweeps),
             fair_value_gaps=tuple(self._fair_value_gaps),
             order_blocks=tuple(self._order_blocks),
+            analysis_index=self._analysis_index,
         )

@@ -45,4 +45,14 @@ class BearishSMCRuleSet(BaseRuleSet[SMCRuleSetResult]):
             liquidity_sweeps=self._sweep_rule.evaluate(context),
             fair_value_gaps=self._fvg_rule.evaluate(context),
             order_blocks=self._order_block_rule.evaluate(context),
+            analysis_index=self._analysis_index(context),
         )
+
+    def _analysis_index(
+        self,
+        context: StrategyContext,
+    ) -> int | None:
+        if not context.candles:
+            return None
+
+        return len(context.candles) - 1

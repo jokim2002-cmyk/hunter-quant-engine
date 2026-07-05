@@ -20,3 +20,4 @@ class SMCRuleSetResult:
     liquidity_sweeps: tuple[LiquiditySweep, ...]
     fair_value_gaps: tuple[FairValueGap, ...]
     order_blocks: tuple[OrderBlock, ...]
+    analysis_index: int | None = None

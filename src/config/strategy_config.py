@@ -46,6 +46,12 @@ class SMCStrategyConfig:
         require_entry_zone: Whether FVG or order block evidence is required.
         require_fair_value_gap: Whether FVG evidence is specifically required.
         require_order_block: Whether order block evidence is specifically required.
+        max_market_structure_age_candles: Maximum allowed age for BOS/CHOCH
+            evidence. None disables age filtering.
+        max_liquidity_sweep_age_candles: Maximum allowed age for liquidity
+            sweep evidence. None disables age filtering.
+        max_entry_zone_age_candles: Maximum allowed age for FVG/OB entry zone
+            evidence. None disables age filtering.
     """
 
     mode: StrategyMode | str = StrategyMode.BALANCED
@@ -59,6 +65,9 @@ class SMCStrategyConfig:
     require_entry_zone: bool = True
     require_fair_value_gap: bool = False
     require_order_block: bool = False
+    max_market_structure_age_candles: int | None = None
+    max_liquidity_sweep_age_candles: int | None = None
+    max_entry_zone_age_candles: int | None = None
 
     def __post_init__(self) -> None:
         """
@@ -77,6 +86,18 @@ class SMCStrategyConfig:
         _validate_confidence(
             value=self.neutral_signal_confidence,
             field_name="neutral_signal_confidence",
+        )
+        _validate_optional_non_negative_int(
+            value=self.max_market_structure_age_candles,
+            field_name="max_market_structure_age_candles",
+        )
+        _validate_optional_non_negative_int(
+            value=self.max_liquidity_sweep_age_candles,
+            field_name="max_liquidity_sweep_age_candles",
+        )
+        _validate_optional_non_negative_int(
+            value=self.max_entry_zone_age_candles,
+            field_name="max_entry_zone_age_candles",
         )
 
 
@@ -112,6 +133,22 @@ def _validate_confidence(
         )
 
 
+def _validate_optional_non_negative_int(
+    value: int | None,
+    field_name: str,
+) -> None:
+    """
+    Validate optional candle-age limits.
+    """
+    if value is None:
+        return
+
+    if value < 0:
+        raise ValueError(
+            f"SMCStrategyConfig {field_name} must be non-negative"
+        )
+
+
 def supported_strategy_mode_names() -> tuple[str, ...]:
     """
     Return supported strategy mode names for CLI/parser usage.
@@ -131,6 +168,9 @@ STRICT_SMC_STRATEGY_CONFIG = SMCStrategyConfig(
     require_entry_zone=True,
     require_fair_value_gap=True,
     require_order_block=True,
+    max_market_structure_age_candles=12,
+    max_liquidity_sweep_age_candles=12,
+    max_entry_zone_age_candles=12,
 )
 
 BALANCED_SMC_STRATEGY_CONFIG = SMCStrategyConfig(
@@ -145,6 +185,9 @@ BALANCED_SMC_STRATEGY_CONFIG = SMCStrategyConfig(
     require_entry_zone=True,
     require_fair_value_gap=False,
     require_order_block=False,
+    max_market_structure_age_candles=48,
+    max_liquidity_sweep_age_candles=48,
+    max_entry_zone_age_candles=48,
 )
 
 RELAXED_SMC_STRATEGY_CONFIG = SMCStrategyConfig(
@@ -159,6 +202,9 @@ RELAXED_SMC_STRATEGY_CONFIG = SMCStrategyConfig(
     require_entry_zone=True,
     require_fair_value_gap=False,
     require_order_block=False,
+    max_market_structure_age_candles=192,
+    max_liquidity_sweep_age_candles=192,
+    max_entry_zone_age_candles=192,
 )
 
 DEFAULT_SMC_STRATEGY_CONFIG = BALANCED_SMC_STRATEGY_CONFIG
