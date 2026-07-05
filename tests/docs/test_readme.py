@@ -33,5 +33,3 @@ def test_readme_no_longer_contains_old_architecture_typos():
     assert "vDetection" not in text
     assert "Mmutable" not in text
     assert "Backtesting Engine will consume" not in text
-
-
