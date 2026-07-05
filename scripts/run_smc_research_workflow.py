@@ -15,6 +15,7 @@ import argparse
 import csv
 import sys
 from dataclasses import dataclass
+from datetime import date
 from pathlib import Path
 from typing import Any
 
@@ -100,6 +101,8 @@ class SMCResearchWorkflowSummary:
     backtest_result: Any
     strategy_mode: str = DEFAULT_STRATEGY_MODE
     max_candles: int | None = None
+    start_date: str | None = None
+    end_date: str | None = None
 
 
 def build_argument_parser() -> argparse.ArgumentParser:
@@ -175,6 +178,16 @@ def build_argument_parser() -> argparse.ArgumentParser:
             "Limit research to the latest N normalized candles. "
             "Useful for safe partial runs before full-data benchmarks."
         ),
+    )
+    parser.add_argument(
+        "--start-date",
+        default=None,
+        help="Inclusive normalized candle start date in YYYY-MM-DD format.",
+    )
+    parser.add_argument(
+        "--end-date",
+        default=None,
+        help="Inclusive normalized candle end date in YYYY-MM-DD format.",
     )
     parser.add_argument(
         "--cost-profile",
@@ -297,6 +310,8 @@ def run_workflow(
     stamp_duty_rate: float = DEFAULT_STAMP_DUTY_RATE,
     gst_rate: float = DEFAULT_GST_RATE,
     max_candles: int | None = None,
+    start_date: str | None = None,
+    end_date: str | None = None,
 ) -> SMCResearchWorkflowSummary:
     """
     Run the full SMC research workflow.
@@ -318,6 +333,11 @@ def run_workflow(
         default_volume=default_volume,
     )
 
+    apply_date_range_limit(
+        csv_path=normalization_summary.output_path,
+        start_date=start_date,
+        end_date=end_date,
+    )
     apply_max_candles_limit(
         csv_path=normalization_summary.output_path,
         max_candles=max_candles,
@@ -392,9 +412,104 @@ def run_workflow(
         backtest_result=backtest_result,
         strategy_mode=strategy_mode,
         max_candles=max_candles,
+        start_date=start_date,
+        end_date=end_date,
     )
 
 
+
+
+def parse_date_filter(
+    value: str | None,
+    label: str,
+) -> date | None:
+    """
+    Parse an optional YYYY-MM-DD date filter.
+    """
+    if value is None:
+        return None
+
+    try:
+        return date.fromisoformat(value)
+    except ValueError as error:
+        raise ValueError(f"{label} must use YYYY-MM-DD format") from error
+
+
+def validate_date_range(
+    start_date: str | None,
+    end_date: str | None,
+) -> tuple[date | None, date | None]:
+    """
+    Validate optional inclusive date range filters.
+    """
+    parsed_start_date = parse_date_filter(start_date, "start_date")
+    parsed_end_date = parse_date_filter(end_date, "end_date")
+
+    if (
+        parsed_start_date is not None
+        and parsed_end_date is not None
+        and parsed_start_date > parsed_end_date
+    ):
+        raise ValueError("start_date must be before or equal to end_date")
+
+    return parsed_start_date, parsed_end_date
+
+
+def apply_date_range_limit(
+    csv_path: str | Path,
+    start_date: str | None,
+    end_date: str | None,
+) -> None:
+    """
+    Keep only normalized candle rows inside an inclusive date range.
+
+    When no date filters are supplied, the file is unchanged.
+    """
+    parsed_start_date, parsed_end_date = validate_date_range(
+        start_date=start_date,
+        end_date=end_date,
+    )
+
+    if parsed_start_date is None and parsed_end_date is None:
+        return
+
+    path = Path(csv_path)
+
+    with path.open("r", newline="", encoding="utf-8-sig") as csv_file:
+        reader = csv.DictReader(csv_file)
+        fieldnames = reader.fieldnames
+        rows = list(reader)
+
+    if fieldnames is None:
+        return
+
+    if "datetime" not in fieldnames:
+        raise ValueError("Normalized CSV missing datetime column")
+
+    filtered_rows = []
+
+    for row in rows:
+        raw_datetime = row["datetime"]
+
+        try:
+            candle_date = date.fromisoformat(raw_datetime[:10])
+        except ValueError as error:
+            raise ValueError(
+                f"Invalid normalized datetime value: {raw_datetime}"
+            ) from error
+
+        if parsed_start_date is not None and candle_date < parsed_start_date:
+            continue
+
+        if parsed_end_date is not None and candle_date > parsed_end_date:
+            continue
+
+        filtered_rows.append(row)
+
+    with path.open("w", newline="", encoding="utf-8") as csv_file:
+        writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
+        writer.writeheader()
+        writer.writerows(filtered_rows)
 
 def validate_max_candles(
     max_candles: int | None,
@@ -485,6 +600,8 @@ def build_workflow_summary_report(
         format_metric("Timeframe", summary.timeframe),
         format_metric("Strategy Mode", summary.strategy_mode),
         format_metric("Max Candles", summary.max_candles),
+        format_metric("Start Date", summary.start_date),
+        format_metric("End Date", summary.end_date),
         "------------------------------------------------------------",
         format_metric("Rows Normalized", summary.normalization_summary.rows_written),
         format_metric("Ready For HQE", summary.inspection_summary.ready_for_hqe),
@@ -536,6 +653,8 @@ def main() -> None:
         reward_to_risk=args.reward_to_risk,
         strategy_mode=args.strategy_mode,
         max_candles=args.max_candles,
+        start_date=args.start_date,
+        end_date=args.end_date,
         datetime_column=args.datetime_column,
         date_column=args.date_column,
         time_column=args.time_column,

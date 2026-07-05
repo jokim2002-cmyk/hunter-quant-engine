@@ -142,6 +142,8 @@ def benchmark_strategy_modes(
     volume_column: str | None = None,
     default_volume: float = 0.0,
     max_candles: int | None = None,
+    start_date: str | None = None,
+    end_date: str | None = None,
     progress_callback: Callable[[str], None] | None = None,
     clock: Callable[[], float] = perf_counter,
 ) -> tuple[ModeBenchmarkResult, ...]:
@@ -181,6 +183,8 @@ def benchmark_strategy_modes(
             volume_column=volume_column,
             default_volume=default_volume,
             max_candles=max_candles,
+            start_date=start_date,
+            end_date=end_date,
         )
 
         close_prices = load_close_prices(output_paths.normalized_output_path)
@@ -473,6 +477,16 @@ def build_argument_parser() -> argparse.ArgumentParser:
         ),
     )
     parser.add_argument(
+        "--start-date",
+        default=None,
+        help="Inclusive normalized candle start date in YYYY-MM-DD format.",
+    )
+    parser.add_argument(
+        "--end-date",
+        default=None,
+        help="Inclusive normalized candle end date in YYYY-MM-DD format.",
+    )
+    parser.add_argument(
         "--report-output",
         default=str(DEFAULT_REPORT_OUTPUT),
         help="Output text report path.",
@@ -513,6 +527,8 @@ def main() -> None:
         volume_column=args.volume_column,
         default_volume=args.default_volume,
         max_candles=args.max_candles,
+        start_date=args.start_date,
+        end_date=args.end_date,
         progress_callback=print,
     )
 

@@ -219,3 +219,59 @@ def test_run_fyers_nifty_research_limits_to_latest_max_candles(tmp_path):
     assert len(rows) == 2
     assert rows[0]["datetime"] == "2026-01-01T09:20:00"
     assert rows[1]["datetime"] == "2026-01-01T09:25:00"
+
+def test_build_argument_parser_accepts_date_range():
+    args = build_argument_parser().parse_args(
+        [
+            "--start-date",
+            "2026-01-02",
+            "--end-date",
+            "2026-01-03",
+        ]
+    )
+
+    assert args.start_date == "2026-01-02"
+    assert args.end_date == "2026-01-03"
+
+
+def test_run_fyers_nifty_research_filters_by_date_range(tmp_path):
+    input_path = tmp_path / "fyers_raw.csv"
+    output_dir = tmp_path / "processed"
+
+    input_path.write_text(
+        "\n".join(
+            [
+                "datetime,open,high,low,close,volume",
+                "2026-01-01T09:15:00,100.0,105.0,95.0,101.0,1000",
+                "2026-01-02T09:15:00,101.0,106.0,96.0,102.0,1000",
+                "2026-01-03T09:15:00,102.0,107.0,97.0,103.0,1000",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    summary = run_fyers_nifty_research(
+        input_path=input_path,
+        output_dir=output_dir,
+        output_prefix="fyers_test",
+        symbol="NIFTY",
+        timeframe="5m",
+        account_balance=10000.0,
+        risk_per_trade=0.01,
+        reward_to_risk=2.0,
+        start_date="2026-01-02",
+        end_date="2026-01-03",
+    )
+    output_paths = build_output_paths(
+        output_dir=output_dir,
+        output_prefix="fyers_test",
+    )
+
+    rows = _read_rows(output_paths.normalized_output_path)
+
+    assert summary.start_date == "2026-01-02"
+    assert summary.end_date == "2026-01-03"
+    assert summary.diagnostic_summary.candles_loaded == 2
+    assert len(rows) == 2
+    assert rows[0]["datetime"] == "2026-01-02T09:15:00"
+    assert rows[1]["datetime"] == "2026-01-03T09:15:00"

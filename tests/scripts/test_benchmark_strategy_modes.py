@@ -390,3 +390,58 @@ def test_benchmark_strategy_modes_limits_to_latest_max_candles(tmp_path: Path):
     assert len(rows) == 2
     assert rows[0]["datetime"] == "2026-01-01T09:20:00"
     assert rows[1]["datetime"] == "2026-01-01T09:25:00"
+
+def test_build_argument_parser_accepts_date_range():
+    args = build_argument_parser().parse_args(
+        [
+            "--start-date",
+            "2026-01-02",
+            "--end-date",
+            "2026-01-03",
+        ]
+    )
+
+    assert args.start_date == "2026-01-02"
+    assert args.end_date == "2026-01-03"
+
+
+def test_benchmark_strategy_modes_filters_by_date_range(tmp_path: Path):
+    input_path = tmp_path / "raw.csv"
+    output_dir = tmp_path / "processed"
+
+    input_path.write_text(
+        "\n".join(
+            [
+                "datetime,open,high,low,close,volume",
+                "2026-01-01T09:15:00,100.0,105.0,95.0,100.0,1000",
+                "2026-01-02T09:15:00,100.0,106.0,99.0,105.0,1000",
+                "2026-01-03T09:15:00,105.0,107.0,104.0,106.0,1000",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    results = benchmark_strategy_modes(
+        input_path=input_path,
+        output_dir=output_dir,
+        output_prefix="mode_test",
+        symbol="TEST",
+        timeframe="5m",
+        account_balance=10000.0,
+        risk_per_trade=0.01,
+        reward_to_risk=2.0,
+        modes=("relaxed",),
+        start_date="2026-01-02",
+        end_date="2026-01-03",
+    )
+
+    with results[0].normalized_output_path.open(
+        mode="r",
+        newline="",
+        encoding="utf-8",
+    ) as csv_file:
+        rows = tuple(csv.DictReader(csv_file))
+
+    assert len(rows) == 2
+    assert rows[0]["datetime"] == "2026-01-02T09:15:00"
+    assert rows[1]["datetime"] == "2026-01-03T09:15:00"
