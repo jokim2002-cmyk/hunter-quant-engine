@@ -19,6 +19,7 @@ def test_readme_shortcuts_documents_safe_daily_commands():
     assert ".\\hqe_paper_demo_report.bat" in text
     assert ".\\.venv\\Scripts\\python.exe -m pytest" in text
     assert "git status --short" in text
+    assert "docs/PAPER_TRADING_DEMO_CLI.md" in text
     assert "Paper P&L is simulation only." in text
     assert "No real orders are placed." in text
     assert "not a profitability claim" in lower_text

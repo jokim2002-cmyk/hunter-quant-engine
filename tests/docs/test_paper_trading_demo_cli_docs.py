@@ -38,6 +38,7 @@ def test_paper_trading_demo_cli_documented_commands_stay_in_sync():
     assert COMBINED_SHORTCUT_COMMAND in cli_doc_text
     assert "Paper demo shortcuts:" in readme_text
     assert "Paper demo shortcuts:" in cli_doc_text
+    assert "../README_SHORTCUTS.md" in cli_doc_text
 
     assert "def main() -> int:" in cli_source
     assert (

@@ -1,5 +1,7 @@
 # Paper Trading Demo CLI
 
+Shortcut quick-start card: `../README_SHORTCUTS.md`
+
 This document explains the safe local paper trading demo CLI.
 
 The demo is fake/local only. It does not connect to FYERS, does not use live or real market data, and does not place real orders.

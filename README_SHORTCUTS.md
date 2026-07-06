@@ -2,6 +2,8 @@
 
 This is the daily-use command card for safe local HQE checks.
 
+Detailed paper trading demo CLI guide: `docs/PAPER_TRADING_DEMO_CLI.md`
+
 ## Paper Trading Demo
 
 Run the safe local paper trading demo:
