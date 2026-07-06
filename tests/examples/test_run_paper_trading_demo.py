@@ -18,6 +18,15 @@ def test_run_paper_trading_demo_smoke() -> None:
     assert rc == 0
 
 
+def test_run_paper_trading_demo_script_can_run_by_path() -> None:
+    import runpy
+
+    try:
+        runpy.run_path("examples/run_paper_trading_demo.py", run_name="__main__")
+    except SystemExit as exc:
+        assert exc.code == 0
+
+
 def test_demo_output_and_safety_constraints() -> None:
     script_path = Path("examples/run_paper_trading_demo.py")
     demo = importlib.import_module("examples.run_paper_trading_demo")
