@@ -58,7 +58,7 @@ Engineer it right once. Improve it forever.
 HQE currently supports:
 
 - Clean Python architecture
-- 1334 tests passing
+- 1335 tests passing
 - Smart Money Concepts detection
 - SMC strategy signal generation
 - Strategy config presets
