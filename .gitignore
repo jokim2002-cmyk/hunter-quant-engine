@@ -25,5 +25,8 @@ data/processed/experiments/
 data/processed/strategy_experiment_report.txt
 data/processed/strategy_experiment_summary.csv
 reports/
+data/recorded/
+data/live_recording/
+data/paper_trading/
 *.generated.json
 *.generated.csv
