@@ -61,11 +61,18 @@ Before live-readiness phase starts:
 - [ ] Win/loss/flat/unknown counts are visible.
 - [ ] Weak strategy result blocks live trading.
 
+## Release Notes
+
+Release notes:
+
+    docs/PAPER_MVP_V0_1_RELEASE_NOTES.md
+
 ## Release Gates
 
 - [ ] Roadmap says Paper MVP v0.1 scope is frozen.
 - [ ] Deferred polish backlog exists.
 - [ ] Operator guide exists.
+- [ ] Paper MVP release notes completed.
 - [ ] Paper operator guide completed.
 - [ ] Full suite is green.
 - [ ] Release commit is pushed.

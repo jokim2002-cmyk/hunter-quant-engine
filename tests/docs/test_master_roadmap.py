@@ -13,7 +13,7 @@ def test_master_roadmap_has_current_status_override_before_historical_notes():
     historical_index = text.index("648 tests passing")
 
     assert current_index < historical_index
-    assert "1442 tests passing after Paper MVP release gate." in text
+    assert "1447 tests passing after Paper MVP v0.1 release close." in text
     assert "Paper trading demo/report workflow completed." in text
     assert "Paper journal persistence skeleton completed." in text
     assert "Replay journal persistence bridge completed." in text
@@ -33,9 +33,11 @@ def test_master_roadmap_has_current_status_override_before_historical_notes():
     assert "Backtest evidence runner completed." in text
     assert "Paper MVP operator workflow completed." in text
     assert "Paper MVP release gate completed." in text
+    assert "Paper MVP v0.1 release close completed." in text
     assert "docs/DEFERRED_POLISH_BACKLOG.md" in text
     assert "docs/PAPER_MVP_RELEASE_CHECKLIST.md" in text
     assert "docs/PAPER_OPERATOR_GUIDE.md" in text
+    assert "docs/PAPER_MVP_V0_1_RELEASE_NOTES.md" in text
     assert "hqe_paper_mvp_release_check.bat" in text
     assert "docs/PAPER_MVP_V0_1_SCOPE.md" in text
     assert "Replay journal all-in-one shortcut prints index completed." in text

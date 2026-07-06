@@ -45,7 +45,9 @@ The Paper MVP includes these completed or required capabilities:
 
 Only these roadmap items can block Paper MVP v0.1:
 
-1. Git tag for the paper MVP release.
+No remaining code/documentation blockers before the Paper MVP v0.1 release tag.
+
+The release tag is created only after final green checks pass.
 
 ## Deferred Beyond v0.1
 

@@ -36,7 +36,8 @@ def test_paper_mvp_scope_doc_limits_remaining_blockers():
     assert "Backtest evidence runner" in text
     assert "Paper MVP operator demo workflow" in text
     assert "Paper MVP release gate" in text
-    assert "Git tag for the paper MVP release" in text
+    assert "No remaining code/documentation blockers" in text
+    assert "release tag is created only after final green checks pass" in text
 
 
 def test_paper_mvp_release_checklist_has_safety_and_operator_gates():
@@ -106,4 +107,14 @@ def test_paper_mvp_scope_doc_marks_release_gate_included_after_module_e():
 
     assert "Paper MVP release gate" in included
     assert "Release checklist pass" not in blockers
-    assert "Git tag for the paper MVP release" in blockers
+    assert "No remaining code/documentation blockers" in blockers
+    assert "release tag is created only after final green checks pass" in blockers
+
+
+def test_paper_mvp_scope_doc_marks_release_close_after_module_f():
+    text = SCOPE_DOC.read_text(encoding="utf-8")
+
+    blockers = text.split("## Must Finish Before v0.1 Release", 1)[1].split("##", 1)[0]
+
+    assert "No remaining code/documentation blockers" in blockers
+    assert "release tag is created only after final green checks pass" in blockers

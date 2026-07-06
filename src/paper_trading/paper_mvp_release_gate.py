@@ -24,6 +24,7 @@ REQUIRED_RELEASE_FILES = (
     "docs/PAPER_MVP_RELEASE_CHECKLIST.md",
     "docs/DEFERRED_POLISH_BACKLOG.md",
     "docs/PAPER_OPERATOR_GUIDE.md",
+    "docs/PAPER_MVP_V0_1_RELEASE_NOTES.md",
     "hqe_quick_check.bat",
     "hqe_paper_mvp_operator_demo.bat",
     "hqe_paper_replay_journal_all.bat",
@@ -53,6 +54,11 @@ REQUIRED_RELEASE_TEXT = {
     "ROADMAP.md": (
         "Paper MVP v0.1 scope is frozen.",
         "Paper MVP operator workflow completed.",
+    ),
+    "docs/PAPER_MVP_V0_1_RELEASE_NOTES.md": (
+        "Paper MVP v0.1 is paper/simulation only.",
+        "v0.1-paper-mvp",
+        "This release does not prove profitability.",
     ),
 }
 
