@@ -18,6 +18,10 @@ The older example script also works:
 
     .\.venv\Scripts\python.exe examples\run_paper_trading_demo.py
 
+The Windows shortcut also works:
+
+    .\hqe_paper_demo.bat
+
 Implementation path:
 
     src/paper_trading/paper_trading_demo_cli.py
