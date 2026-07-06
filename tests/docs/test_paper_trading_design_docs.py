@@ -47,6 +47,21 @@ def test_paper_trading_design_doc_documents_implemented_skeleton():
     assert "tests/paper_trading/test_paper_order_journal.py" in text
 
 
+def test_paper_trading_design_doc_documents_position_state_skeleton():
+    text = (PROJECT_ROOT / "docs" / "PAPER_TRADING_DESIGN.md").read_text(encoding="utf-8")
+
+    assert "Paper Position State Skeleton" in text
+    assert "PaperPosition" in text
+    assert "PaperPositionState" in text
+    assert "Local fake paper position tracking only" in text
+    assert "PaperOrderRecord" in text
+    assert "No broker or FYERS" in text
+    assert "No real orders" in text
+    assert "Not a profitability claim" in text
+    assert "src/paper_trading/paper_position_state.py" in text
+    assert "tests/paper_trading/test_paper_position_state.py" in text
+
+
 def test_roadmap_documents_paper_trading_design_next_phase():
     text = (PROJECT_ROOT / "ROADMAP.md").read_text(encoding="utf-8")
 

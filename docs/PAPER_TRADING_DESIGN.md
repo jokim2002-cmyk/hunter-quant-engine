@@ -269,3 +269,24 @@ Relevant path:
 
 - `src/paper_trading/paper_order_journal.py`
 - `tests/paper_trading/test_paper_order_journal.py`
+
+## Paper Position State Skeleton
+
+The second paper trading building block is now implemented.
+
+- `PaperPosition` — immutable snapshot of one open fake paper position.
+- `PaperPositionState` — in-memory state of all open fake paper positions.
+
+Properties:
+
+- Local fake paper position tracking only.
+- Can be built directly from a `PaperOrderRecord`.
+- Merges duplicate symbols using weighted average entry price.
+- No broker or FYERS integration.
+- No real orders.
+- Not a profitability claim.
+
+Relevant path:
+
+- `src/paper_trading/paper_position_state.py`
+- `tests/paper_trading/test_paper_position_state.py`
