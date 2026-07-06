@@ -283,6 +283,27 @@ Expected safe output:
 - Synthetic/demo summary printed to console
 - No orders placed
 
+## Offline CSV replay demo
+
+The demo script at `examples/replay_csv_option_market_data.py` replays previously recorded synthetic/demo CSV files offline through CsvReplayOptionMarketDataSource and OptionMarketDataPoller.
+
+- It does not use FYERS or any broker SDK.
+- It does not use live or real market data.
+- It does not place orders.
+- It is not a profitability claim.
+
+First run the recording demo to generate the CSV files:
+
+```powershell
+.\.venv\Scripts\python.exe examples\record_in_memory_option_market_data.py
+```
+
+Then run the replay demo:
+
+```powershell
+.\.venv\Scripts\python.exe examples\replay_csv_option_market_data.py
+```
+
 ## Notes
 
 - This layer is broker-agnostic.
