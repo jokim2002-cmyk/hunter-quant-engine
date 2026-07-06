@@ -290,3 +290,32 @@ Relevant path:
 
 - `src/paper_trading/paper_position_state.py`
 - `tests/paper_trading/test_paper_position_state.py`
+
+## Paper Trading Session Skeleton
+
+The next paper trading building block is now implemented.
+
+- `PaperTradingSession` â€” fake/local coordinator that wires `PaperOrderRequest` to `PaperOrderJournal` and `PaperPositionState`.
+
+Properties:
+
+- Fake/local coordinator only.
+- No broker/FYERS.
+- No real orders.
+- Not a profitability claim.
+
+Relevant path:
+
+- `src/paper_trading/paper_trading_session.py`
+- `tests/paper_trading/test_paper_trading_session.py`
+
+## Paper trading session skeleton
+
+The `PaperTradingSession` skeleton wires `PaperOrderJournal` and `PaperPositionState` together as a fake/local coordinator only.
+
+Relevant path:
+
+- `src/paper_trading/paper_trading_session.py`
+- `tests/paper_trading/test_paper_trading_session.py`
+
+It does not use FYERS, does not use live market data, does not place real orders, and is not a profitability claim.

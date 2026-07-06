@@ -77,3 +77,21 @@ def test_roadmap_documents_paper_trading_design_next_phase():
     assert "Broker/live execution remains a future phase" in text
     assert "Real-money execution remains the last phase" in text
     assert "docs/PAPER_TRADING_DESIGN.md" in text
+
+
+def test_paper_trading_design_docs_cover_session_skeleton():
+    from pathlib import Path
+
+    text = Path("docs/PAPER_TRADING_DESIGN.md").read_text(encoding="utf-8")
+
+    assert "Paper trading session skeleton" in text
+    assert "PaperTradingSession" in text
+    assert "PaperOrderJournal" in text
+    assert "PaperPositionState" in text
+    assert "src/paper_trading/paper_trading_session.py" in text
+    assert "tests/paper_trading/test_paper_trading_session.py" in text
+    assert "fake/local coordinator" in text
+    assert "does not use FYERS" in text
+    assert "does not use live market data" in text
+    assert "does not place real orders" in text
+    assert "not a profitability claim" in text
