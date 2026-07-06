@@ -3,7 +3,7 @@ Paper MVP Release Gate
 
 Checks whether the local Paper MVP v0.1 release checklist is ready.
 
-This module does not create a git tag.
+This module does not create a release tag.
 This module does not place orders.
 This module does not use broker APIs.
 This module does not use live market data.

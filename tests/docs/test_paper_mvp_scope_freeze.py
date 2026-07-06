@@ -35,7 +35,7 @@ def test_paper_mvp_scope_doc_limits_remaining_blockers():
     assert "Strategy-to-paper bridge" in text
     assert "Backtest evidence runner" in text
     assert "Paper MVP operator demo workflow" in text
-    assert "Release checklist pass" in text
+    assert "Paper MVP release gate" in text
     assert "Git tag for the paper MVP release" in text
 
 
