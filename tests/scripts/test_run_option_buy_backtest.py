@@ -4,6 +4,7 @@ Run Offline Option Buy Backtest Script Tests
 
 import csv
 import json
+from datetime import date, datetime
 from pathlib import Path
 
 import pytest
@@ -14,10 +15,27 @@ from scripts.run_option_buy_backtest import (
     main,
     run_backtest,
     summary_to_dict,
+    trade_result_to_dict,
+    trade_results_to_dicts,
     write_summary_csv,
     write_summary_json,
+    write_trades_csv,
+    write_trades_json,
 )
 from src.backtesting.option_buy_backtest_summary import OptionBuyBacktestSummary
+from src.backtesting.option_premium_backtest_exit_reason import (
+    OptionPremiumBacktestExitReason,
+)
+from src.backtesting.option_premium_backtest_result import OptionPremiumBacktestResult
+from src.models.option_action import OptionAction
+from src.models.option_chain_entry import OptionChainEntry
+from src.models.option_contract import OptionContract
+from src.models.option_type import OptionType
+from src.strategy.signal_strength import SignalStrength
+from src.strategy.signal_type import SignalType
+from src.strategy.trade_signal import TradeSignal
+from src.trade_planning.option_buy_trade_plan import OptionBuyTradePlan
+from src.trade_planning.option_buy_trade_plan_status import OptionBuyTradePlanStatus
 
 
 SCENARIO_CSV = """
@@ -127,6 +145,49 @@ def test_main_prints_summary_for_valid_csv_inputs(tmp_path, capsys):
 def test_main_fails_through_argparse_when_required_args_missing():
     with pytest.raises(SystemExit):
         main([])
+
+
+def _backtest_result():
+    plan = OptionBuyTradePlan(
+        signal=TradeSignal(
+            signal_type=SignalType.LONG,
+            strength=SignalStrength.STRONG,
+            confidence=0.9,
+            rationale=("test",),
+            created_at=datetime(2026, 7, 6, 10, 15),
+        ),
+        entry=OptionChainEntry(
+            contract=OptionContract(
+                underlying_symbol="NIFTY",
+                expiry_date=date(2026, 7, 9),
+                strike_price=24200.0,
+                option_type=OptionType.CE,
+                lot_size=65,
+                symbol="NIFTY26JUL24200CE",
+            ),
+            last_traded_price=100.0,
+            bid_price=99.0,
+            ask_price=101.0,
+            volume=10000,
+            open_interest=50000,
+        ),
+        action=OptionAction.BUY,
+        underlying_price=24210.0,
+        entry_premium=100.0,
+        stop_loss_premium=70.0,
+        target_premium=160.0,
+        lots=1,
+        estimated_charges=10.0,
+        status=OptionBuyTradePlanStatus.APPROVED,
+        rejection_reasons=(),
+    )
+    return OptionPremiumBacktestResult(
+        plan=plan,
+        exit_reason=OptionPremiumBacktestExitReason.TARGET_HIT,
+        exit_premium=160.0,
+        bars_held=2,
+        estimated_charges=10.0,
+    )
 
 
 def test_summary_to_dict_contains_expected_summary_fields():
@@ -272,6 +333,135 @@ def test_main_without_output_args_still_prints_summary_and_returns_zero(tmp_path
     assert exit_code == 0
     output = capsys.readouterr().out
     assert "Hunter Quant Engine - Offline Option Buy Backtest" in output
+
+
+def test_trade_result_to_dict_returns_expected_fields():
+    payload = trade_result_to_dict(_backtest_result())
+
+    assert payload["symbol"] == "NIFTY26JUL24200CE"
+    assert payload["option_type"] == "CE"
+    assert payload["strike_price"] == 24200.0
+    assert payload["expiry_date"] == "2026-07-09"
+    assert payload["entry_premium"] == 100.0
+    assert payload["stop_loss_premium"] == 70.0
+    assert payload["target_premium"] == 160.0
+    assert payload["exit_premium"] == 160.0
+    assert payload["exit_reason"] == "target_hit"
+    assert payload["quantity"] == 65
+    assert payload["bars_held"] == 2
+    assert payload["estimated_charges"] == 10.0
+    assert payload["gross_pnl"] == 3900.0
+    assert payload["net_pnl"] == 3890.0
+    assert payload["return_percent"] == 0.6
+    assert payload["is_win"] is True
+    assert payload["is_loss"] is False
+
+
+def test_trade_results_to_dicts_returns_list_of_dicts():
+    payloads = trade_results_to_dicts([_backtest_result()])
+
+    assert len(payloads) == 1
+    assert payloads[0]["symbol"] == "NIFTY26JUL24200CE"
+
+
+def test_write_trades_json_creates_json_file(tmp_path):
+    output_path = tmp_path / "nested" / "trades.json"
+
+    write_trades_json([_backtest_result()], output_path)
+
+    assert output_path.exists()
+    payload = json.loads(output_path.read_text(encoding="utf-8"))
+    assert payload[0]["symbol"] == "NIFTY26JUL24200CE"
+
+
+def test_write_trades_csv_creates_csv_file_with_header_and_trade_row(tmp_path):
+    output_path = tmp_path / "nested" / "trades.csv"
+
+    write_trades_csv([_backtest_result()], output_path)
+
+    assert output_path.exists()
+    with output_path.open(newline="", encoding="utf-8") as handle:
+        rows = list(csv.reader(handle))
+
+    assert rows[0][0] == "symbol"
+    assert rows[1][0] == "NIFTY26JUL24200CE"
+
+
+def test_main_writes_trades_json_when_requested(tmp_path):
+    scenario_csv = _write_csv(tmp_path, "scenario.csv", SCENARIO_CSV)
+    premium_csv = _write_csv(tmp_path, "premium.csv", PREMIUM_CSV)
+    output_path = tmp_path / "reports" / "trades.json"
+
+    exit_code = main(
+        [
+            "--scenario-csv",
+            str(scenario_csv),
+            "--premium-csv",
+            str(premium_csv),
+            "--trades-json",
+            str(output_path),
+        ]
+    )
+
+    assert exit_code == 0
+    assert output_path.exists()
+    payload = json.loads(output_path.read_text(encoding="utf-8"))
+    assert payload[0]["symbol"] == "NIFTY26JUL24200CE"
+
+
+def test_main_writes_trades_csv_when_requested(tmp_path):
+    scenario_csv = _write_csv(tmp_path, "scenario.csv", SCENARIO_CSV)
+    premium_csv = _write_csv(tmp_path, "premium.csv", PREMIUM_CSV)
+    output_path = tmp_path / "reports" / "trades.csv"
+
+    exit_code = main(
+        [
+            "--scenario-csv",
+            str(scenario_csv),
+            "--premium-csv",
+            str(premium_csv),
+            "--trades-csv",
+            str(output_path),
+        ]
+    )
+
+    assert exit_code == 0
+    assert output_path.exists()
+    with output_path.open(newline="", encoding="utf-8") as handle:
+        rows = list(csv.reader(handle))
+    assert rows[1][0] == "NIFTY26JUL24200CE"
+
+
+def test_main_can_write_summary_and_trades_outputs_in_one_run(tmp_path):
+    scenario_csv = _write_csv(tmp_path, "scenario.csv", SCENARIO_CSV)
+    premium_csv = _write_csv(tmp_path, "premium.csv", PREMIUM_CSV)
+    summary_json_path = tmp_path / "reports" / "summary.json"
+    summary_csv_path = tmp_path / "reports" / "summary.csv"
+    trades_json_path = tmp_path / "reports" / "trades.json"
+    trades_csv_path = tmp_path / "reports" / "trades.csv"
+
+    exit_code = main(
+        [
+            "--scenario-csv",
+            str(scenario_csv),
+            "--premium-csv",
+            str(premium_csv),
+            "--summary-json",
+            str(summary_json_path),
+            "--summary-csv",
+            str(summary_csv_path),
+            "--trades-json",
+            str(trades_json_path),
+            "--trades-csv",
+            str(trades_csv_path),
+        ]
+    )
+
+    assert exit_code == 0
+    assert summary_json_path.exists()
+    assert summary_csv_path.exists()
+    assert trades_json_path.exists()
+    assert trades_csv_path.exists()
 
 
 def test_script_remains_broker_agnostic_and_does_not_import_fyers_modules():

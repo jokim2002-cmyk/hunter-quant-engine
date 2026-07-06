@@ -21,6 +21,9 @@ from src.backtesting.option_buy_backtest_scenario_csv_loader import (
     OptionBuyBacktestScenarioCsvLoader,
 )
 from src.backtesting.option_buy_backtest_summary import OptionBuyBacktestSummary
+from src.backtesting.option_premium_backtest_result import (
+    OptionPremiumBacktestResult,
+)
 from src.backtesting.option_premium_candle_csv_loader import (
     OptionPremiumCandleCsvLoader,
 )
@@ -127,6 +130,93 @@ def write_summary_csv(
         writer.writerow(row)
 
 
+def trade_result_to_dict(result: OptionPremiumBacktestResult) -> dict[str, object]:
+    """
+    Convert a single backtest trade result into a serializable dictionary.
+    """
+    return {
+        "symbol": result.plan.entry.contract.symbol,
+        "option_type": result.plan.entry.contract.option_type.value,
+        "strike_price": result.plan.entry.contract.strike_price,
+        "expiry_date": result.plan.entry.contract.expiry_date.isoformat(),
+        "entry_premium": result.plan.entry_premium,
+        "stop_loss_premium": result.plan.stop_loss_premium,
+        "target_premium": result.plan.target_premium,
+        "exit_premium": result.exit_premium,
+        "exit_reason": result.exit_reason.value,
+        "quantity": result.quantity,
+        "bars_held": result.bars_held,
+        "estimated_charges": result.estimated_charges,
+        "gross_pnl": result.gross_pnl,
+        "net_pnl": result.net_pnl,
+        "return_percent": result.return_percent,
+        "is_win": result.is_win,
+        "is_loss": result.is_loss,
+    }
+
+
+def trade_results_to_dicts(
+    results: Sequence[OptionPremiumBacktestResult],
+) -> list[dict[str, object]]:
+    """
+    Convert a sequence of backtest trade results into serializable dictionaries.
+    """
+    return [trade_result_to_dict(result) for result in results]
+
+
+def write_trades_json(
+    results: Sequence[OptionPremiumBacktestResult],
+    output_path: str | Path,
+) -> None:
+    """
+    Write per-trade results to a JSON file.
+    """
+    output_path = Path(output_path)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+
+    with output_path.open("w", encoding="utf-8") as handle:
+        json.dump(trade_results_to_dicts(results), handle, indent=2)
+        handle.write("\n")
+
+
+def write_trades_csv(
+    results: Sequence[OptionPremiumBacktestResult],
+    output_path: str | Path,
+) -> None:
+    """
+    Write per-trade results to a CSV file.
+    """
+    output_path = Path(output_path)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+
+    rows = trade_results_to_dicts(results)
+    header = [
+        "symbol",
+        "option_type",
+        "strike_price",
+        "expiry_date",
+        "entry_premium",
+        "stop_loss_premium",
+        "target_premium",
+        "exit_premium",
+        "exit_reason",
+        "quantity",
+        "bars_held",
+        "estimated_charges",
+        "gross_pnl",
+        "net_pnl",
+        "return_percent",
+        "is_win",
+        "is_loss",
+    ]
+
+    with output_path.open("w", newline="", encoding="utf-8") as handle:
+        writer = csv.writer(handle)
+        writer.writerow(header)
+        for row in rows:
+            writer.writerow([row[field] for field in header])
+
+
 def format_summary(
     summary: OptionBuyBacktestSummary,
 ) -> str:
@@ -182,6 +272,16 @@ def build_argument_parser() -> argparse.ArgumentParser:
         default=None,
         help="Optional path to write the summary as CSV.",
     )
+    parser.add_argument(
+        "--trades-json",
+        default=None,
+        help="Optional path to write per-trade results as JSON.",
+    )
+    parser.add_argument(
+        "--trades-csv",
+        default=None,
+        help="Optional path to write per-trade results as CSV.",
+    )
     return parser
 
 
@@ -202,6 +302,12 @@ def main(
 
     if args.summary_csv:
         write_summary_csv(summary, args.summary_csv)
+
+    if args.trades_json:
+        write_trades_json(summary.results, args.trades_json)
+
+    if args.trades_csv:
+        write_trades_csv(summary.results, args.trades_csv)
 
     print(format_summary(summary))
     return 0
