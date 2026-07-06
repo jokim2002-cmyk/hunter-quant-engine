@@ -136,3 +136,20 @@ def test_gitignore_ignores_recording_data_directories():
     assert "data/recorded/" in gitignore
     assert "data/live_recording/" in gitignore
     assert "data/paper_trading/" in gitignore
+
+
+def test_option_market_data_recording_docs_cover_record_validate_replay_checkpoint():
+    from pathlib import Path
+
+    text = Path("docs/OPTION_MARKET_DATA_RECORDING.md").read_text(encoding="utf-8")
+
+    assert "Checkpoint: offline record-validate-replay workflow" in text
+    assert "examples/record_in_memory_option_market_data.py" in text
+    assert "examples/validate_option_market_data_csv.py" in text
+    assert "examples/replay_csv_option_market_data.py" in text
+    assert "tests/examples/test_option_market_data_demo_workflow.py" in text
+    assert "broker-agnostic" in text
+    assert "does not use FYERS" in text
+    assert "not live market data" in text or "not real market data" in text
+    assert "does not place orders" in text
+    assert "not a profitability claim" in text

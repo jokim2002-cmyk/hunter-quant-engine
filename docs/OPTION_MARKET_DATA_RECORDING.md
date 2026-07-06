@@ -373,3 +373,25 @@ Then validate:
 - It is not a profitability claim.
 - It does not place orders.
 - It should not contain secrets, credentials, or broker-specific implementation details.
+
+## Checkpoint: offline record-validate-replay workflow
+
+The safe offline option market data workflow is now documented and covered by a smoke test.
+
+Workflow:
+
+1. Record synthetic demo CSV files:
+   `examples/record_in_memory_option_market_data.py`
+
+2. Validate the recorded CSV files:
+   `examples/validate_option_market_data_csv.py`
+
+3. Replay the validated CSV files offline:
+   `examples/replay_csv_option_market_data.py`
+
+4. End-to-end workflow smoke test:
+   `tests/examples/test_option_market_data_demo_workflow.py`
+
+This proves the safe local demo workflow only. The workflow is broker-agnostic, does not use FYERS, is not live market data, does not place orders, and is not a profitability claim.
+
+Real broker/live market data remains a future phase.
