@@ -28,6 +28,10 @@ Open the generated paper trading reports folder:
 
     .\hqe_paper_folder.bat
 
+Print the latest generated paper trading report in the terminal:
+
+    .\hqe_paper_report_text.bat
+
 ## Tests
 
 Run the full test suite:

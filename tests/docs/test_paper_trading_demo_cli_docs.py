@@ -13,6 +13,7 @@ SHORTCUT_COMMAND = r".\hqe_paper_demo.bat"
 REPORT_SHORTCUT_COMMAND = r".\hqe_paper_report.bat"
 COMBINED_SHORTCUT_COMMAND = r".\hqe_paper_demo_report.bat"
 FOLDER_SHORTCUT_COMMAND = r".\hqe_paper_folder.bat"
+REPORT_TEXT_SHORTCUT_COMMAND = r".\hqe_paper_report_text.bat"
 
 
 def test_paper_trading_demo_cli_documented_commands_stay_in_sync():
@@ -39,6 +40,8 @@ def test_paper_trading_demo_cli_documented_commands_stay_in_sync():
     assert COMBINED_SHORTCUT_COMMAND in cli_doc_text
     assert FOLDER_SHORTCUT_COMMAND in readme_text
     assert FOLDER_SHORTCUT_COMMAND in cli_doc_text
+    assert REPORT_TEXT_SHORTCUT_COMMAND in readme_text
+    assert REPORT_TEXT_SHORTCUT_COMMAND in cli_doc_text
     assert "Paper demo shortcuts:" in readme_text
     assert "Paper demo shortcuts:" in cli_doc_text
     assert "../README_SHORTCUTS.md" in cli_doc_text

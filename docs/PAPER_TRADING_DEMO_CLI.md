@@ -26,6 +26,7 @@ Paper demo shortcuts:
     .\hqe_paper_report.bat
     .\hqe_paper_demo_report.bat
     .\hqe_paper_folder.bat
+    .\hqe_paper_report_text.bat
 
 Shortcut meanings:
 
@@ -33,6 +34,7 @@ Shortcut meanings:
 - `hqe_paper_report.bat` opens the latest generated text report after a demo run.
 - `hqe_paper_demo_report.bat` runs the demo and then opens the report.
 - `hqe_paper_folder.bat` opens the generated paper trading reports folder.
+- `hqe_paper_report_text.bat` prints the latest generated text report in the terminal.
 
 Implementation path:
 

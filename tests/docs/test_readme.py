@@ -35,6 +35,7 @@ def test_readme_documents_current_hqe_workflow():
     assert ".\\hqe_paper_report.bat" in text
     assert ".\\hqe_paper_demo_report.bat" in text
     assert ".\\hqe_paper_folder.bat" in text
+    assert ".\\hqe_paper_report_text.bat" in text
 
 
 def test_readme_no_longer_contains_old_architecture_typos():
