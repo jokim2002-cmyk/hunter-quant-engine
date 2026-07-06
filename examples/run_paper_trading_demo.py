@@ -23,6 +23,10 @@ from src.paper_trading.option_buy_plan_to_paper_order import (
     create_paper_order_request_from_option_buy_plan,
 )
 from src.paper_trading.paper_trading_session import PaperTradingSession
+from src.paper_trading.paper_trading_session_summary import (
+    build_paper_trading_session_summary,
+)
+from src.paper_trading.paper_trading_session_summary import build_paper_trading_session_summary
 from src.strategy.signal_strength import SignalStrength
 from src.strategy.signal_type import SignalType
 from src.strategy.trade_signal import TradeSignal
@@ -95,6 +99,12 @@ def run_demo() -> int:
         print(f"paper position symbol: {position.symbol}")
         print(f"paper position quantity: {position.quantity}")
 
+    summary = build_paper_trading_session_summary(session)
+    print(f"session summary total orders: {summary.total_orders}")
+    print(f"session summary open positions: {summary.open_positions_count}")
+    print(f"session summary total open quantity: {summary.total_open_quantity}")
+    print(f"session summary symbols: {', '.join(summary.symbols)}")
+
     print("no broker/FYERS")
     print("no live/real market data")
     print("no real orders placed")
@@ -112,4 +122,6 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+
+
 

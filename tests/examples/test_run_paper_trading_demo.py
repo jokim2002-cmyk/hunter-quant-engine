@@ -55,6 +55,10 @@ def test_demo_output_and_safety_constraints() -> None:
     assert "paper-" in out
     assert "nifty26jul24200ce" in out
     assert "paper position quantity" in out
+    assert "session summary total orders" in out
+    assert "session summary open positions" in out
+    assert "session summary total open quantity" in out
+    assert "session summary symbols" in out
 
     # Forbidden SDK string check: ensure demo doesn't reference FYERS.
     source = script_path.read_text(encoding="utf-8").lower()
