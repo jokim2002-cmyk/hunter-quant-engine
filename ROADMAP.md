@@ -1,4 +1,61 @@
-﻿# Hunter Quant Engine — Master Roadmap
+# Hunter Quant Engine — Master Roadmap
+
+## Current Status Override - July 2026
+
+This section is the authoritative current HQE state.
+
+Older roadmap sections below are retained as historical planning notes and documentation-test anchors. If an older section says a phase is still planned, this current status section supersedes it.
+
+Current checkpoint:
+
+- 1341 tests passing after this roadmap guard.
+- Repository shortcut cleanup completed.
+- Old unused/risky root shortcuts removed.
+- Safe local shortcut layer completed.
+- Paper trading demo/report workflow completed.
+- Paper P&L is simulation only.
+- Real-money execution remains the final phase only.
+
+Current safe local shortcuts:
+
+- `hqe_help.bat`
+- `hqe_daily.bat`
+- `hqe_quick_check.bat`
+- `hqe_test.bat`
+- `hqe_status.bat`
+- `hqe_snapshot.bat`
+- `hqe_paper_demo.bat`
+- `hqe_paper_demo_report.bat`
+- `hqe_paper_report.bat`
+- `hqe_paper_report_text.bat`
+- `hqe_paper_folder.bat`
+
+Deleted old unused/risky shortcuts:
+
+- `hqe_pull_test.bat`
+- `hqe_push.bat`
+- `hqe_run_nifty.bat`
+- `refresh_fyers_token.bat`
+
+Current next priority:
+
+1. Paper trading live-like replay loop.
+2. Paper journal persistence.
+3. Paper report/dashboard polish.
+4. Real option premium replay strengthening.
+5. Broker interface design with mocks only.
+6. Live market observer with no orders.
+7. Risk gateway.
+8. Micro live execution only after paper evidence and risk gateway.
+
+Generated paper report outputs remain local/generated and ignored:
+
+- `reports/paper_trading/report.txt`
+- `reports/paper_trading/summary.json`
+- `reports/paper_trading/summary.csv`
+- `reports/paper_trading/manifest.json`
+
+---
 
 
 ## Corrected Product Direction
