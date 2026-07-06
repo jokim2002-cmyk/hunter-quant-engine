@@ -5,9 +5,8 @@ This demo is fake/local only.
 - It converts it to a PaperOrderRequest.
 - It submits the request to PaperTradingSession.
 - It closes the open fake paper position locally.
-- It shows paper-only simulated P&L from a synthetic exit premium.
-- It estimates local paper exit costs with a simple deterministic demo model.
-- It writes local paper report files under reports/paper_trading/.
+- It shows a short trader-readable paper-only simulated P&L summary.
+- It writes detailed local paper report files under reports/paper_trading/.
 
 No broker SDK. No broker platform integration. No live/real market data.
 
@@ -38,10 +37,6 @@ from src.strategy.signal_type import SignalType
 from src.strategy.trade_signal import TradeSignal
 from src.trade_planning.option_buy_trade_plan import OptionBuyTradePlan
 from src.trade_planning.option_buy_trade_plan_status import OptionBuyTradePlanStatus
-
-
-def _format_symbols(symbols: tuple[str, ...]) -> str:
-    return ", ".join(symbols) if symbols else "none"
 
 
 def run_demo() -> int:
@@ -95,11 +90,7 @@ def run_demo() -> int:
     estimated_exit_costs = estimate_paper_exit_costs(quantity=request.quantity)
 
     session = PaperTradingSession()
-    record = session.submit_order(request)
-
-    position_before_close = session.find_position(symbol)
-    qty_before_close = session.total_open_quantity(symbol)
-    summary_before_close = build_paper_trading_session_summary(session)
+    order_record = session.submit_order(request)
 
     exit_record = session.close_position_with_exit_record(
         symbol=symbol,
@@ -110,83 +101,31 @@ def run_demo() -> int:
         estimated_slippage=estimated_exit_costs.estimated_slippage,
     )
 
-    position_after_close = session.find_position(symbol)
-    qty_after_close = session.total_open_quantity(symbol)
-    summary_after_close = build_paper_trading_session_summary(session)
+    summary = build_paper_trading_session_summary(session)
     report_paths = write_paper_trading_report(session)
 
     print("fake/local paper trading demo")
     print("synthetic option-buy trade plan")
-    print(f"paper order id: {record.order_id}")
-    print(f"paper order symbol: {record.symbol}")
-    print(f"paper order quantity: {record.quantity}")
-
-    if position_before_close is None:
-        print("paper position before close: None")
-    else:
-        print(f"paper position symbol before close: {position_before_close.symbol}")
-        print(f"paper position quantity before close: {position_before_close.quantity}")
-
-    print(f"session summary total orders before close: {summary_before_close.total_orders}")
-    print(
-        "session summary open positions before close: "
-        f"{summary_before_close.open_positions_count}"
-    )
-    print(
-        "session summary total open quantity before close: "
-        f"{summary_before_close.total_open_quantity}"
-    )
-    print(
-        "session summary symbols before close: "
-        f"{_format_symbols(summary_before_close.symbols)}"
-    )
+    print(f"paper trade symbol: {order_record.symbol}")
+    print(f"paper trade quantity: {order_record.quantity}")
+    print(f"paper entry premium: {order_record.planned_entry_price}")
+    print(f"paper simulated exit premium: {synthetic_exit_price}")
+    print(f"paper order id: {order_record.order_id}")
 
     if exit_record is None:
-        print("paper close result: None")
+        print("paper close status: not closed")
     else:
-        print("paper close result: closed")
+        print("paper close status: closed")
         print(f"paper exit id: {exit_record.exit_id}")
-        print(f"paper close symbol: {exit_record.symbol}")
-        print(f"paper close quantity: {exit_record.quantity}")
-        print(f"paper simulated exit price: {exit_record.exit_price}")
         print(f"paper simulated points: {exit_record.simulated_points}")
         print(f"paper simulated gross pnl: {exit_record.simulated_gross_pnl}")
-        print(f"paper estimated exit charges: {exit_record.estimated_exit_charges}")
-        print(f"paper estimated slippage: {exit_record.estimated_slippage}")
-        print(f"paper total estimated costs: {exit_record.total_estimated_costs}")
+        print(f"paper estimated costs: {exit_record.total_estimated_costs}")
         print(f"paper simulated net pnl: {exit_record.simulated_net_pnl}")
 
-    if position_after_close is None:
-        print("paper position after close: None")
-    else:
-        print(f"paper position symbol after close: {position_after_close.symbol}")
-        print(f"paper position quantity after close: {position_after_close.quantity}")
-
-    print(f"session summary total orders after close: {summary_after_close.total_orders}")
-    print(
-        "session summary open positions after close: "
-        f"{summary_after_close.open_positions_count}"
-    )
-    print(
-        "session summary total open quantity after close: "
-        f"{summary_after_close.total_open_quantity}"
-    )
-    print(
-        "session summary symbols after close: "
-        f"{_format_symbols(summary_after_close.symbols)}"
-    )
-
+    print(f"paper open positions: {summary.open_positions_count}")
+    print(f"paper closed trades: {summary.closed_trades_count}")
     print(f"paper report output dir: {report_paths.output_dir}")
-    print(f"paper report summary json: {report_paths.summary_json}")
-    print(f"paper report summary csv: {report_paths.summary_csv}")
-    print(f"paper report orders json: {report_paths.orders_json}")
-    print(f"paper report orders csv: {report_paths.orders_csv}")
-    print(f"paper report open positions json: {report_paths.open_positions_json}")
-    print(f"paper report open positions csv: {report_paths.open_positions_csv}")
-    print(f"paper report exit records json: {report_paths.exit_records_json}")
-    print(f"paper report exit records csv: {report_paths.exit_records_csv}")
     print(f"paper report text: {report_paths.report_text}")
-
     print("paper report files are local/generated")
     print("paper pnl is simulation only")
     print("estimated costs are included in net pnl only")
@@ -195,9 +134,6 @@ def run_demo() -> int:
     print("no live/real market data")
     print("no real orders placed")
     print("not a profitability claim")
-
-    # Basic sanity in the demo output.
-    _ = (qty_before_close, qty_after_close)
 
     return 0
 

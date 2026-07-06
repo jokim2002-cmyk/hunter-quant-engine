@@ -33,68 +33,49 @@ def test_demo_output_and_safety_constraints() -> None:
     out = buf.getvalue().lower()
     assert rc == 0
 
-    # Required demo messages.
+    # Short trader-readable demo messages.
     assert "fake/local paper trading demo" in out
     assert "synthetic option-buy trade plan" in out
-    assert "paper order id" in out
-    assert "paper order symbol" in out
-    assert "paper order quantity" in out
-    assert "paper position symbol before close" in out
-    assert "paper position quantity before close" in out
-
-    # Close-position demo messages.
-    assert "paper close result: closed" in out
+    assert "paper trade symbol: nifty26jul24200ce" in out
+    assert "paper trade quantity: 130" in out
+    assert "paper entry premium: 100.0" in out
+    assert "paper simulated exit premium: 135.0" in out
+    assert "paper order id: paper-000001" in out
+    assert "paper close status: closed" in out
     assert "paper exit id: paper-exit-000001" in out
-    assert "paper close symbol: nifty26jul24200ce" in out
-    assert "paper close quantity" in out
-    assert "paper position after close: none" in out
 
     # Paper-only simulated P&L messages.
-    assert "paper simulated exit price: 135.0" in out
     assert "paper simulated points: 35.0" in out
     assert "paper simulated gross pnl: 4550.0" in out
-    assert "paper estimated exit charges: 40.0" in out
-    assert "paper estimated slippage: 13.0" in out
-    assert "paper total estimated costs: 53.0" in out
+    assert "paper estimated costs: 53.0" in out
     assert "paper simulated net pnl: 4497.0" in out
+    assert "paper open positions: 0" in out
+    assert "paper closed trades: 1" in out
+
+    # Local report writer output stays concise in terminal.
+    assert "paper report output dir:" in out
+    assert "paper report text:" in out
+    assert "paper report files are local/generated" in out
+    assert "paper report summary json:" not in out
+    assert "paper report orders json:" not in out
+    assert "paper report open positions json:" not in out
+    assert "paper report exit records json:" not in out
+
+    # Removed noisy before/after position dump.
+    assert "paper position symbol before close" not in out
+    assert "paper position quantity before close" not in out
+    assert "paper position after close" not in out
+    assert "session summary total orders before close" not in out
+    assert "session summary total orders after close" not in out
+
+    # Safety / no broker / no live market data / no real orders.
     assert "paper pnl is simulation only" in out
     assert "estimated costs are included in net pnl only" in out
     assert "gross pnl excludes costs" in out
-
-    # Summary before close.
-    assert "session summary total orders before close: 1" in out
-    assert "session summary open positions before close: 1" in out
-    assert "session summary total open quantity before close" in out
-    assert "session summary symbols before close: nifty26jul24200ce" in out
-
-    # Summary after close.
-    assert "session summary total orders after close: 1" in out
-    assert "session summary open positions after close: 0" in out
-    assert "session summary total open quantity after close: 0" in out
-    assert "session summary symbols after close: none" in out
-
-    # Local report writer output.
-    assert "paper report output dir:" in out
-    assert "paper report summary json:" in out
-    assert "paper report summary csv:" in out
-    assert "paper report orders json:" in out
-    assert "paper report orders csv:" in out
-    assert "paper report open positions json:" in out
-    assert "paper report open positions csv:" in out
-    assert "paper report exit records json:" in out
-    assert "paper report exit records csv:" in out
-    assert "paper report text:" in out
-    assert "paper report files are local/generated" in out
-
-    # Safety / no broker / no live market data / no real orders.
     assert "no broker/fyers" in out
     assert "no live/real market data" in out
     assert "no real orders placed" in out
     assert "not a profitability claim" in out
-
-    # Must include values.
-    assert "paper-" in out
-    assert "nifty26jul24200ce" in out
 
     # Forbidden SDK import check: safety text may mention FYERS, imports must not.
     source = script_path.read_text(encoding="utf-8").lower()
