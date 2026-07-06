@@ -287,6 +287,8 @@ Expected safe output:
 
 The demo script at `examples/replay_csv_option_market_data.py` replays previously recorded synthetic/demo CSV files offline through CsvReplayOptionMarketDataSource and OptionMarketDataPoller.
 
+- It validates CSV files before replay using `validate_option_market_data_csvs`.
+- Invalid CSV files fail safely. No replay is run and no orders are placed if validation fails.
 - It does not use FYERS or any broker SDK.
 - It does not use live or real market data.
 - It does not place orders.

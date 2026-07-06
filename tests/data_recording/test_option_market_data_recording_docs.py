@@ -84,6 +84,9 @@ def test_option_market_data_recording_docs_cover_csv_replay_demo():
     assert "does not use fyers" in contents.lower()
     assert "does not place orders" in contents.lower()
     assert "not a profitability claim" in contents.lower()
+    assert "validates csv files before replay" in contents.lower()
+    assert "invalid csv files fail safely" in contents.lower()
+    assert "no replay is run" in contents.lower()
 
 
 def test_option_market_data_recording_docs_cover_record_to_replay_workflow():
