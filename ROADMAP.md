@@ -8,11 +8,12 @@ Older roadmap sections below are retained as historical planning notes and docum
 
 Current checkpoint:
 
-- 1341 tests passing after this roadmap guard.
+- 1353 tests passing after paper journal persistence skeleton.
 - Repository shortcut cleanup completed.
 - Old unused/risky root shortcuts removed.
 - Safe local shortcut layer completed.
 - Paper trading demo/report workflow completed.
+- Paper journal persistence skeleton completed.
 - Paper P&L is simulation only.
 - Real-money execution remains the final phase only.
 
