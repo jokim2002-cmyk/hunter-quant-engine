@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import importlib
 import io
+import json
 import sys
 from pathlib import Path
 
@@ -67,6 +68,19 @@ def test_demo_output_and_safety_constraints() -> None:
     assert "session summary total open quantity after close: 0" in out
     assert "session summary symbols after close: none" in out
 
+    # Local report writer output.
+    assert "paper report output dir:" in out
+    assert "paper report summary json:" in out
+    assert "paper report summary csv:" in out
+    assert "paper report orders json:" in out
+    assert "paper report orders csv:" in out
+    assert "paper report open positions json:" in out
+    assert "paper report open positions csv:" in out
+    assert "paper report exit records json:" in out
+    assert "paper report exit records csv:" in out
+    assert "paper report text:" in out
+    assert "paper report files are local/generated" in out
+
     # Safety / no broker / no live market data / no real orders.
     assert "no broker/fyers" in out
     assert "no live/real market data" in out
@@ -86,3 +100,52 @@ def test_demo_output_and_safety_constraints() -> None:
     forbidden_tokens = ["place" + "_order", "send" + "_order", "execute" + "_order"]
     for token in forbidden_tokens:
         assert token not in source
+
+
+def test_demo_writes_local_report_files_under_reports() -> None:
+    demo = importlib.import_module("examples.run_paper_trading_demo")
+
+    rc = demo.run_demo()
+
+    assert rc == 0
+
+    output_dir = Path("reports") / "paper_trading"
+    expected_files = [
+        output_dir / "summary.json",
+        output_dir / "summary.csv",
+        output_dir / "orders.json",
+        output_dir / "orders.csv",
+        output_dir / "open_positions.json",
+        output_dir / "open_positions.csv",
+        output_dir / "exit_records.json",
+        output_dir / "exit_records.csv",
+        output_dir / "report.txt",
+    ]
+
+    for path in expected_files:
+        assert path.exists()
+        assert "reports" in [part.lower() for part in path.parts]
+
+    summary_payload = json.loads(
+        (output_dir / "summary.json").read_text(encoding="utf-8")
+    )
+    exit_records_payload = json.loads(
+        (output_dir / "exit_records.json").read_text(encoding="utf-8")
+    )
+    report_text = (output_dir / "report.txt").read_text(encoding="utf-8").lower()
+
+    assert summary_payload["total_orders"] == 1
+    assert summary_payload["open_positions_count"] == 0
+    assert summary_payload["total_open_quantity"] == 0
+    assert summary_payload["symbols"] == []
+    assert summary_payload["has_open_positions"] is False
+
+    assert len(exit_records_payload) == 1
+    assert exit_records_payload[0]["exit_id"] == "PAPER-EXIT-000001"
+    assert exit_records_payload[0]["symbol"] == "NIFTY26JUL24200CE"
+    assert exit_records_payload[0]["simulated_points"] == 35.0
+    assert exit_records_payload[0]["simulated_gross_pnl"] == 4550.0
+
+    assert "paper pnl is simulation only" in report_text
+    assert "charges and slippage are not included" in report_text
+    assert "not a profitability claim" in report_text

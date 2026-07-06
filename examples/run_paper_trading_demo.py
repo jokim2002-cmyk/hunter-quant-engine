@@ -6,6 +6,7 @@ This demo is fake/local only.
 - It submits the request to PaperTradingSession.
 - It closes the open fake paper position locally.
 - It shows paper-only simulated P&L from a synthetic exit premium.
+- It writes local paper report files under reports/paper_trading/.
 
 No broker SDK. No broker platform integration. No live/real market data.
 
@@ -25,6 +26,7 @@ from src.paper_trading.option_buy_plan_to_paper_order import (
     create_paper_order_request_from_option_buy_plan,
 )
 from src.paper_trading.paper_realized_exit_record import PaperExitReason
+from src.paper_trading.paper_trading_report_writer import write_paper_trading_report
 from src.paper_trading.paper_trading_session import PaperTradingSession
 from src.paper_trading.paper_trading_session_summary import (
     build_paper_trading_session_summary,
@@ -106,6 +108,7 @@ def run_demo() -> int:
     position_after_close = session.find_position(symbol)
     qty_after_close = session.total_open_quantity(symbol)
     summary_after_close = build_paper_trading_session_summary(session)
+    report_paths = write_paper_trading_report(session)
 
     print("fake/local paper trading demo")
     print("synthetic option-buy trade plan")
@@ -164,6 +167,18 @@ def run_demo() -> int:
         f"{_format_symbols(summary_after_close.symbols)}"
     )
 
+    print(f"paper report output dir: {report_paths.output_dir}")
+    print(f"paper report summary json: {report_paths.summary_json}")
+    print(f"paper report summary csv: {report_paths.summary_csv}")
+    print(f"paper report orders json: {report_paths.orders_json}")
+    print(f"paper report orders csv: {report_paths.orders_csv}")
+    print(f"paper report open positions json: {report_paths.open_positions_json}")
+    print(f"paper report open positions csv: {report_paths.open_positions_csv}")
+    print(f"paper report exit records json: {report_paths.exit_records_json}")
+    print(f"paper report exit records csv: {report_paths.exit_records_csv}")
+    print(f"paper report text: {report_paths.report_text}")
+
+    print("paper report files are local/generated")
     print("paper pnl is simulation only")
     print("charges and slippage are not included")
     print("no broker/FYERS")
