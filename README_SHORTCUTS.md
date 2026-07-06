@@ -60,6 +60,12 @@ Check Git status shortcut:
 
     .\hqe_status.bat
 
+Show repo snapshot shortcut:
+
+    .\hqe_snapshot.bat
+
+This shows the current branch, latest commits, and working tree status.
+
 ## Safety Notes
 
 - Paper trading is local/generated only.

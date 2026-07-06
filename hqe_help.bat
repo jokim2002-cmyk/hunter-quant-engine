@@ -9,6 +9,7 @@ echo   .\hqe_quick_check.bat       - git status, full tests, git status
 echo   .\hqe_daily.bat             - quick check, demo, open report
 echo   .\hqe_test.bat              - full pytest suite
 echo   .\hqe_status.bat            - git status --short
+echo   .\hqe_snapshot.bat          - branch, recent commits, git status
 echo.
 echo Paper trading demo:
 echo   .\hqe_paper_demo.bat        - run safe paper demo

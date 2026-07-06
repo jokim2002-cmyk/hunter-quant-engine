@@ -156,6 +156,7 @@ Run quick local check shortcut:
 Check Git status shortcut:
 
     .\hqe_status.bat
+    .\hqe_snapshot.bat
 
 Check Git status:
 
