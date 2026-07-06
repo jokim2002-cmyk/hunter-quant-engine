@@ -2,12 +2,21 @@
 Run Offline Option Buy Backtest Script Tests
 """
 
+import csv
+import json
 from pathlib import Path
 
 import pytest
 
 import scripts.run_option_buy_backtest as cli_module
-from scripts.run_option_buy_backtest import format_summary, main, run_backtest
+from scripts.run_option_buy_backtest import (
+    format_summary,
+    main,
+    run_backtest,
+    summary_to_dict,
+    write_summary_csv,
+    write_summary_json,
+)
 from src.backtesting.option_buy_backtest_summary import OptionBuyBacktestSummary
 
 
@@ -118,6 +127,151 @@ def test_main_prints_summary_for_valid_csv_inputs(tmp_path, capsys):
 def test_main_fails_through_argparse_when_required_args_missing():
     with pytest.raises(SystemExit):
         main([])
+
+
+def test_summary_to_dict_contains_expected_summary_fields():
+    summary = _summary(rejection_reasons=("setup rejected", "bad data"))
+
+    payload = summary_to_dict(summary)
+
+    assert payload["planned_signals"] == 1
+    assert payload["completed_trades"] == 0
+    assert payload["rejected_plans"] == 0
+    assert payload["failed_backtests"] == 0
+    assert payload["winning_trades"] == 0
+    assert payload["losing_trades"] == 0
+    assert payload["breakeven_trades"] == 0
+    assert payload["win_rate"] == 0.0
+    assert payload["total_gross_pnl"] == 0.0
+    assert payload["total_estimated_charges"] == 0.0
+    assert payload["total_net_pnl"] == 0.0
+    assert payload["rejection_reasons"] == ["setup rejected", "bad data"]
+
+
+def test_write_summary_json_creates_parent_directories_and_writes_json(tmp_path):
+    summary = _summary(rejection_reasons=("setup rejected",))
+    output_path = tmp_path / "nested" / "summary.json"
+
+    write_summary_json(summary, output_path)
+
+    assert output_path.exists()
+    payload = json.loads(output_path.read_text(encoding="utf-8"))
+    assert payload["planned_signals"] == 1
+    assert payload["rejection_reasons"] == ["setup rejected"]
+
+
+def test_write_summary_csv_creates_parent_directories_and_writes_csv(tmp_path):
+    summary = _summary(rejection_reasons=("setup rejected", "bad data"))
+    output_path = tmp_path / "nested" / "summary.csv"
+
+    write_summary_csv(summary, output_path)
+
+    assert output_path.exists()
+    with output_path.open(newline="", encoding="utf-8") as handle:
+        rows = list(csv.reader(handle))
+
+    assert rows[0] == [
+        "planned_signals",
+        "completed_trades",
+        "rejected_plans",
+        "failed_backtests",
+        "winning_trades",
+        "losing_trades",
+        "breakeven_trades",
+        "win_rate",
+        "total_gross_pnl",
+        "total_estimated_charges",
+        "total_net_pnl",
+        "rejection_reasons",
+    ]
+    assert rows[1][11] == "setup rejected;bad data"
+
+
+def test_main_writes_json_when_requested(tmp_path):
+    scenario_csv = _write_csv(tmp_path, "scenario.csv", SCENARIO_CSV)
+    premium_csv = _write_csv(tmp_path, "premium.csv", PREMIUM_CSV)
+    output_path = tmp_path / "reports" / "summary.json"
+
+    exit_code = main(
+        [
+            "--scenario-csv",
+            str(scenario_csv),
+            "--premium-csv",
+            str(premium_csv),
+            "--summary-json",
+            str(output_path),
+        ]
+    )
+
+    assert exit_code == 0
+    assert output_path.exists()
+    payload = json.loads(output_path.read_text(encoding="utf-8"))
+    assert payload["completed_trades"] == 1
+
+
+def test_main_writes_csv_when_requested(tmp_path):
+    scenario_csv = _write_csv(tmp_path, "scenario.csv", SCENARIO_CSV)
+    premium_csv = _write_csv(tmp_path, "premium.csv", PREMIUM_CSV)
+    output_path = tmp_path / "reports" / "summary.csv"
+
+    exit_code = main(
+        [
+            "--scenario-csv",
+            str(scenario_csv),
+            "--premium-csv",
+            str(premium_csv),
+            "--summary-csv",
+            str(output_path),
+        ]
+    )
+
+    assert exit_code == 0
+    assert output_path.exists()
+    with output_path.open(newline="", encoding="utf-8") as handle:
+        rows = list(csv.reader(handle))
+    assert rows[1][0] == "1"
+
+
+def test_main_writes_both_json_and_csv_when_requested(tmp_path):
+    scenario_csv = _write_csv(tmp_path, "scenario.csv", SCENARIO_CSV)
+    premium_csv = _write_csv(tmp_path, "premium.csv", PREMIUM_CSV)
+    json_path = tmp_path / "reports" / "summary.json"
+    csv_path = tmp_path / "reports" / "summary.csv"
+
+    exit_code = main(
+        [
+            "--scenario-csv",
+            str(scenario_csv),
+            "--premium-csv",
+            str(premium_csv),
+            "--summary-json",
+            str(json_path),
+            "--summary-csv",
+            str(csv_path),
+        ]
+    )
+
+    assert exit_code == 0
+    assert json_path.exists()
+    assert csv_path.exists()
+
+
+def test_main_without_output_args_still_prints_summary_and_returns_zero(tmp_path, capsys):
+    scenario_csv = _write_csv(tmp_path, "scenario.csv", SCENARIO_CSV)
+    premium_csv = _write_csv(tmp_path, "premium.csv", PREMIUM_CSV)
+
+    exit_code = main(
+        [
+            "--scenario-csv",
+            str(scenario_csv),
+            "--premium-csv",
+            str(premium_csv),
+        ]
+    )
+
+    assert exit_code == 0
+    output = capsys.readouterr().out
+    assert "Hunter Quant Engine - Offline Option Buy Backtest" in output
 
 
 def test_script_remains_broker_agnostic_and_does_not_import_fyers_modules():
