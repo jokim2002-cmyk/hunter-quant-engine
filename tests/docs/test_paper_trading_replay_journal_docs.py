@@ -26,6 +26,8 @@ def test_replay_journal_docs_cover_generated_local_files():
     assert "open_positions.json" in text
     assert "exit_records.json" in text
     assert "manifest.json" in text
+    assert "index.json" in text
+    assert "The index file tracks available replay journal runs." in text
     assert "local/generated outputs and must stay ignored by Git" in text
 
 

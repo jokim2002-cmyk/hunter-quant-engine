@@ -13,10 +13,13 @@ import pytest
 from src.paper_trading.paper_order_journal import PaperOrderRequest
 from src.paper_trading.paper_realized_exit_record import PaperExitReason
 from src.paper_trading.paper_trading_journal_store import (
+    PAPER_TRADING_JOURNAL_INDEX_FILENAME,
     PAPER_TRADING_JOURNAL_RUN_FILENAMES,
     PaperTradingJournalRunPaths,
     build_paper_trading_journal_run_id,
     clean_paper_trading_journal_run,
+    paper_trading_journal_index_path,
+    read_paper_trading_journal_index,
     write_paper_trading_journal_run,
 )
 from src.paper_trading.paper_trading_session import PaperTradingSession
@@ -228,3 +231,95 @@ def test_clean_paper_trading_journal_run_rejects_known_path_directory(tmp_path):
 
     with pytest.raises(ValueError, match="not a file"):
         clean_paper_trading_journal_run(output_dir, run_id="bad-run")
+
+
+def test_write_paper_trading_journal_run_updates_index_json(tmp_path):
+    session = _session_with_open_and_closed_positions()
+    output_dir = tmp_path / "reports" / "paper_trading" / "journal"
+
+    paths = write_paper_trading_journal_run(
+        session,
+        output_dir,
+        run_id="indexed-run",
+        generated_at=_CLOSED_AT,
+    )
+
+    index_path = output_dir / PAPER_TRADING_JOURNAL_INDEX_FILENAME
+    payload = _read_json(index_path)
+
+    assert index_path == paper_trading_journal_index_path(output_dir)
+    assert payload["journal_index_version"] == 1
+    assert payload["journal_source"] == "paper"
+    assert payload["paper_journal_is_local_only"] is True
+    assert payload["paper_pnl_is_simulation_only"] is True
+    assert payload["runs"] == [
+        {
+            "run_id": "indexed-run",
+            "generated_at": "2026-07-06T09:30:00+00:00",
+            "output_dir": str(paths.output_dir),
+            "summary_json": str(paths.summary_json),
+            "manifest_json": str(paths.manifest_json),
+        }
+    ]
+
+
+def test_write_paper_trading_journal_run_upserts_same_run_id_in_index(tmp_path):
+    session = _session_with_open_and_closed_positions()
+    output_dir = tmp_path / "reports" / "paper_trading" / "journal"
+
+    write_paper_trading_journal_run(
+        session,
+        output_dir,
+        run_id="same-run",
+        generated_at=datetime(2026, 7, 6, 9, 30, tzinfo=timezone.utc),
+    )
+    write_paper_trading_journal_run(
+        session,
+        output_dir,
+        run_id="same-run",
+        generated_at=datetime(2026, 7, 6, 9, 45, tzinfo=timezone.utc),
+    )
+
+    payload = read_paper_trading_journal_index(output_dir)
+
+    assert [run["run_id"] for run in payload["runs"]] == ["same-run"]
+    assert payload["runs"][0]["generated_at"] == "2026-07-06T09:45:00+00:00"
+
+
+def test_write_paper_trading_journal_run_keeps_multiple_run_ids_sorted_in_index(tmp_path):
+    session = _session_with_open_and_closed_positions()
+    output_dir = tmp_path / "reports" / "paper_trading" / "journal"
+
+    write_paper_trading_journal_run(
+        session,
+        output_dir,
+        run_id="later-run",
+        generated_at=datetime(2026, 7, 6, 9, 45, tzinfo=timezone.utc),
+    )
+    write_paper_trading_journal_run(
+        session,
+        output_dir,
+        run_id="earlier-run",
+        generated_at=datetime(2026, 7, 6, 9, 30, tzinfo=timezone.utc),
+    )
+
+    payload = read_paper_trading_journal_index(output_dir)
+
+    assert [run["run_id"] for run in payload["runs"]] == [
+        "earlier-run",
+        "later-run",
+    ]
+
+
+def test_read_paper_trading_journal_index_returns_empty_payload_for_missing_index(tmp_path):
+    payload = read_paper_trading_journal_index(
+        tmp_path / "reports" / "paper_trading" / "journal"
+    )
+
+    assert payload == {
+        "journal_index_version": 1,
+        "journal_source": "paper",
+        "paper_journal_is_local_only": True,
+        "paper_pnl_is_simulation_only": True,
+        "runs": [],
+    }

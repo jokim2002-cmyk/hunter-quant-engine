@@ -8,7 +8,7 @@ Older roadmap sections below are retained as historical planning notes and docum
 
 Current checkpoint:
 
-- 1377 tests passing after replay journal cleanup helper.
+- 1381 tests passing after replay journal index.
 - Repository shortcut cleanup completed.
 - Old unused/risky root shortcuts removed.
 - Safe local shortcut layer completed.
@@ -21,6 +21,7 @@ Current checkpoint:
 - Replay journal all-in-one shortcut completed.
 - Replay journal guide completed.
 - Replay journal cleanup helper completed.
+- Replay journal index completed.
 - Paper P&L is simulation only.
 - Real-money execution remains the final phase only.
 

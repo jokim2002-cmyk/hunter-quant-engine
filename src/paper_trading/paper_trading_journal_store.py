@@ -37,6 +37,8 @@ PAPER_TRADING_JOURNAL_RUN_FILENAMES = (
     "manifest.json",
 )
 
+PAPER_TRADING_JOURNAL_INDEX_FILENAME = "index.json"
+
 
 @dataclass(frozen=True)
 class PaperTradingJournalRunPaths:
@@ -155,6 +157,7 @@ def write_paper_trading_journal_run(
         ],
     )
     _write_json(paths.manifest_json, paper_trading_journal_manifest_to_dict(paths, metadata))
+    _upsert_paper_trading_journal_index(base_dir, paths, metadata)
 
     return paths
 
@@ -177,6 +180,85 @@ def paper_trading_journal_manifest_to_dict(
             "exit_records_json": str(paths.exit_records_json),
             "manifest_json": str(paths.manifest_json),
         },
+    }
+
+
+def paper_trading_journal_index_path(
+    output_dir: str | Path = Path("reports") / "paper_trading" / "journal",
+) -> Path:
+    """
+    Return the local fake/paper journal index path under reports/.
+    """
+    return _ensure_reports_output_dir(output_dir) / PAPER_TRADING_JOURNAL_INDEX_FILENAME
+
+
+def read_paper_trading_journal_index(
+    output_dir: str | Path = Path("reports") / "paper_trading" / "journal",
+) -> dict[str, Any]:
+    """
+    Read the local fake/paper journal index, or return an empty index payload.
+    """
+    index_path = paper_trading_journal_index_path(output_dir)
+    if not index_path.exists():
+        return _empty_journal_index()
+
+    payload = json.loads(index_path.read_text(encoding="utf-8"))
+    if not isinstance(payload, dict):
+        raise ValueError("paper trading journal index must be a JSON object")
+    if "runs" not in payload:
+        payload["runs"] = []
+    if not isinstance(payload["runs"], list):
+        raise ValueError("paper trading journal index runs must be a list")
+    return payload
+
+
+def _upsert_paper_trading_journal_index(
+    output_dir: str | Path,
+    paths: PaperTradingJournalRunPaths,
+    metadata: dict[str, Any],
+) -> Path:
+    index_path = paper_trading_journal_index_path(output_dir)
+    payload = read_paper_trading_journal_index(output_dir)
+    entry = _build_journal_index_entry(paths, metadata)
+
+    runs = [
+        run
+        for run in payload["runs"]
+        if run.get("run_id") != entry["run_id"]
+    ]
+    runs.append(entry)
+    runs.sort(key=lambda run: (run.get("generated_at", ""), run.get("run_id", "")))
+
+    payload = {
+        **_empty_journal_index(),
+        **payload,
+        "runs": runs,
+    }
+
+    _write_json(index_path, payload)
+    return index_path
+
+
+def _empty_journal_index() -> dict[str, Any]:
+    return {
+        "journal_index_version": 1,
+        "journal_source": "paper",
+        "paper_journal_is_local_only": True,
+        "paper_pnl_is_simulation_only": True,
+        "runs": [],
+    }
+
+
+def _build_journal_index_entry(
+    paths: PaperTradingJournalRunPaths,
+    metadata: dict[str, Any],
+) -> dict[str, Any]:
+    return {
+        "run_id": metadata["run_id"],
+        "generated_at": metadata["generated_at"],
+        "output_dir": str(paths.output_dir),
+        "summary_json": str(paths.summary_json),
+        "manifest_json": str(paths.manifest_json),
     }
 
 

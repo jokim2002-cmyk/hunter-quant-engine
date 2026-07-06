@@ -78,8 +78,11 @@ Expected generated files:
 - `open_positions.json`
 - `exit_records.json`
 - `manifest.json`
+- `index.json`
 
 These files are local/generated outputs and must stay ignored by Git.
+
+The index file tracks available replay journal runs.
 
 ---
 
