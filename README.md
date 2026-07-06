@@ -143,6 +143,10 @@ Run the full test suite shortcut:
 
     .\hqe_test.bat
 
+Check Git status shortcut:
+
+    .\hqe_status.bat
+
 Check Git status:
 
 ```powershell

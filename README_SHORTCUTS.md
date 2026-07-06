@@ -34,6 +34,10 @@ Check working tree status:
 
     git status --short
 
+Check Git status shortcut:
+
+    .\hqe_status.bat
+
 ## Safety Notes
 
 - Paper trading is local/generated only.
