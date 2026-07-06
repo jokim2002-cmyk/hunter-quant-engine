@@ -43,6 +43,16 @@ snapshot_id,timestamp,signal_type,signal_strength,confidence,underlying_symbol,u
 s1,2026-07-06T09:15:00,long,strong,0.9,NIFTY,24210,2026-07-09,24200,CE,65,NIFTY26JUL24200CE,100,99,100,10000,50000,test setup
 """
 
+SIGNAL_CSV = """
+timestamp,signal_type,signal_strength,confidence,rationale
+2026-07-06T09:15:00,long,strong,0.9,test setup
+"""
+
+SNAPSHOT_CSV = """
+snapshot_id,timestamp,underlying_symbol,underlying_price,expiry_date,strike_price,option_type,lot_size,option_symbol,last_traded_price,bid_price,ask_price,volume,open_interest,delta,theta,vega,gamma,implied_volatility
+s1,2026-07-06T09:15:00,NIFTY,24210,2026-07-09,24200,CE,65,NIFTY26JUL24200CE,100,99,100,10000,50000,,,,,
+"""
+
 PREMIUM_CSV = """
 symbol,timestamp,open,high,low,close,volume
 NIFTY26JUL24200CE,2026-07-06T09:20:00,100,170,95,165,1000
@@ -124,6 +134,25 @@ def test_main_returns_zero_for_valid_csv_inputs(tmp_path):
     assert exit_code == 0
 
 
+def test_main_returns_zero_for_signal_and_snapshot_csv_inputs(tmp_path):
+    signal_csv = _write_csv(tmp_path, "signals.csv", SIGNAL_CSV)
+    snapshot_csv = _write_csv(tmp_path, "snapshots.csv", SNAPSHOT_CSV)
+    premium_csv = _write_csv(tmp_path, "premium.csv", PREMIUM_CSV)
+
+    exit_code = main(
+        [
+            "--signal-csv",
+            str(signal_csv),
+            "--snapshot-csv",
+            str(snapshot_csv),
+            "--premium-csv",
+            str(premium_csv),
+        ]
+    )
+
+    assert exit_code == 0
+
+
 def test_main_prints_summary_for_valid_csv_inputs(tmp_path, capsys):
     scenario_csv = _write_csv(tmp_path, "scenario.csv", SCENARIO_CSV)
     premium_csv = _write_csv(tmp_path, "premium.csv", PREMIUM_CSV)
@@ -145,6 +174,71 @@ def test_main_prints_summary_for_valid_csv_inputs(tmp_path, capsys):
 def test_main_fails_through_argparse_when_required_args_missing():
     with pytest.raises(SystemExit):
         main([])
+
+
+def test_main_rejects_missing_signal_and_snapshot_inputs(tmp_path):
+    premium_csv = _write_csv(tmp_path, "premium.csv", PREMIUM_CSV)
+
+    with pytest.raises(SystemExit):
+        main(["--premium-csv", str(premium_csv)])
+
+
+def test_main_rejects_scenario_csv_mixed_with_signal_csv(tmp_path):
+    scenario_csv = _write_csv(tmp_path, "scenario.csv", SCENARIO_CSV)
+    signal_csv = _write_csv(tmp_path, "signals.csv", SIGNAL_CSV)
+    premium_csv = _write_csv(tmp_path, "premium.csv", PREMIUM_CSV)
+
+    with pytest.raises(SystemExit):
+        main([
+            "--scenario-csv",
+            str(scenario_csv),
+            "--signal-csv",
+            str(signal_csv),
+            "--premium-csv",
+            str(premium_csv),
+        ])
+
+
+def test_main_rejects_scenario_csv_mixed_with_snapshot_csv(tmp_path):
+    scenario_csv = _write_csv(tmp_path, "scenario.csv", SCENARIO_CSV)
+    snapshot_csv = _write_csv(tmp_path, "snapshots.csv", SNAPSHOT_CSV)
+    premium_csv = _write_csv(tmp_path, "premium.csv", PREMIUM_CSV)
+
+    with pytest.raises(SystemExit):
+        main([
+            "--scenario-csv",
+            str(scenario_csv),
+            "--snapshot-csv",
+            str(snapshot_csv),
+            "--premium-csv",
+            str(premium_csv),
+        ])
+
+
+def test_main_rejects_signal_csv_without_snapshot_csv(tmp_path):
+    signal_csv = _write_csv(tmp_path, "signals.csv", SIGNAL_CSV)
+    premium_csv = _write_csv(tmp_path, "premium.csv", PREMIUM_CSV)
+
+    with pytest.raises(SystemExit):
+        main([
+            "--signal-csv",
+            str(signal_csv),
+            "--premium-csv",
+            str(premium_csv),
+        ])
+
+
+def test_main_rejects_snapshot_csv_without_signal_csv(tmp_path):
+    snapshot_csv = _write_csv(tmp_path, "snapshots.csv", SNAPSHOT_CSV)
+    premium_csv = _write_csv(tmp_path, "premium.csv", PREMIUM_CSV)
+
+    with pytest.raises(SystemExit):
+        main([
+            "--snapshot-csv",
+            str(snapshot_csv),
+            "--premium-csv",
+            str(premium_csv),
+        ])
 
 
 def _backtest_result():
@@ -293,6 +387,32 @@ def test_main_writes_csv_when_requested(tmp_path):
     assert rows[1][0] == "1"
 
 
+def test_main_writes_summary_csv_in_signal_and_snapshot_mode(tmp_path):
+    signal_csv = _write_csv(tmp_path, "signals.csv", SIGNAL_CSV)
+    snapshot_csv = _write_csv(tmp_path, "snapshots.csv", SNAPSHOT_CSV)
+    premium_csv = _write_csv(tmp_path, "premium.csv", PREMIUM_CSV)
+    output_path = tmp_path / "reports" / "summary.csv"
+
+    exit_code = main(
+        [
+            "--signal-csv",
+            str(signal_csv),
+            "--snapshot-csv",
+            str(snapshot_csv),
+            "--premium-csv",
+            str(premium_csv),
+            "--summary-csv",
+            str(output_path),
+        ]
+    )
+
+    assert exit_code == 0
+    assert output_path.exists()
+    with output_path.open(newline="", encoding="utf-8") as handle:
+        rows = list(csv.reader(handle))
+    assert rows[1][0] == "1"
+
+
 def test_main_writes_both_json_and_csv_when_requested(tmp_path):
     scenario_csv = _write_csv(tmp_path, "scenario.csv", SCENARIO_CSV)
     premium_csv = _write_csv(tmp_path, "premium.csv", PREMIUM_CSV)
@@ -409,6 +529,31 @@ def test_main_writes_trades_json_when_requested(tmp_path):
     assert payload[0]["symbol"] == "NIFTY26JUL24200CE"
 
 
+def test_main_writes_trades_json_in_signal_and_snapshot_mode(tmp_path):
+    signal_csv = _write_csv(tmp_path, "signals.csv", SIGNAL_CSV)
+    snapshot_csv = _write_csv(tmp_path, "snapshots.csv", SNAPSHOT_CSV)
+    premium_csv = _write_csv(tmp_path, "premium.csv", PREMIUM_CSV)
+    output_path = tmp_path / "reports" / "trades.json"
+
+    exit_code = main(
+        [
+            "--signal-csv",
+            str(signal_csv),
+            "--snapshot-csv",
+            str(snapshot_csv),
+            "--premium-csv",
+            str(premium_csv),
+            "--trades-json",
+            str(output_path),
+        ]
+    )
+
+    assert exit_code == 0
+    assert output_path.exists()
+    payload = json.loads(output_path.read_text(encoding="utf-8"))
+    assert payload[0]["symbol"] == "NIFTY26JUL24200CE"
+
+
 def test_main_writes_trades_csv_when_requested(tmp_path):
     scenario_csv = _write_csv(tmp_path, "scenario.csv", SCENARIO_CSV)
     premium_csv = _write_csv(tmp_path, "premium.csv", PREMIUM_CSV)
@@ -418,6 +563,32 @@ def test_main_writes_trades_csv_when_requested(tmp_path):
         [
             "--scenario-csv",
             str(scenario_csv),
+            "--premium-csv",
+            str(premium_csv),
+            "--trades-csv",
+            str(output_path),
+        ]
+    )
+
+    assert exit_code == 0
+    assert output_path.exists()
+    with output_path.open(newline="", encoding="utf-8") as handle:
+        rows = list(csv.reader(handle))
+    assert rows[1][0] == "NIFTY26JUL24200CE"
+
+
+def test_main_writes_trades_csv_in_signal_and_snapshot_mode(tmp_path):
+    signal_csv = _write_csv(tmp_path, "signals.csv", SIGNAL_CSV)
+    snapshot_csv = _write_csv(tmp_path, "snapshots.csv", SNAPSHOT_CSV)
+    premium_csv = _write_csv(tmp_path, "premium.csv", PREMIUM_CSV)
+    output_path = tmp_path / "reports" / "trades.csv"
+
+    exit_code = main(
+        [
+            "--signal-csv",
+            str(signal_csv),
+            "--snapshot-csv",
+            str(snapshot_csv),
             "--premium-csv",
             str(premium_csv),
             "--trades-csv",

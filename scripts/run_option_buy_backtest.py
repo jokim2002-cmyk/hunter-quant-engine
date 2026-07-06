@@ -17,26 +17,62 @@ if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 from src.backtesting.option_buy_backtest_runner import OptionBuyBacktestRunner
+from src.backtesting.option_buy_backtest_scenario_builder import (
+    OptionBuyBacktestScenarioBuilder,
+)
 from src.backtesting.option_buy_backtest_scenario_csv_loader import (
     OptionBuyBacktestScenarioCsvLoader,
 )
 from src.backtesting.option_buy_backtest_summary import OptionBuyBacktestSummary
+from src.backtesting.option_chain_snapshot_csv_loader import (
+    OptionChainSnapshotCsvLoader,
+)
 from src.backtesting.option_premium_backtest_result import (
     OptionPremiumBacktestResult,
 )
 from src.backtesting.option_premium_candle_csv_loader import (
     OptionPremiumCandleCsvLoader,
 )
+from src.backtesting.trade_signal_csv_loader import TradeSignalCsvLoader
+
+
+def load_scenarios_from_inputs(
+    scenario_csv: str | Path | None = None,
+    signal_csv: str | Path | None = None,
+    snapshot_csv: str | Path | None = None,
+) -> tuple[object, ...]:
+    """
+    Load scenarios from either scenario CSV input or separate signal/snapshot CSV inputs.
+    """
+    if scenario_csv is not None and (signal_csv is not None or snapshot_csv is not None):
+        raise ValueError("scenario_csv cannot be combined with signal_csv or snapshot_csv")
+
+    if scenario_csv is None and (signal_csv is None or snapshot_csv is None):
+        raise ValueError("scenario_csv or both signal_csv and snapshot_csv are required")
+
+    if scenario_csv is not None:
+        scenarios = OptionBuyBacktestScenarioCsvLoader().load_scenarios(scenario_csv)
+        return tuple(scenarios)
+
+    signals = TradeSignalCsvLoader().load_signals(signal_csv)
+    snapshots = OptionChainSnapshotCsvLoader().load_snapshots(snapshot_csv)
+    return OptionBuyBacktestScenarioBuilder().build_scenarios(signals, snapshots)
 
 
 def run_backtest(
-    scenario_csv: str | Path,
-    premium_csv: str | Path,
+    scenario_csv: str | Path | None = None,
+    premium_csv: str | Path | None = None,
+    signal_csv: str | Path | None = None,
+    snapshot_csv: str | Path | None = None,
 ) -> OptionBuyBacktestSummary:
     """
     Run an offline option-buy backtest from scenario and premium CSV files.
     """
-    scenarios = OptionBuyBacktestScenarioCsvLoader().load_scenarios(scenario_csv)
+    scenarios = load_scenarios_from_inputs(
+        scenario_csv=scenario_csv,
+        signal_csv=signal_csv,
+        snapshot_csv=snapshot_csv,
+    )
     premium_provider = OptionPremiumCandleCsvLoader().load_provider(premium_csv)
 
     signals = tuple(scenario.signal for scenario in scenarios)
@@ -254,8 +290,18 @@ def build_argument_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "--scenario-csv",
-        required=True,
+        default=None,
         help="Path to option-buy backtest scenario CSV.",
+    )
+    parser.add_argument(
+        "--signal-csv",
+        default=None,
+        help="Path to trade signal CSV.",
+    )
+    parser.add_argument(
+        "--snapshot-csv",
+        default=None,
+        help="Path to option chain snapshot CSV.",
     )
     parser.add_argument(
         "--premium-csv",
@@ -291,10 +337,23 @@ def main(
     """
     CLI entrypoint.
     """
-    args = build_argument_parser().parse_args(argv)
+    parser = build_argument_parser()
+    args = parser.parse_args(argv)
+
+    if args.scenario_csv is None and args.signal_csv is None and args.snapshot_csv is None:
+        parser.error("either --scenario-csv or both --signal-csv and --snapshot-csv are required")
+
+    if args.scenario_csv is not None and (args.signal_csv is not None or args.snapshot_csv is not None):
+        parser.error("--scenario-csv cannot be used with --signal-csv or --snapshot-csv")
+
+    if (args.signal_csv is None) != (args.snapshot_csv is None):
+        parser.error("--signal-csv and --snapshot-csv must be provided together")
+
     summary = run_backtest(
         scenario_csv=args.scenario_csv,
         premium_csv=args.premium_csv,
+        signal_csv=args.signal_csv,
+        snapshot_csv=args.snapshot_csv,
     )
 
     if args.summary_json:
