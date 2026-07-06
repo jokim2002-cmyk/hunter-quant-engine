@@ -76,3 +76,13 @@ def test_paper_mvp_scope_doc_marks_strategy_bridge_included_after_module_b():
 
     assert "Strategy-to-paper bridge" in included
     assert "Strategy-to-paper bridge" not in blockers
+
+
+def test_paper_mvp_scope_doc_marks_backtest_evidence_included_after_module_c():
+    text = SCOPE_DOC.read_text(encoding="utf-8")
+
+    included = text.split("## Included in Paper MVP v0.1", 1)[1].split("##", 1)[0]
+    blockers = text.split("## Must Finish Before v0.1 Release", 1)[1].split("##", 1)[0]
+
+    assert "Backtest evidence runner" in included
+    assert "Backtest evidence runner" not in blockers

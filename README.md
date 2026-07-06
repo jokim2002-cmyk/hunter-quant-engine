@@ -26,6 +26,7 @@ Roadmap-closing work now happens in larger module patches with tests and full
 quick-check validation.
 
 Module B added the Strategy-to-paper bridge for approved option-buy plans.
+Module C added the Backtest evidence runner for paper pass/fail gates.
 
 Key scope documents:
 
@@ -81,7 +82,7 @@ Engineer it right once. Improve it forever.
 HQE currently supports:
 
 - Clean Python architecture
-- 1410 tests passing
+- 1418 tests passing
 - Smart Money Concepts detection
 - SMC strategy signal generation
 - Strategy config presets
