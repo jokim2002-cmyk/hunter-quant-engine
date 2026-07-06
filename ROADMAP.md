@@ -27,6 +27,7 @@ Current checkpoint:
 - All-in-one replay journal shortcut uses pretty runs viewer completed.
 - Friendly replay journal summary viewer completed.
 - Paper MVP v0.1 scope freeze completed.
+- Strategy-to-paper bridge completed.
 - Replay journal all-in-one shortcut prints index completed.
 - Paper P&L is simulation only.
 - Real-money execution remains the final phase only.
@@ -774,11 +775,10 @@ Scope docs:
 
 Only these items can block Paper MVP v0.1:
 
-1. Strategy-to-paper bridge.
-2. Backtest evidence runner.
-3. Final paper operator guide.
-4. Release checklist pass.
-5. Paper MVP release tag.
+1. Backtest evidence runner.
+2. Final paper operator guide.
+3. Release checklist pass.
+4. Paper MVP release tag.
 
 Deferred beyond v0.1:
 

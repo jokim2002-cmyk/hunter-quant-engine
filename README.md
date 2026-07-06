@@ -25,6 +25,8 @@ Paper MVP v0.1 is paper-only:
 Roadmap-closing work now happens in larger module patches with tests and full
 quick-check validation.
 
+Module B added the Strategy-to-paper bridge for approved option-buy plans.
+
 Key scope documents:
 
 - `docs/PAPER_MVP_V0_1_SCOPE.md`
@@ -79,7 +81,7 @@ Engineer it right once. Improve it forever.
 HQE currently supports:
 
 - Clean Python architecture
-- 1402 tests passing
+- 1410 tests passing
 - Smart Money Concepts detection
 - SMC strategy signal generation
 - Strategy config presets
