@@ -45,7 +45,14 @@ class PaperTradingReplayStep:
     def __post_init__(self) -> None:
         has_request = self.request is not None
         has_close = bool(self.close_symbol.strip())
+        has_exit_details = (
+            self.exit_price is not None
+            or self.estimated_exit_charges
+            or self.estimated_slippage
+        )
 
+        if not has_close and has_exit_details:
+            raise ValueError("exit details require close_symbol")
         if not has_request and not has_close:
             raise ValueError("replay step requires a request or close_symbol")
         if self.request is not None and not isinstance(
@@ -60,12 +67,6 @@ class PaperTradingReplayStep:
             raise ValueError("estimated_exit_charges cannot be negative")
         if self.estimated_slippage < 0:
             raise ValueError("estimated_slippage cannot be negative")
-        if not has_close and (
-            self.exit_price is not None
-            or self.estimated_exit_charges
-            or self.estimated_slippage
-        ):
-            raise ValueError("exit details require close_symbol")
 
 
 @dataclass(frozen=True)
