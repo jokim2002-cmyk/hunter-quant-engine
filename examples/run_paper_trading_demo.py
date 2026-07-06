@@ -6,6 +6,7 @@ This demo is fake/local only.
 - It submits the request to PaperTradingSession.
 - It closes the open fake paper position locally.
 - It shows paper-only simulated P&L from a synthetic exit premium.
+- It estimates local paper exit costs with a simple deterministic demo model.
 - It writes local paper report files under reports/paper_trading/.
 
 No broker SDK. No broker platform integration. No live/real market data.
@@ -25,6 +26,7 @@ from src.models.option_type import OptionType
 from src.paper_trading.option_buy_plan_to_paper_order import (
     create_paper_order_request_from_option_buy_plan,
 )
+from src.paper_trading.paper_estimated_cost_model import estimate_paper_exit_costs
 from src.paper_trading.paper_realized_exit_record import PaperExitReason
 from src.paper_trading.paper_trading_report_writer import write_paper_trading_report
 from src.paper_trading.paper_trading_session import PaperTradingSession
@@ -46,8 +48,6 @@ def run_demo() -> int:
     ts = datetime(2026, 7, 6, 9, 15)
     closed_at = datetime(2026, 7, 6, 9, 30)
     synthetic_exit_price = 135.0
-    estimated_exit_charges = 40.0
-    estimated_slippage = 10.0
 
     signal = TradeSignal(
         signal_type=SignalType.LONG,
@@ -92,6 +92,7 @@ def run_demo() -> int:
     )
 
     request = create_paper_order_request_from_option_buy_plan(plan)
+    estimated_exit_costs = estimate_paper_exit_costs(quantity=request.quantity)
 
     session = PaperTradingSession()
     record = session.submit_order(request)
@@ -105,8 +106,8 @@ def run_demo() -> int:
         closed_at=closed_at,
         exit_reason=PaperExitReason.MANUAL,
         exit_price=synthetic_exit_price,
-        estimated_exit_charges=estimated_exit_charges,
-        estimated_slippage=estimated_slippage,
+        estimated_exit_charges=estimated_exit_costs.estimated_exit_charges,
+        estimated_slippage=estimated_exit_costs.estimated_slippage,
     )
 
     position_after_close = session.find_position(symbol)
