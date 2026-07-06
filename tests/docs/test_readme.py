@@ -16,7 +16,7 @@ def test_readme_documents_current_hqe_workflow():
     text = readme_path.read_text(encoding="utf-8")
 
     assert "Hunter Quant Engine (HQE)" in text
-    assert "1338 tests passing" in text
+    assert "1339 tests passing" in text
     assert "Strict/Balanced/Relaxed strategy modes" in text
     assert "Strategy mode benchmark runner" in text
     assert "Strategy experiment dry-run planner" in text
@@ -29,6 +29,7 @@ def test_readme_documents_current_hqe_workflow():
     assert ".\\.venv\\Scripts\\python.exe -m src.paper_trading.paper_trading_demo_cli" in text
     assert "Run the safe local paper trading demo example wrapper:" in text
     assert ".\\.venv\\Scripts\\python.exe examples\\run_paper_trading_demo.py" in text
+    assert "Shortcut quick-start card: `README_SHORTCUTS.md`" in text
     assert "Paper demo shortcuts:" in text
     assert ".\\hqe_paper_demo.bat" in text
     assert ".\\hqe_paper_report.bat" in text

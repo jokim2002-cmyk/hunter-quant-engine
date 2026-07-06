@@ -58,7 +58,7 @@ Engineer it right once. Improve it forever.
 HQE currently supports:
 
 - Clean Python architecture
-- 1338 tests passing
+- 1339 tests passing
 - Smart Money Concepts detection
 - SMC strategy signal generation
 - Strategy config presets
@@ -122,6 +122,8 @@ Run experiment dry-run only:
 ```powershell
 py scripts\run_strategy_experiments.py
 ```
+
+Shortcut quick-start card: `README_SHORTCUTS.md`
 
 Run the safe local paper trading demo CLI:
 
