@@ -1,0 +1,3 @@
+timestamp,signal_type,signal_strength,confidence,rationale
+2026-07-06T09:15:00,long,strong,0.80,synthetic demo LONG CE setup
+2026-07-06T09:30:00,short,medium,0.75,synthetic demo SHORT PE setup

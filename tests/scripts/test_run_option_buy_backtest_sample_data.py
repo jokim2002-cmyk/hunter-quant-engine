@@ -8,6 +8,8 @@ from src.backtesting.option_buy_backtest_scenario_csv_loader import (
 
 SAMPLE_DIR = Path("examples/option_buy_backtest")
 SCENARIO_CSV = SAMPLE_DIR / "sample_scenario.csv"
+SIGNALS_CSV = SAMPLE_DIR / "sample_signals.csv"
+SNAPSHOTS_CSV = SAMPLE_DIR / "sample_snapshots.csv"
 PREMIUM_CSV = SAMPLE_DIR / "sample_premium.csv"
 README = SAMPLE_DIR / "README.md"
 
@@ -18,6 +20,14 @@ def test_sample_scenario_csv_exists():
 
 def test_sample_premium_csv_exists():
     assert PREMIUM_CSV.exists()
+
+
+def test_sample_signal_csv_exists():
+    assert SIGNALS_CSV.exists()
+
+
+def test_sample_snapshot_csv_exists():
+    assert SNAPSHOTS_CSV.exists()
 
 
 def test_run_backtest_works_with_sample_files():
@@ -51,6 +61,32 @@ def test_main_returns_zero_for_sample_files():
     assert exit_code == 0
 
 
+def test_main_returns_zero_for_signal_and_snapshot_sample_files():
+    exit_code = main(
+        [
+            "--signal-csv",
+            str(SIGNALS_CSV),
+            "--snapshot-csv",
+            str(SNAPSHOTS_CSV),
+            "--premium-csv",
+            str(PREMIUM_CSV),
+        ]
+    )
+
+    assert exit_code == 0
+
+
+def test_run_backtest_works_with_signal_and_snapshot_sample_files():
+    summary = run_backtest(
+        signal_csv=str(SIGNALS_CSV),
+        snapshot_csv=str(SNAPSHOTS_CSV),
+        premium_csv=str(PREMIUM_CSV),
+    )
+
+    assert summary.planned_signals >= 1
+    assert summary.completed_trades >= 1
+
+
 def test_sample_readme_states_synthetic_demo_and_no_profitability_claim():
     readme = README.read_text(encoding="utf-8").lower()
 
@@ -66,6 +102,8 @@ def test_sample_readme_includes_all_report_output_examples():
     assert "--summary-csv" in readme
     assert "--trades-json" in readme
     assert "--trades-csv" in readme
+    assert "--signal-csv" in readme
+    assert "--snapshot-csv" in readme
 
 
 def test_gitignore_ignores_generated_reports_but_not_sample_csvs():

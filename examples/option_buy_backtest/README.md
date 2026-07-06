@@ -10,11 +10,23 @@ Run from the repository root:
 python scripts/run_option_buy_backtest.py --scenario-csv examples/option_buy_backtest/sample_scenario.csv --premium-csv examples/option_buy_backtest/sample_premium.csv
 ```
 
+Run with separate signal and snapshot CSV files:
+
+```powershell
+.\.venv\Scripts\python.exe scripts/run_option_buy_backtest.py `
+  --signal-csv examples/option_buy_backtest/sample_signals.csv `
+  --snapshot-csv examples/option_buy_backtest/sample_snapshots.csv `
+  --premium-csv examples/option_buy_backtest/sample_premium.csv `
+  --summary-json reports/option_buy_backtest/signal_snapshot_summary.json `
+  --summary-csv reports/option_buy_backtest/signal_snapshot_summary.csv `
+  --trades-json reports/option_buy_backtest/signal_snapshot_trades.json `
+  --trades-csv reports/option_buy_backtest/signal_snapshot_trades.csv
+```
+
 Write a summary JSON report:
 
 ```powershell
-.
-.venv\Scripts\python.exe scripts/run_option_buy_backtest.py `
+.\.venv\Scripts\python.exe scripts/run_option_buy_backtest.py `
   --scenario-csv examples/option_buy_backtest/sample_scenario.csv `
   --premium-csv examples/option_buy_backtest/sample_premium.csv `
   --summary-json reports/option_buy_backtest/summary.json
@@ -60,3 +72,5 @@ Write all reports together:
 ```
 
 Generated report files should not be committed unless you intentionally want to create fixtures. They are safe local outputs only.
+
+These sample files are synthetic/demo only. They are not real market data and they are not a profitability claim.
