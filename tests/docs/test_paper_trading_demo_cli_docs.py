@@ -10,6 +10,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[2]
 CLI_MODULE_COMMAND = r".\.venv\Scripts\python.exe -m src.paper_trading.paper_trading_demo_cli"
 SCRIPT_WRAPPER_COMMAND = r".\.venv\Scripts\python.exe examples\run_paper_trading_demo.py"
 SHORTCUT_COMMAND = r".\hqe_paper_demo.bat"
+REPORT_SHORTCUT_COMMAND = r".\hqe_paper_report.bat"
 
 
 def test_paper_trading_demo_cli_documented_commands_stay_in_sync():
@@ -30,6 +31,8 @@ def test_paper_trading_demo_cli_documented_commands_stay_in_sync():
     assert SCRIPT_WRAPPER_COMMAND in cli_doc_text
     assert SHORTCUT_COMMAND in readme_text
     assert SHORTCUT_COMMAND in cli_doc_text
+    assert REPORT_SHORTCUT_COMMAND in readme_text
+    assert REPORT_SHORTCUT_COMMAND in cli_doc_text
 
     assert "def main() -> int:" in cli_source
     assert (

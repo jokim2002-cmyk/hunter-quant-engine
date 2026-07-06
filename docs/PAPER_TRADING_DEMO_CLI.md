@@ -47,6 +47,10 @@ The demo runs a complete safe local paper flow:
 
 ---
 
+After running the demo, this shortcut opens the generated text report:
+
+    .\hqe_paper_report.bat
+
 ## Generated Report Files
 
 The CLI writes generated files under:
