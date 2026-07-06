@@ -610,6 +610,37 @@ Definition of Done:
 20. Risk gateway
 21. Micro live execution
 
+## Completed Checkpoint
+
+### Safe Offline Option Market Data Workflow
+
+Completed:
+
+- Synthetic in-memory recording demo
+- CSV validation demo
+- CSV replay demo
+- End-to-end record -> validate -> replay smoke test
+
+Properties:
+
+- Broker-agnostic
+- No FYERS
+- No live or real market data
+- No orders
+- No profitability claim
+
+Relevant paths:
+
+- `examples/record_in_memory_option_market_data.py`
+- `examples/validate_option_market_data_csv.py`
+- `examples/replay_csv_option_market_data.py`
+- `tests/examples/test_option_market_data_demo_workflow.py`
+- `docs/OPTION_MARKET_DATA_RECORDING.md`
+
+Future phase:
+
+- Real broker/live data adapter after safety layers
+
 ---
 
 ## HQE Philosophy

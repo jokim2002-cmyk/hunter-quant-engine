@@ -295,6 +295,35 @@ Current SMC strict/balanced/relaxed benchmarks remain useful as underlying signa
 - ROADMAP.md
 - docs/PC_BENCHMARK_RUNBOOK.md
 
+## Safe Offline Option Market Data Workflow
+
+HQE now has a completed broker-agnostic offline option market data workflow.
+
+It covers:
+
+- Synthetic in-memory recording demo
+- CSV validation demo
+- CSV replay demo
+- End-to-end record -> validate -> replay smoke test
+
+This workflow:
+
+- Is broker-agnostic
+- Does not use FYERS
+- Does not use live or real market data
+- Does not place orders
+- Is not a profitability claim
+
+Relevant paths:
+
+- `examples/record_in_memory_option_market_data.py`
+- `examples/validate_option_market_data_csv.py`
+- `examples/replay_csv_option_market_data.py`
+- `tests/examples/test_option_market_data_demo_workflow.py`
+- `docs/OPTION_MARKET_DATA_RECORDING.md`
+
+Real broker/live market data remains a future phase.
+
 ---
 
 ## Guiding Principle
