@@ -345,6 +345,27 @@ Properties of this workflow:
 - It returns an `OptionMarketDataCsvValidationResult` with `is_valid`, `errors`, `snapshot_count`, `premium_candle_count`, and `symbols`.
 - Errors are returned as messages instead of raising, so callers can decide how to handle them.
 
+## Offline CSV validation demo
+
+The demo script at `examples/validate_option_market_data_csv.py` validates recorded synthetic/demo CSV files offline without replaying them.
+
+- It does not use FYERS or any broker SDK.
+- It does not use live or real market data.
+- It does not place orders.
+- It is not a profitability claim.
+
+First generate demo CSV files:
+
+```powershell
+.\.venv\Scripts\python.exe examples\record_in_memory_option_market_data.py
+```
+
+Then validate:
+
+```powershell
+.\.venv\Scripts\python.exe examples\validate_option_market_data_csv.py
+```
+
 ## Notes
 
 - This layer is broker-agnostic.
