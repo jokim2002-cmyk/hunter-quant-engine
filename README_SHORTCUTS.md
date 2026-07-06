@@ -81,3 +81,4 @@ This shows the current branch, latest commits, and working tree status.
 - No real orders are placed.
 - This is not a profitability claim.
 - `hqe_paper_replay_journal_summary.bat` - print replay journal summary
+- `hqe_paper_replay_journal_all.bat` - run replay journal, print summary, and open folder
