@@ -395,3 +395,17 @@ Workflow:
 This proves the safe local demo workflow only. The workflow is broker-agnostic, does not use FYERS, is not live market data, does not place orders, and is not a profitability claim.
 
 Real broker/live market data remains a future phase.
+
+## Backtest-readiness smoke test
+
+`tests/examples/test_option_market_data_backtest_readiness_workflow.py`
+
+Proves that demo-recorded CSV files can be loaded through the existing
+`OptionChainSnapshotCsvLoader` and `OptionPremiumCandleCsvLoader` and
+used with the existing `OptionBuyBacktestScenarioBuilder`.
+
+- Synthetic/demo data only.
+- Does not use broker/FYERS.
+- Not live or real market data.
+- Does not place orders.
+- Not a profitability claim.
