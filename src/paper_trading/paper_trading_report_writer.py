@@ -30,6 +30,18 @@ from src.paper_trading.paper_trading_session_summary_export import (
 
 PAPER_TRADING_REPORT_VERSION = 1
 PAPER_TRADING_REPORT_SOURCE = "paper"
+PAPER_TRADING_REPORT_BUNDLE_FILENAMES = (
+    "manifest.json",
+    "summary.json",
+    "summary.csv",
+    "orders.json",
+    "orders.csv",
+    "open_positions.json",
+    "open_positions.csv",
+    "exit_records.json",
+    "exit_records.csv",
+    "report.txt",
+)
 
 PaperTradingReportSummary = PaperTradingSessionSummary
 
@@ -154,6 +166,30 @@ def _ensure_reports_output_dir(output_dir: str | Path) -> Path:
 
     path.mkdir(parents=True, exist_ok=True)
     return path
+
+
+def clean_paper_trading_report_bundle(
+    output_dir: str | Path = Path("reports") / "paper_trading",
+) -> tuple[Path, ...]:
+    """
+    Safely remove known generated paper report bundle files.
+
+    Only known generated report files are deleted, and output_dir must be
+    under reports/. Unknown files are left untouched.
+    """
+    base_dir = _ensure_reports_output_dir(output_dir)
+    deleted_paths: list[Path] = []
+
+    for filename in PAPER_TRADING_REPORT_BUNDLE_FILENAMES:
+        path = base_dir / filename
+        if not path.exists():
+            continue
+        if not path.is_file():
+            raise ValueError(f"paper report bundle path is not a file: {path}")
+        path.unlink()
+        deleted_paths.append(path)
+
+    return tuple(deleted_paths)
 
 
 def _write_json(output_path: Path, payload: Any) -> Path:

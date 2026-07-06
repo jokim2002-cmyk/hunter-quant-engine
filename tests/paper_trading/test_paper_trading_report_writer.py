@@ -17,6 +17,7 @@ import pytest
 from src.paper_trading.paper_order_journal import PaperOrderRequest
 from src.paper_trading.paper_realized_exit_record import PaperExitReason
 from src.paper_trading.paper_trading_report_writer import (
+    PAPER_TRADING_REPORT_BUNDLE_FILENAMES,
     PAPER_TRADING_REPORT_SOURCE,
     PAPER_TRADING_REPORT_VERSION,
     PaperTradingReportMetadata,
@@ -24,6 +25,7 @@ from src.paper_trading.paper_trading_report_writer import (
     PaperTradingReportSummary,
     build_paper_trading_report_metadata,
     build_paper_trading_report_summary,
+    clean_paper_trading_report_bundle,
     paper_exit_record_to_dict,
     paper_order_record_to_dict,
     paper_position_to_dict,
@@ -584,6 +586,62 @@ def test_write_paper_trading_report_text_contains_safety_lines(tmp_path):
     assert "no live/real market data" in text
     assert "no real orders" in text
     assert "not a profitability claim" in text
+
+
+def test_clean_paper_trading_report_bundle_removes_only_known_report_files(tmp_path):
+    session = _session_with_open_and_closed_positions()
+    output_dir = tmp_path / "reports" / "paper"
+    paths = write_paper_trading_report(
+        session,
+        output_dir,
+        generated_at=_GENERATED_AT,
+    )
+    extra_file = output_dir / "keep_me.txt"
+    extra_file.write_text("not part of paper report bundle\n", encoding="utf-8")
+
+    deleted_paths = clean_paper_trading_report_bundle(output_dir)
+
+    assert set(path.name for path in deleted_paths) == set(
+        PAPER_TRADING_REPORT_BUNDLE_FILENAMES
+    )
+    assert len(deleted_paths) == len(PAPER_TRADING_REPORT_BUNDLE_FILENAMES)
+
+    assert not paths.manifest_json.exists()
+    assert not paths.summary_json.exists()
+    assert not paths.summary_csv.exists()
+    assert not paths.orders_json.exists()
+    assert not paths.orders_csv.exists()
+    assert not paths.open_positions_json.exists()
+    assert not paths.open_positions_csv.exists()
+    assert not paths.exit_records_json.exists()
+    assert not paths.exit_records_csv.exists()
+    assert not paths.report_text.exists()
+
+    assert extra_file.exists()
+    assert extra_file.read_text(encoding="utf-8") == "not part of paper report bundle\n"
+
+
+def test_clean_paper_trading_report_bundle_returns_empty_when_no_files(tmp_path):
+    output_dir = tmp_path / "reports" / "empty"
+
+    deleted_paths = clean_paper_trading_report_bundle(output_dir)
+
+    assert deleted_paths == ()
+    assert output_dir.exists()
+
+
+def test_clean_paper_trading_report_bundle_rejects_output_outside_reports(tmp_path):
+    with pytest.raises(ValueError, match="reports/"):
+        clean_paper_trading_report_bundle(tmp_path / "paper")
+
+
+def test_clean_paper_trading_report_bundle_rejects_directory_bundle_member(tmp_path):
+    output_dir = tmp_path / "reports" / "paper"
+    bad_path = output_dir / "summary.json"
+    bad_path.mkdir(parents=True)
+
+    with pytest.raises(ValueError, match="paper report bundle path is not a file"):
+        clean_paper_trading_report_bundle(output_dir)
 
 
 def test_write_paper_trading_report_rejects_output_outside_reports(tmp_path):
