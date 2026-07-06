@@ -42,9 +42,11 @@ Run the full workflow:
 
 This shortcut runs:
 
+The all-in-one shortcut uses the pretty runs viewer instead of raw index JSON.
+
     .\hqe_paper_replay_journal.bat
     .\hqe_paper_replay_journal_summary.bat
-    .\hqe_paper_replay_journal_index.bat
+    .\hqe_paper_replay_journal_summary.bat
     .\hqe_paper_replay_journal_runs.bat
     .\hqe_paper_replay_journal_folder.bat
 

@@ -10,9 +10,10 @@ def test_paper_replay_journal_all_shortcut_runs_demo_summary_and_folder():
 
     assert "call hqe_paper_replay_journal.bat" in text
     assert "call hqe_paper_replay_journal_summary.bat" in text
-    assert "call hqe_paper_replay_journal_index.bat" in text
+    assert "call hqe_paper_replay_journal_runs.bat" in text
+    assert "call hqe_paper_replay_journal_index.bat" not in text
     assert "call hqe_paper_replay_journal_folder.bat" in text
-    assert "prints index" in text
+    assert "lists runs" in text
     assert "paper replay journal workflow complete" in text
     assert "paper pnl is simulation only" in text
 
