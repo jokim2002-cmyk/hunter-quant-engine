@@ -44,6 +44,7 @@ This shortcut runs:
 
     .\hqe_paper_replay_journal.bat
     .\hqe_paper_replay_journal_summary.bat
+    .\hqe_paper_replay_journal_index.bat
     .\hqe_paper_replay_journal_folder.bat
 
 ---
@@ -57,6 +58,10 @@ Run fake paper replay and save the journal bundle:
 Print the generated summary JSON:
 
     .\hqe_paper_replay_journal_summary.bat
+
+Print the generated index JSON:
+
+    .\hqe_paper_replay_journal_index.bat
 
 Open the generated replay journal folder:
 

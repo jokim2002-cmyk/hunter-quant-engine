@@ -18,6 +18,7 @@ echo   .\hqe_paper_demo_report.bat - run demo and open report
 echo   .\hqe_paper_replay_journal.bat - run fake paper replay and save journal bundle
 echo   .\hqe_paper_replay_journal_folder.bat - open replay journal folder
 echo   .\hqe_paper_replay_journal_summary.bat - print replay journal summary
+echo   .\hqe_paper_replay_journal_index.bat - print replay journal index
 echo   .\hqe_paper_replay_journal_all.bat - run replay journal, print summary, open folder
 echo   .\hqe_paper_folder.bat      - open paper report folder
 echo   .\hqe_paper_report_text.bat - print paper report in terminal

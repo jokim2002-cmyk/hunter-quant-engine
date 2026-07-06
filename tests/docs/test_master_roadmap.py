@@ -13,7 +13,7 @@ def test_master_roadmap_has_current_status_override_before_historical_notes():
     historical_index = text.index("648 tests passing")
 
     assert current_index < historical_index
-    assert "1381 tests passing after replay journal index." in text
+    assert "1383 tests passing after replay journal index shortcut." in text
     assert "Paper trading demo/report workflow completed." in text
     assert "Paper journal persistence skeleton completed." in text
     assert "Replay journal persistence bridge completed." in text
@@ -24,6 +24,7 @@ def test_master_roadmap_has_current_status_override_before_historical_notes():
     assert "Replay journal guide completed." in text
     assert "Replay journal cleanup helper completed." in text
     assert "Replay journal index completed." in text
+    assert "Replay journal index shortcut completed." in text
     assert "Paper P&L is simulation only." in text
     assert "Real-money execution remains the final phase only." in text
     assert "hqe_paper_demo_report.bat" in text
@@ -31,6 +32,7 @@ def test_master_roadmap_has_current_status_override_before_historical_notes():
     assert "hqe_paper_replay_journal.bat" in text
     assert "hqe_paper_replay_journal_folder.bat" in text
     assert "hqe_paper_replay_journal_summary.bat" in text
+    assert "hqe_paper_replay_journal_index.bat" in text
     assert "hqe_paper_replay_journal_all.bat" in text
     assert "docs/PAPER_TRADING_REPLAY_JOURNAL.md" in text
     assert "reports/paper_trading/report.txt" in text
