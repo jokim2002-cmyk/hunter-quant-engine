@@ -45,6 +45,7 @@ This shortcut runs:
     .\hqe_paper_replay_journal.bat
     .\hqe_paper_replay_journal_summary.bat
     .\hqe_paper_replay_journal_index.bat
+    .\hqe_paper_replay_journal_runs.bat
     .\hqe_paper_replay_journal_folder.bat
 
 ---
@@ -62,6 +63,10 @@ Print the generated summary JSON:
 Print the generated index JSON:
 
     .\hqe_paper_replay_journal_index.bat
+
+List replay journal runs:
+
+    .\hqe_paper_replay_journal_runs.bat
 
 Open the generated replay journal folder:
 
