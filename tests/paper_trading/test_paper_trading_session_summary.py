@@ -84,3 +84,32 @@ def test_no_forbidden_external_sdk_strings_in_summary_source():
     assert "send" + "_order" not in source
     assert "execute" + "_order" not in source
 
+
+def test_session_summary_after_closed_position():
+    session = PaperTradingSession()
+    session.submit_order(_request(symbol="NIFTY26JUL24200CE", quantity=65))
+    session.close_position("NIFTY26JUL24200CE")
+
+    summary = build_paper_trading_session_summary(session)
+
+    assert summary.total_orders == 1
+    assert summary.open_positions_count == 0
+    assert summary.total_open_quantity == 0
+    assert summary.symbols == ()
+    assert summary.has_open_positions is False
+
+
+def test_session_summary_after_one_of_two_positions_is_closed():
+    session = PaperTradingSession()
+    session.submit_order(_request(symbol="NIFTY26JUL24200CE", quantity=65))
+    session.submit_order(_request(symbol="NIFTY26JUL24300CE", quantity=130))
+    session.close_position("NIFTY26JUL24200CE")
+
+    summary = build_paper_trading_session_summary(session)
+
+    assert summary.total_orders == 2
+    assert summary.open_positions_count == 1
+    assert summary.total_open_quantity == 130
+    assert summary.symbols == ("NIFTY26JUL24300CE",)
+    assert summary.has_open_positions is True
+

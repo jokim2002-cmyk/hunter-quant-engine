@@ -78,4 +78,12 @@ class PaperTradingSession:
         """
         return self._position_state.total_quantity(symbol)
 
+    def close_position(self, symbol: str) -> PaperPosition | None:
+        """
+        Close and return the open fake paper position for symbol.
+
+        Returns None when no open paper position exists for the symbol.
+        """
+        return self._position_state.close(symbol)
+
 

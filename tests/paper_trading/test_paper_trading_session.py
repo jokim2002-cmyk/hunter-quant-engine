@@ -232,3 +232,61 @@ def test_session_defaults_to_local_journal_and_position_state():
 
     assert isinstance(session._journal, PaperOrderJournal)
     assert isinstance(session._position_state, PaperPositionState)
+
+
+def test_close_position_removes_matching_open_position():
+    session = PaperTradingSession()
+    session.submit_order(_request(symbol="NIFTY_24200CE"))
+    session.submit_order(_request(symbol="NIFTY_24300PE"))
+
+    closed = session.close_position("NIFTY_24200CE")
+
+    assert closed is not None
+    assert closed.symbol == "NIFTY_24200CE"
+    assert closed.quantity == 65
+    assert session.find_position("NIFTY_24200CE") is None
+    assert session.total_open_quantity("NIFTY_24200CE") == 0
+
+    remaining_positions = session.list_open_positions()
+    assert len(remaining_positions) == 1
+    assert remaining_positions[0].symbol == "NIFTY_24300PE"
+
+
+def test_close_position_returns_none_for_unknown_symbol():
+    session = PaperTradingSession()
+    session.submit_order(_request(symbol="NIFTY_24200CE"))
+
+    closed = session.close_position("NIFTY_99999CE")
+
+    assert closed is None
+    assert session.find_position("NIFTY_24200CE") is not None
+    assert session.total_open_quantity("NIFTY_24200CE") == 65
+
+
+def test_close_position_keeps_order_journal_history():
+    session = PaperTradingSession()
+    first = session.submit_order(_request(symbol="NIFTY_24200CE"))
+    second = session.submit_order(_request(symbol="NIFTY_24300PE"))
+
+    session.close_position("NIFTY_24200CE")
+
+    orders = session.list_orders()
+    assert orders == (first, second)
+    assert session.find_order(first.order_id) is first
+    assert session.find_order(second.order_id) is second
+
+
+def test_close_position_after_merged_orders_returns_merged_position_snapshot():
+    session = PaperTradingSession()
+    session.submit_order(_request(symbol="NIFTY_24200CE", quantity=65, planned_entry_price=100.0))
+    session.submit_order(_request(symbol="NIFTY_24200CE", quantity=130, planned_entry_price=120.0))
+
+    closed = session.close_position("NIFTY_24200CE")
+
+    assert closed is not None
+    assert closed.symbol == "NIFTY_24200CE"
+    assert closed.quantity == 195
+    assert closed.average_entry_price == ((65 * 100.0) + (130 * 120.0)) / 195
+    assert session.find_position("NIFTY_24200CE") is None
+    assert session.list_open_positions() == ()
+
