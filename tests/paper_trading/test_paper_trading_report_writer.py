@@ -55,6 +55,8 @@ def _session_with_open_and_closed_positions() -> PaperTradingSession:
         closed_at=_CLOSED_AT,
         exit_reason=PaperExitReason.TARGET,
         exit_price=135.0,
+        estimated_exit_charges=40.0,
+        estimated_slippage=10.0,
     )
     return session
 
@@ -103,6 +105,8 @@ def test_paper_exit_record_to_dict():
         closed_at=_CLOSED_AT,
         exit_reason=PaperExitReason.TARGET,
         exit_price=135.0,
+        estimated_exit_charges=40.0,
+        estimated_slippage=10.0,
     )
 
     assert exit_record is not None
@@ -121,6 +125,10 @@ def test_paper_exit_record_to_dict():
         "has_exit_price": True,
         "simulated_points": 35.0,
         "simulated_gross_pnl": 2275.0,
+        "estimated_exit_charges": 40.0,
+        "estimated_slippage": 10.0,
+        "total_estimated_costs": 50.0,
+        "simulated_net_pnl": 2225.0,
         "source": "paper",
     }
 
@@ -140,12 +148,19 @@ def test_build_paper_trading_report_summary_with_closed_trade():
     assert summary.has_closed_trades is True
     assert summary.exits_with_pnl_count == 1
     assert summary.total_simulated_gross_pnl == 2275.0
+    assert summary.total_estimated_costs == 50.0
+    assert summary.total_simulated_net_pnl == 2225.0
     assert summary.winning_exits_count == 1
     assert summary.losing_exits_count == 0
     assert summary.flat_exits_count == 0
     assert summary.unknown_pnl_exits_count == 0
+    assert summary.net_winning_exits_count == 1
+    assert summary.net_losing_exits_count == 0
+    assert summary.net_flat_exits_count == 0
+    assert summary.unknown_net_pnl_exits_count == 0
     assert summary.paper_pnl_is_simulation_only is True
-    assert summary.charges_and_slippage_included is False
+    assert summary.estimated_costs_included_in_net_pnl is True
+    assert summary.gross_pnl_excludes_costs is True
 
 
 def test_build_paper_trading_report_summary_counts_losing_flat_and_unknown_exits():
@@ -165,10 +180,36 @@ def test_build_paper_trading_report_summary_counts_losing_flat_and_unknown_exits
     assert summary.closed_trades_count == 4
     assert summary.exits_with_pnl_count == 3
     assert summary.total_simulated_gross_pnl == 0.0
+    assert summary.total_simulated_net_pnl == 0.0
     assert summary.winning_exits_count == 1
     assert summary.losing_exits_count == 1
     assert summary.flat_exits_count == 1
     assert summary.unknown_pnl_exits_count == 1
+    assert summary.net_winning_exits_count == 1
+    assert summary.net_losing_exits_count == 1
+    assert summary.net_flat_exits_count == 1
+    assert summary.unknown_net_pnl_exits_count == 1
+
+
+def test_build_paper_trading_report_summary_counts_net_loss_after_costs():
+    session = PaperTradingSession()
+    session.submit_order(_request(symbol="COSTED", planned_entry_price=100.0))
+
+    session.close_position_with_exit_record(
+        "COSTED",
+        _CLOSED_AT,
+        exit_price=101.0,
+        estimated_exit_charges=40.0,
+        estimated_slippage=30.0,
+    )
+
+    summary = build_paper_trading_report_summary(session)
+
+    assert summary.total_simulated_gross_pnl == 65.0
+    assert summary.total_estimated_costs == 70.0
+    assert summary.total_simulated_net_pnl == -5.0
+    assert summary.winning_exits_count == 1
+    assert summary.net_losing_exits_count == 1
 
 
 def test_paper_trading_report_summary_to_dict():
@@ -188,12 +229,19 @@ def test_paper_trading_report_summary_to_dict():
         "has_closed_trades": True,
         "exits_with_pnl_count": 1,
         "total_simulated_gross_pnl": 2275.0,
+        "total_estimated_costs": 50.0,
+        "total_simulated_net_pnl": 2225.0,
         "winning_exits_count": 1,
         "losing_exits_count": 0,
         "flat_exits_count": 0,
         "unknown_pnl_exits_count": 0,
+        "net_winning_exits_count": 1,
+        "net_losing_exits_count": 0,
+        "net_flat_exits_count": 0,
+        "unknown_net_pnl_exits_count": 0,
         "paper_pnl_is_simulation_only": True,
-        "charges_and_slippage_included": False,
+        "estimated_costs_included_in_net_pnl": True,
+        "gross_pnl_excludes_costs": True,
     }
 
 
@@ -207,6 +255,8 @@ def test_paper_trading_report_summary_to_csv_row():
     assert payload["symbols"] == "NIFTY26JUL24300CE"
     assert payload["closed_trades_count"] == 1
     assert payload["total_simulated_gross_pnl"] == 2275.0
+    assert payload["total_estimated_costs"] == 50.0
+    assert payload["total_simulated_net_pnl"] == 2225.0
 
 
 def test_write_paper_trading_report_creates_expected_files(tmp_path):
@@ -251,12 +301,19 @@ def test_write_paper_trading_report_writes_summary_json(tmp_path):
         "has_closed_trades": True,
         "exits_with_pnl_count": 1,
         "total_simulated_gross_pnl": 2275.0,
+        "total_estimated_costs": 50.0,
+        "total_simulated_net_pnl": 2225.0,
         "winning_exits_count": 1,
         "losing_exits_count": 0,
         "flat_exits_count": 0,
         "unknown_pnl_exits_count": 0,
+        "net_winning_exits_count": 1,
+        "net_losing_exits_count": 0,
+        "net_flat_exits_count": 0,
+        "unknown_net_pnl_exits_count": 0,
         "paper_pnl_is_simulation_only": True,
-        "charges_and_slippage_included": False,
+        "estimated_costs_included_in_net_pnl": True,
+        "gross_pnl_excludes_costs": True,
     }
 
 
@@ -278,12 +335,19 @@ def test_write_paper_trading_report_writes_summary_csv(tmp_path):
             "has_closed_trades": "True",
             "exits_with_pnl_count": "1",
             "total_simulated_gross_pnl": "2275.0",
+            "total_estimated_costs": "50.0",
+            "total_simulated_net_pnl": "2225.0",
             "winning_exits_count": "1",
             "losing_exits_count": "0",
             "flat_exits_count": "0",
             "unknown_pnl_exits_count": "0",
+            "net_winning_exits_count": "1",
+            "net_losing_exits_count": "0",
+            "net_flat_exits_count": "0",
+            "unknown_net_pnl_exits_count": "0",
             "paper_pnl_is_simulation_only": "True",
-            "charges_and_slippage_included": "False",
+            "estimated_costs_included_in_net_pnl": "True",
+            "gross_pnl_excludes_costs": "True",
         }
     ]
 
@@ -339,6 +403,10 @@ def test_write_paper_trading_report_writes_exit_records_csv(tmp_path):
             "has_exit_price": "True",
             "simulated_points": "35.0",
             "simulated_gross_pnl": "2275.0",
+            "estimated_exit_charges": "40.0",
+            "estimated_slippage": "10.0",
+            "total_estimated_costs": "50.0",
+            "simulated_net_pnl": "2225.0",
             "source": "paper",
         }
     ]
@@ -359,12 +427,19 @@ def test_write_paper_trading_report_text_contains_safety_lines(tmp_path):
     assert "closed trades count: 1" in text
     assert "exits with pnl count: 1" in text
     assert "total simulated gross pnl: 2275.0" in text
+    assert "total estimated costs: 50.0" in text
+    assert "total simulated net pnl: 2225.0" in text
     assert "winning exits count: 1" in text
     assert "losing exits count: 0" in text
     assert "flat exits count: 0" in text
     assert "unknown pnl exits count: 0" in text
+    assert "net winning exits count: 1" in text
+    assert "net losing exits count: 0" in text
+    assert "net flat exits count: 0" in text
+    assert "unknown net pnl exits count: 0" in text
     assert "paper pnl is simulation only" in text
-    assert "charges and slippage are not included" in text
+    assert "estimated costs are included in net pnl only" in text
+    assert "gross pnl excludes costs" in text
     assert "local report/export only" in text
     assert "no broker/fyers" in text
     assert "no live/real market data" in text
@@ -392,12 +467,19 @@ def test_write_empty_paper_trading_report(tmp_path):
     assert summary_payload["closed_trades_count"] == 0
     assert summary_payload["exits_with_pnl_count"] == 0
     assert summary_payload["total_simulated_gross_pnl"] == 0
+    assert summary_payload["total_estimated_costs"] == 0
+    assert summary_payload["total_simulated_net_pnl"] == 0
     assert summary_payload["winning_exits_count"] == 0
     assert summary_payload["losing_exits_count"] == 0
     assert summary_payload["flat_exits_count"] == 0
     assert summary_payload["unknown_pnl_exits_count"] == 0
+    assert summary_payload["net_winning_exits_count"] == 0
+    assert summary_payload["net_losing_exits_count"] == 0
+    assert summary_payload["net_flat_exits_count"] == 0
+    assert summary_payload["unknown_net_pnl_exits_count"] == 0
     assert summary_payload["paper_pnl_is_simulation_only"] is True
-    assert summary_payload["charges_and_slippage_included"] is False
+    assert summary_payload["estimated_costs_included_in_net_pnl"] is True
+    assert summary_payload["gross_pnl_excludes_costs"] is True
     assert orders_payload == []
     assert positions_payload == []
     assert exits_payload == []

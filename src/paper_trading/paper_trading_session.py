@@ -102,13 +102,15 @@ class PaperTradingSession:
         closed_at: datetime,
         exit_reason: PaperExitReason = PaperExitReason.MANUAL,
         exit_price: float | None = None,
+        estimated_exit_charges: float = 0.0,
+        estimated_slippage: float = 0.0,
     ) -> PaperRealizedExitRecord | None:
         """
         Close a fake paper position and store a local realized exit snapshot.
 
         Returns None when no open paper position exists for the symbol.
         No real order is placed. Simulated P&L is available only when
-        exit_price is supplied.
+        exit_price is supplied. Net simulated P&L subtracts estimated costs.
         """
         closed_position = self.close_position(symbol)
         if closed_position is None:
@@ -121,6 +123,8 @@ class PaperTradingSession:
             closed_at=closed_at,
             exit_reason=exit_reason,
             exit_price=exit_price,
+            estimated_exit_charges=estimated_exit_charges,
+            estimated_slippage=estimated_slippage,
         )
         self._exit_records.append(exit_record)
         return exit_record

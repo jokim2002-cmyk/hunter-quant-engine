@@ -64,9 +64,13 @@ def test_realized_exit_record_accepts_valid_values():
     assert record.closed_at == _CLOSED_AT
     assert record.exit_reason is PaperExitReason.MANUAL
     assert record.exit_price is None
+    assert record.estimated_exit_charges == 0.0
+    assert record.estimated_slippage == 0.0
+    assert record.total_estimated_costs == 0.0
     assert record.has_exit_price is False
     assert record.simulated_points is None
     assert record.simulated_gross_pnl is None
+    assert record.simulated_net_pnl is None
     assert record.source == "paper"
 
 
@@ -86,6 +90,27 @@ def test_realized_exit_record_accepts_exit_price_and_calculates_simulated_pnl():
     assert record.has_exit_price is True
     assert record.simulated_points == 15.0
     assert record.simulated_gross_pnl == 975.0
+    assert record.total_estimated_costs == 0.0
+    assert record.simulated_net_pnl == 975.0
+
+
+def test_realized_exit_record_subtracts_estimated_costs_from_net_pnl():
+    record = PaperRealizedExitRecord(
+        exit_id="PAPER-EXIT-000001",
+        symbol="NIFTY_24200CE",
+        quantity=65,
+        average_entry_price=120.0,
+        opened_at=_OPENED_AT,
+        closed_at=_CLOSED_AT,
+        exit_reason=PaperExitReason.MANUAL,
+        exit_price=135.0,
+        estimated_exit_charges=40.0,
+        estimated_slippage=10.0,
+    )
+
+    assert record.simulated_gross_pnl == 975.0
+    assert record.total_estimated_costs == 50.0
+    assert record.simulated_net_pnl == 925.0
 
 
 def test_realized_exit_record_calculates_simulated_negative_pnl():
@@ -102,6 +127,7 @@ def test_realized_exit_record_calculates_simulated_negative_pnl():
 
     assert record.simulated_points == -20.0
     assert record.simulated_gross_pnl == -1300.0
+    assert record.simulated_net_pnl == -1300.0
 
 
 def test_realized_exit_record_rejects_blank_exit_id():
@@ -184,6 +210,40 @@ def test_realized_exit_record_rejects_negative_exit_price():
         )
 
 
+def test_realized_exit_record_rejects_negative_estimated_exit_charges():
+    with pytest.raises(
+        ValueError,
+        match="estimated_exit_charges must be greater than or equal to 0",
+    ):
+        PaperRealizedExitRecord(
+            exit_id="PAPER-EXIT-000001",
+            symbol="NIFTY_24200CE",
+            quantity=65,
+            average_entry_price=120.0,
+            opened_at=_OPENED_AT,
+            closed_at=_CLOSED_AT,
+            exit_reason=PaperExitReason.MANUAL,
+            estimated_exit_charges=-1.0,
+        )
+
+
+def test_realized_exit_record_rejects_negative_estimated_slippage():
+    with pytest.raises(
+        ValueError,
+        match="estimated_slippage must be greater than or equal to 0",
+    ):
+        PaperRealizedExitRecord(
+            exit_id="PAPER-EXIT-000001",
+            symbol="NIFTY_24200CE",
+            quantity=65,
+            average_entry_price=120.0,
+            opened_at=_OPENED_AT,
+            closed_at=_CLOSED_AT,
+            exit_reason=PaperExitReason.MANUAL,
+            estimated_slippage=-1.0,
+        )
+
+
 def test_realized_exit_record_rejects_closed_at_before_opened_at():
     with pytest.raises(ValueError, match="closed_at must be after or equal to opened_at"):
         PaperRealizedExitRecord(
@@ -240,21 +300,27 @@ def test_create_realized_exit_record_from_position():
     assert record.closed_at == _CLOSED_AT
     assert record.exit_reason is PaperExitReason.TARGET
     assert record.exit_price is None
+    assert record.total_estimated_costs == 0.0
+    assert record.simulated_net_pnl is None
     assert record.source == "paper"
 
 
-def test_create_realized_exit_record_with_exit_price():
+def test_create_realized_exit_record_with_exit_price_and_costs():
     record = create_paper_realized_exit_record(
         position=_position(quantity=130, average_entry_price=100.0),
         exit_id="PAPER-EXIT-000001",
         closed_at=_CLOSED_AT,
         exit_reason=PaperExitReason.TARGET,
         exit_price=125.0,
+        estimated_exit_charges=30.0,
+        estimated_slippage=20.0,
     )
 
     assert record.exit_price == 125.0
     assert record.simulated_points == 25.0
     assert record.simulated_gross_pnl == 3250.0
+    assert record.total_estimated_costs == 50.0
+    assert record.simulated_net_pnl == 3200.0
 
 
 def test_create_realized_exit_record_defaults_to_manual_reason():
@@ -286,8 +352,12 @@ def test_session_close_position_with_exit_record_closes_position_and_records_exi
     assert exit_record.closed_at == _CLOSED_AT
     assert exit_record.exit_reason is PaperExitReason.MANUAL
     assert exit_record.exit_price is None
+    assert exit_record.estimated_exit_charges == 0.0
+    assert exit_record.estimated_slippage == 0.0
+    assert exit_record.total_estimated_costs == 0.0
     assert exit_record.simulated_points is None
     assert exit_record.simulated_gross_pnl is None
+    assert exit_record.simulated_net_pnl is None
 
     assert session.find_position("NIFTY_24200CE") is None
     assert session.total_open_quantity("NIFTY_24200CE") == 0
@@ -295,7 +365,7 @@ def test_session_close_position_with_exit_record_closes_position_and_records_exi
     assert session.find_exit_record("PAPER-EXIT-000001") is exit_record
 
 
-def test_session_close_position_with_exit_record_accepts_exit_price():
+def test_session_close_position_with_exit_record_accepts_exit_price_and_costs():
     session = PaperTradingSession()
     session.submit_order(_request(quantity=65, planned_entry_price=120.0))
 
@@ -304,6 +374,8 @@ def test_session_close_position_with_exit_record_accepts_exit_price():
         closed_at=_CLOSED_AT,
         exit_reason=PaperExitReason.TARGET,
         exit_price=150.0,
+        estimated_exit_charges=25.0,
+        estimated_slippage=5.0,
     )
 
     assert exit_record is not None
@@ -311,6 +383,8 @@ def test_session_close_position_with_exit_record_accepts_exit_price():
     assert exit_record.has_exit_price is True
     assert exit_record.simulated_points == 30.0
     assert exit_record.simulated_gross_pnl == 1950.0
+    assert exit_record.total_estimated_costs == 30.0
+    assert exit_record.simulated_net_pnl == 1920.0
 
 
 def test_session_close_position_with_exit_record_returns_none_for_unknown_symbol():

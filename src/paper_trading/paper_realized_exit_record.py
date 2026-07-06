@@ -7,6 +7,9 @@ No external SDK. Not live market data. Not a profitability claim.
 This model records that a fake paper position was closed locally.
 Optional exit_price enables paper-only simulated P&L math when a fake or
 recorded premium exit price is supplied.
+
+Optional estimated_exit_charges and estimated_slippage make net simulated P&L
+cost-aware while remaining paper-only.
 """
 
 from __future__ import annotations
@@ -35,7 +38,7 @@ class PaperRealizedExitRecord:
 
     This is a paper-only record. It does not place orders and does not claim
     real profit or loss. Simulated P&L is calculated only when exit_price is
-    supplied.
+    supplied. Net simulated P&L subtracts estimated costs only.
     """
 
     exit_id: str
@@ -46,6 +49,8 @@ class PaperRealizedExitRecord:
     closed_at: datetime
     exit_reason: PaperExitReason
     exit_price: float | None = None
+    estimated_exit_charges: float = 0.0
+    estimated_slippage: float = 0.0
     source: str = "paper"
 
     def __post_init__(self) -> None:
@@ -63,6 +68,10 @@ class PaperRealizedExitRecord:
             raise ValueError("exit_reason must be PaperExitReason")
         if self.exit_price is not None and self.exit_price <= 0:
             raise ValueError("exit_price must be greater than 0")
+        if self.estimated_exit_charges < 0:
+            raise ValueError("estimated_exit_charges must be greater than or equal to 0")
+        if self.estimated_slippage < 0:
+            raise ValueError("estimated_slippage must be greater than or equal to 0")
         if self.source != "paper":
             raise ValueError("source must be 'paper'")
 
@@ -96,6 +105,25 @@ class PaperRealizedExitRecord:
             return None
         return points * self.quantity
 
+    @property
+    def total_estimated_costs(self) -> float:
+        """
+        Return estimated paper-only costs used for net P&L.
+        """
+        return self.estimated_exit_charges + self.estimated_slippage
+
+    @property
+    def simulated_net_pnl(self) -> float | None:
+        """
+        Return paper-only simulated net P&L after estimated costs.
+
+        None means exit_price was not supplied.
+        """
+        gross_pnl = self.simulated_gross_pnl
+        if gross_pnl is None:
+            return None
+        return gross_pnl - self.total_estimated_costs
+
 
 def create_paper_realized_exit_record(
     position: PaperPosition,
@@ -103,12 +131,14 @@ def create_paper_realized_exit_record(
     closed_at: datetime,
     exit_reason: PaperExitReason = PaperExitReason.MANUAL,
     exit_price: float | None = None,
+    estimated_exit_charges: float = 0.0,
+    estimated_slippage: float = 0.0,
 ) -> PaperRealizedExitRecord:
     """
     Create a local paper exit snapshot from a closed paper position.
 
     No real order is placed. Simulated P&L is available only when exit_price
-    is supplied.
+    is supplied. Net simulated P&L subtracts estimated costs only.
     """
     return PaperRealizedExitRecord(
         exit_id=exit_id,
@@ -119,5 +149,7 @@ def create_paper_realized_exit_record(
         closed_at=closed_at,
         exit_reason=exit_reason,
         exit_price=exit_price,
+        estimated_exit_charges=estimated_exit_charges,
+        estimated_slippage=estimated_slippage,
         source=position.source,
     )
