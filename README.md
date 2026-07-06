@@ -30,6 +30,7 @@ Module C added the Backtest evidence runner for paper pass/fail gates.
 Module D added the Paper MVP operator demo and operator guide.
 Module E added the Paper MVP release gate.
 Module F added Paper MVP v0.1 release notes and release-close prep.
+Module G added the Paper evidence aggregate runner.
 
 Key scope documents:
 
@@ -88,7 +89,7 @@ Engineer it right once. Improve it forever.
 HQE currently supports:
 
 - Clean Python architecture
-- 1447 tests passing
+- 1460 tests passing
 - Smart Money Concepts detection
 - SMC strategy signal generation
 - Strategy config presets

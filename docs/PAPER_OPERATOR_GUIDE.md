@@ -61,6 +61,18 @@ This workflow:
 - lists replay journal runs
 - opens the replay journal folder
 
+## Evidence Aggregate
+
+After running the Paper MVP operator demo, aggregate paper evidence:
+
+    .\hqe_paper_evidence_aggregate.bat
+
+This writes aggregate evidence under:
+
+    reports\paper_trading\evidence_aggregate
+
+The aggregate is paper/simulation only and is not a profitability claim.
+
 ## Evidence Gates
 
 The evidence runner blocks unsafe live-readiness when:

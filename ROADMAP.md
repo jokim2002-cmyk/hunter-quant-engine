@@ -8,7 +8,7 @@ Older roadmap sections below are retained as historical planning notes and docum
 
 Current checkpoint:
 
-- 1447 tests passing after Paper MVP v0.1 release close.1 release close.
+- 1460 tests passing after Paper evidence aggregate runner.1 release close.1 release close.
 - Repository shortcut cleanup completed.
 - Old unused/risky root shortcuts removed.
 - Safe local shortcut layer completed.
@@ -32,6 +32,7 @@ Current checkpoint:
 - Paper MVP operator workflow completed.
 - Paper MVP release gate completed.
 - Paper MVP v0.1 release close completed.
+- Paper evidence aggregate runner completed.
 - Replay journal all-in-one shortcut prints index completed.
 - Paper P&L is simulation only.
 - Real-money execution remains the final phase only.
