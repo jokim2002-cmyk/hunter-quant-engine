@@ -97,7 +97,7 @@ def test_paper_replay_journal_shortcut_points_to_safe_demo_module():
     text = Path("hqe_paper_replay_journal.bat").read_text(encoding="utf-8").lower()
 
     assert "src.paper_trading.paper_trading_replay_journal_demo_cli" in text
-    assert ".venv\scripts\python.exe" in text
+    assert ".venv\\scripts\\python.exe" in text
     assert "no broker" in text
     assert "no live market data" in text
     assert "no real orders" in text
