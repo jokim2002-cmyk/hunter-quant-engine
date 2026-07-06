@@ -28,6 +28,10 @@ def test_master_roadmap_has_current_status_override_before_historical_notes():
     assert "Replay journal runs viewer completed." in text
     assert "All-in-one replay journal shortcut uses pretty runs viewer completed." in text
     assert "Friendly replay journal summary viewer completed." in text
+    assert "Paper MVP v0.1 scope freeze completed." in text
+    assert "docs/DEFERRED_POLISH_BACKLOG.md" in text
+    assert "docs/PAPER_MVP_RELEASE_CHECKLIST.md" in text
+    assert "docs/PAPER_MVP_V0_1_SCOPE.md" in text
     assert "Replay journal all-in-one shortcut prints index completed." in text
     assert "Paper P&L is simulation only." in text
     assert "Real-money execution remains the final phase only." in text

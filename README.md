@@ -10,6 +10,27 @@ HQE is a market research and execution framework designed to transform NIFTY spo
 
 ---
 
+
+## Paper MVP v0.1 Scope Freeze
+
+HQE is now using a frozen Paper MVP v0.1 scope to avoid infinite micro-polish.
+
+Paper MVP v0.1 is paper-only:
+
+- no broker orders
+- no real-money trading
+- no live execution
+- no profitability claim
+
+Roadmap-closing work now happens in larger module patches with tests and full
+quick-check validation.
+
+Key scope documents:
+
+- `docs/PAPER_MVP_V0_1_SCOPE.md`
+- `docs/PAPER_MVP_RELEASE_CHECKLIST.md`
+- `docs/DEFERRED_POLISH_BACKLOG.md`
+
 ## Corrected First Module Direction
 
 HQE first product module is a dynamic NIFTY option-buy planning engine.
@@ -58,7 +79,7 @@ Engineer it right once. Improve it forever.
 HQE currently supports:
 
 - Clean Python architecture
-- 1339 tests passing
+- 1402 tests passing
 - Smart Money Concepts detection
 - SMC strategy signal generation
 - Strategy config presets

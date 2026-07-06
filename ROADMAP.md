@@ -26,6 +26,7 @@ Current checkpoint:
 - Replay journal runs viewer completed.
 - All-in-one replay journal shortcut uses pretty runs viewer completed.
 - Friendly replay journal summary viewer completed.
+- Paper MVP v0.1 scope freeze completed.
 - Replay journal all-in-one shortcut prints index completed.
 - Paper P&L is simulation only.
 - Real-money execution remains the final phase only.
@@ -759,3 +760,30 @@ HQE is built to answer honestly:
 The goal is not to rush.
 
 The goal is to build something real.
+
+
+## Paper MVP v0.1 Closure Plan
+
+Paper MVP v0.1 scope is frozen.
+
+Scope docs:
+
+- `docs/PAPER_MVP_V0_1_SCOPE.md`
+- `docs/PAPER_MVP_RELEASE_CHECKLIST.md`
+- `docs/DEFERRED_POLISH_BACKLOG.md`
+
+Only these items can block Paper MVP v0.1:
+
+1. Strategy-to-paper bridge.
+2. Backtest evidence runner.
+3. Final paper operator guide.
+4. Release checklist pass.
+5. Paper MVP release tag.
+
+Deferred beyond v0.1:
+
+- live broker execution
+- real-money trading
+- dashboard polish
+- cosmetic shortcut/docs polish
+- profitability claims without evidence
