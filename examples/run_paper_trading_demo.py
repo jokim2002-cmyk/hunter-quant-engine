@@ -4,6 +4,7 @@ This demo is fake/local only.
 - It creates a synthetic approved OptionBuyTradePlan.
 - It converts it to a PaperOrderRequest.
 - It submits the request to PaperTradingSession.
+- It closes the open fake paper position locally.
 
 No broker SDK. No broker platform integration. No live/real market data.
 
@@ -26,12 +27,15 @@ from src.paper_trading.paper_trading_session import PaperTradingSession
 from src.paper_trading.paper_trading_session_summary import (
     build_paper_trading_session_summary,
 )
-from src.paper_trading.paper_trading_session_summary import build_paper_trading_session_summary
 from src.strategy.signal_strength import SignalStrength
 from src.strategy.signal_type import SignalType
 from src.strategy.trade_signal import TradeSignal
 from src.trade_planning.option_buy_trade_plan import OptionBuyTradePlan
 from src.trade_planning.option_buy_trade_plan_status import OptionBuyTradePlanStatus
+
+
+def _format_symbols(symbols: tuple[str, ...]) -> str:
+    return ", ".join(symbols) if symbols else "none"
 
 
 def run_demo() -> int:
@@ -84,26 +88,68 @@ def run_demo() -> int:
     session = PaperTradingSession()
     record = session.submit_order(request)
 
-    position = session.find_position(symbol)
+    position_before_close = session.find_position(symbol)
+    qty_before_close = session.total_open_quantity(symbol)
+    summary_before_close = build_paper_trading_session_summary(session)
 
-    qty = session.total_open_quantity(symbol)
+    closed_position = session.close_position(symbol)
+
+    position_after_close = session.find_position(symbol)
+    qty_after_close = session.total_open_quantity(symbol)
+    summary_after_close = build_paper_trading_session_summary(session)
 
     print("fake/local paper trading demo")
     print("synthetic option-buy trade plan")
     print(f"paper order id: {record.order_id}")
     print(f"paper order symbol: {record.symbol}")
     print(f"paper order quantity: {record.quantity}")
-    if position is None:
-        print("paper position: None")
-    else:
-        print(f"paper position symbol: {position.symbol}")
-        print(f"paper position quantity: {position.quantity}")
 
-    summary = build_paper_trading_session_summary(session)
-    print(f"session summary total orders: {summary.total_orders}")
-    print(f"session summary open positions: {summary.open_positions_count}")
-    print(f"session summary total open quantity: {summary.total_open_quantity}")
-    print(f"session summary symbols: {', '.join(summary.symbols)}")
+    if position_before_close is None:
+        print("paper position before close: None")
+    else:
+        print(f"paper position symbol before close: {position_before_close.symbol}")
+        print(f"paper position quantity before close: {position_before_close.quantity}")
+
+    print(f"session summary total orders before close: {summary_before_close.total_orders}")
+    print(
+        "session summary open positions before close: "
+        f"{summary_before_close.open_positions_count}"
+    )
+    print(
+        "session summary total open quantity before close: "
+        f"{summary_before_close.total_open_quantity}"
+    )
+    print(
+        "session summary symbols before close: "
+        f"{_format_symbols(summary_before_close.symbols)}"
+    )
+
+    if closed_position is None:
+        print("paper close result: None")
+    else:
+        print("paper close result: closed")
+        print(f"paper close symbol: {closed_position.symbol}")
+        print(f"paper close quantity: {closed_position.quantity}")
+
+    if position_after_close is None:
+        print("paper position after close: None")
+    else:
+        print(f"paper position symbol after close: {position_after_close.symbol}")
+        print(f"paper position quantity after close: {position_after_close.quantity}")
+
+    print(f"session summary total orders after close: {summary_after_close.total_orders}")
+    print(
+        "session summary open positions after close: "
+        f"{summary_after_close.open_positions_count}"
+    )
+    print(
+        "session summary total open quantity after close: "
+        f"{summary_after_close.total_open_quantity}"
+    )
+    print(
+        "session summary symbols after close: "
+        f"{_format_symbols(summary_after_close.symbols)}"
+    )
 
     print("no broker/FYERS")
     print("no live/real market data")
@@ -111,7 +157,7 @@ def run_demo() -> int:
     print("not a profitability claim")
 
     # Basic sanity in the demo output.
-    _ = qty
+    _ = (qty_before_close, qty_after_close)
 
     return 0
 
@@ -122,6 +168,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-
-
-

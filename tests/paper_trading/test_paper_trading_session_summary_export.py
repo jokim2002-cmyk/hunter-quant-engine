@@ -1,8 +1,14 @@
 import csv
 import json
+from datetime import datetime, timezone
 from pathlib import Path
 
-from src.paper_trading.paper_trading_session_summary import PaperTradingSessionSummary
+from src.paper_trading.paper_order_journal import PaperOrderRequest
+from src.paper_trading.paper_trading_session import PaperTradingSession
+from src.paper_trading.paper_trading_session_summary import (
+    PaperTradingSessionSummary,
+    build_paper_trading_session_summary,
+)
 from src.paper_trading.paper_trading_session_summary_export import (
     format_paper_trading_session_summary,
     paper_trading_session_summary_to_dict,
@@ -20,6 +26,21 @@ def _summary() -> PaperTradingSessionSummary:
     )
 
 
+def _closed_summary() -> PaperTradingSessionSummary:
+    session = PaperTradingSession()
+    session.submit_order(
+        PaperOrderRequest(
+            symbol="NIFTY26JUL24200CE",
+            quantity=65,
+            planned_entry_price=100.0,
+            created_at=datetime(2026, 7, 6, 9, 15, tzinfo=timezone.utc),
+        )
+    )
+    session.close_position("NIFTY26JUL24200CE")
+
+    return build_paper_trading_session_summary(session)
+
+
 def test_paper_trading_session_summary_to_dict():
     payload = paper_trading_session_summary_to_dict(_summary())
 
@@ -29,6 +50,18 @@ def test_paper_trading_session_summary_to_dict():
         "total_open_quantity": 195,
         "symbols": ["NIFTY26JUL24200CE"],
         "has_open_positions": True,
+    }
+
+
+def test_paper_trading_session_summary_to_dict_after_closed_position():
+    payload = paper_trading_session_summary_to_dict(_closed_summary())
+
+    assert payload == {
+        "total_orders": 1,
+        "open_positions_count": 0,
+        "total_open_quantity": 0,
+        "symbols": [],
+        "has_open_positions": False,
     }
 
 
@@ -62,6 +95,16 @@ def test_format_empty_symbols_summary_uses_none():
     assert "has open positions: false" in text
 
 
+def test_format_closed_position_summary_uses_none_symbols():
+    text = format_paper_trading_session_summary(_closed_summary()).lower()
+
+    assert "total orders: 1" in text
+    assert "open positions count: 0" in text
+    assert "total open quantity: 0" in text
+    assert "symbols: none" in text
+    assert "has open positions: false" in text
+
+
 def test_write_paper_trading_session_summary_json(tmp_path):
     output_path = tmp_path / "paper_session_summary.json"
 
@@ -75,6 +118,24 @@ def test_write_paper_trading_session_summary_json(tmp_path):
     assert payload["total_open_quantity"] == 195
     assert payload["symbols"] == ["NIFTY26JUL24200CE"]
     assert payload["has_open_positions"] is True
+
+
+def test_write_closed_position_summary_json(tmp_path):
+    output_path = tmp_path / "paper_closed_session_summary.json"
+
+    written_path = write_paper_trading_session_summary_json(
+        _closed_summary(),
+        output_path,
+    )
+
+    assert written_path == output_path
+    payload = json.loads(output_path.read_text(encoding="utf-8"))
+
+    assert payload["total_orders"] == 1
+    assert payload["open_positions_count"] == 0
+    assert payload["total_open_quantity"] == 0
+    assert payload["symbols"] == []
+    assert payload["has_open_positions"] is False
 
 
 def test_write_paper_trading_session_summary_csv(tmp_path):
@@ -94,6 +155,30 @@ def test_write_paper_trading_session_summary_csv(tmp_path):
             "total_open_quantity": "195",
             "symbols": "NIFTY26JUL24200CE",
             "has_open_positions": "True",
+        }
+    ]
+
+
+def test_write_closed_position_summary_csv(tmp_path):
+    output_path = tmp_path / "paper_closed_session_summary.csv"
+
+    written_path = write_paper_trading_session_summary_csv(
+        _closed_summary(),
+        output_path,
+    )
+
+    assert written_path == output_path
+
+    with output_path.open(encoding="utf-8", newline="") as handle:
+        rows = list(csv.DictReader(handle))
+
+    assert rows == [
+        {
+            "total_orders": "1",
+            "open_positions_count": "0",
+            "total_open_quantity": "0",
+            "symbols": "",
+            "has_open_positions": "False",
         }
     ]
 
