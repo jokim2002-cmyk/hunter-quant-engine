@@ -51,6 +51,10 @@ After running the demo, this shortcut opens the generated text report:
 
     .\hqe_paper_report.bat
 
+This shortcut runs the demo and then opens the generated report:
+
+    .\hqe_paper_demo_report.bat
+
 ## Generated Report Files
 
 The CLI writes generated files under:
