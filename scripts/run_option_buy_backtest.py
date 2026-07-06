@@ -1,4 +1,4 @@
-﻿"""
+"""
 Run Offline Option Buy Backtest
 
 Runs an offline option-buy backtest from supplied broker-agnostic CSV files.
@@ -7,6 +7,12 @@ Runs an offline option-buy backtest from supplied broker-agnostic CSV files.
 import argparse
 from collections.abc import Sequence
 from pathlib import Path
+import sys
+
+
+REPO_ROOT = Path(__file__).resolve().parents[1]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
 
 from src.backtesting.option_buy_backtest_runner import OptionBuyBacktestRunner
 from src.backtesting.option_buy_backtest_scenario_csv_loader import (

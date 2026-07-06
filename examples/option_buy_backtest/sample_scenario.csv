@@ -1,0 +1,3 @@
+snapshot_id,timestamp,signal_type,signal_strength,confidence,underlying_symbol,underlying_price,expiry_date,strike_price,option_type,lot_size,option_symbol,last_traded_price,bid_price,ask_price,volume,open_interest,rationale,delta,theta,vega,gamma,implied_volatility
+demo-long-1,2026-07-06T09:15:00,long,strong,0.80,NIFTY,24210.0,2026-07-09,24200.0,CE,65,NIFTY_DEMO_20260709_24200CE,99.0,99.0,100.0,10000,50000,synthetic demo LONG CE setup,0.52,-4.0,11.0,0.04,0.18
+demo-short-1,2026-07-06T09:30:00,short,medium,0.75,NIFTY,24180.0,2026-07-09,24200.0,PE,65,NIFTY_DEMO_20260709_24200PE,79.0,79.0,80.0,9000,45000,synthetic demo SHORT PE setup,-0.48,-3.5,10.0,0.03,0.19
