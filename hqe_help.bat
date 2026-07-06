@@ -14,7 +14,8 @@ echo.
 echo Paper trading demo:
 echo   .\hqe_paper_demo.bat        - run safe paper demo
 echo   .\hqe_paper_report.bat      - open latest generated paper report
-echo   .\hqe_paper_demo_report.bat - run demo and open report
+echo   .\hqe_paper_demo_report.bat
+echo   hqe_paper_replay_journal.bat  Run fake paper replay and save journal bundle - run demo and open report
 echo   .\hqe_paper_folder.bat      - open paper report folder
 echo   .\hqe_paper_report_text.bat - print paper report in terminal
 echo.
@@ -24,4 +25,4 @@ echo   docs\PAPER_TRADING_DEMO_CLI.md
 echo.
 echo Safety:
 echo   paper demo only, no broker/FYERS, no live data, no real orders
-exit /b 0
+exit /b 0
