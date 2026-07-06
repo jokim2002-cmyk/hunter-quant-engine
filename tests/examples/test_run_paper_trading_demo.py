@@ -82,10 +82,36 @@ def test_demo_output_and_safety_constraints() -> None:
     assert "import " + "fy" + "ers" not in source
     assert "from " + "fy" + "ers" not in source
 
+    assert "clean_paper_trading_report_bundle" in source
+
     # No broker order execution method names.
     forbidden_tokens = ["place" + "_order", "send" + "_order", "execute" + "_order"]
     for token in forbidden_tokens:
         assert token not in source
+
+
+def test_demo_cleans_report_bundle_before_writing(monkeypatch) -> None:
+    demo = importlib.import_module("examples.run_paper_trading_demo")
+    from src.paper_trading.paper_trading_report_writer import (
+        clean_paper_trading_report_bundle,
+    )
+
+    calls: list[Path] = []
+
+    def spy_clean_report_bundle(output_dir: str | Path = Path("reports") / "paper_trading"):
+        calls.append(Path(output_dir))
+        return clean_paper_trading_report_bundle(output_dir)
+
+    monkeypatch.setattr(
+        demo,
+        "clean_paper_trading_report_bundle",
+        spy_clean_report_bundle,
+    )
+
+    rc = demo.run_demo()
+
+    assert rc == 0
+    assert calls == [Path("reports") / "paper_trading"]
 
 
 def test_demo_writes_local_report_files_under_reports() -> None:

@@ -6,6 +6,7 @@ This demo is fake/local only.
 - It submits the request to PaperTradingSession.
 - It closes the open fake paper position locally.
 - It shows a short trader-readable paper-only simulated P&L summary.
+- It safely cleans old local paper report bundle files.
 - It writes detailed local paper report files under reports/paper_trading/.
 
 No broker SDK. No broker platform integration. No live/real market data.
@@ -17,6 +18,7 @@ Not a profitability claim.
 from __future__ import annotations
 
 from datetime import date, datetime
+from pathlib import Path
 
 from src.models.option_action import OptionAction
 from src.models.option_chain_entry import OptionChainEntry
@@ -27,7 +29,10 @@ from src.paper_trading.option_buy_plan_to_paper_order import (
 )
 from src.paper_trading.paper_estimated_cost_model import estimate_paper_exit_costs
 from src.paper_trading.paper_realized_exit_record import PaperExitReason
-from src.paper_trading.paper_trading_report_writer import write_paper_trading_report
+from src.paper_trading.paper_trading_report_writer import (
+    clean_paper_trading_report_bundle,
+    write_paper_trading_report,
+)
 from src.paper_trading.paper_trading_session import PaperTradingSession
 from src.paper_trading.paper_trading_session_summary import (
     build_paper_trading_session_summary,
@@ -37,6 +42,9 @@ from src.strategy.signal_type import SignalType
 from src.strategy.trade_signal import TradeSignal
 from src.trade_planning.option_buy_trade_plan import OptionBuyTradePlan
 from src.trade_planning.option_buy_trade_plan_status import OptionBuyTradePlanStatus
+
+
+REPORT_OUTPUT_DIR = Path("reports") / "paper_trading"
 
 
 def run_demo() -> int:
@@ -102,7 +110,8 @@ def run_demo() -> int:
     )
 
     summary = build_paper_trading_session_summary(session)
-    report_paths = write_paper_trading_report(session)
+    clean_paper_trading_report_bundle(REPORT_OUTPUT_DIR)
+    report_paths = write_paper_trading_report(session, REPORT_OUTPUT_DIR)
 
     print("fake/local paper trading demo")
     print("synthetic option-buy trade plan")
