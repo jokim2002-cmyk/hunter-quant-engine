@@ -5,6 +5,7 @@ This demo is fake/local only.
 - It converts it to a PaperOrderRequest.
 - It submits the request to PaperTradingSession.
 - It closes the open fake paper position locally.
+- It shows paper-only simulated P&L from a synthetic exit premium.
 
 No broker SDK. No broker platform integration. No live/real market data.
 
@@ -23,6 +24,7 @@ from src.models.option_type import OptionType
 from src.paper_trading.option_buy_plan_to_paper_order import (
     create_paper_order_request_from_option_buy_plan,
 )
+from src.paper_trading.paper_realized_exit_record import PaperExitReason
 from src.paper_trading.paper_trading_session import PaperTradingSession
 from src.paper_trading.paper_trading_session_summary import (
     build_paper_trading_session_summary,
@@ -40,6 +42,8 @@ def _format_symbols(symbols: tuple[str, ...]) -> str:
 
 def run_demo() -> int:
     ts = datetime(2026, 7, 6, 9, 15)
+    closed_at = datetime(2026, 7, 6, 9, 30)
+    synthetic_exit_price = 135.0
 
     signal = TradeSignal(
         signal_type=SignalType.LONG,
@@ -92,7 +96,12 @@ def run_demo() -> int:
     qty_before_close = session.total_open_quantity(symbol)
     summary_before_close = build_paper_trading_session_summary(session)
 
-    closed_position = session.close_position(symbol)
+    exit_record = session.close_position_with_exit_record(
+        symbol=symbol,
+        closed_at=closed_at,
+        exit_reason=PaperExitReason.MANUAL,
+        exit_price=synthetic_exit_price,
+    )
 
     position_after_close = session.find_position(symbol)
     qty_after_close = session.total_open_quantity(symbol)
@@ -124,12 +133,16 @@ def run_demo() -> int:
         f"{_format_symbols(summary_before_close.symbols)}"
     )
 
-    if closed_position is None:
+    if exit_record is None:
         print("paper close result: None")
     else:
         print("paper close result: closed")
-        print(f"paper close symbol: {closed_position.symbol}")
-        print(f"paper close quantity: {closed_position.quantity}")
+        print(f"paper exit id: {exit_record.exit_id}")
+        print(f"paper close symbol: {exit_record.symbol}")
+        print(f"paper close quantity: {exit_record.quantity}")
+        print(f"paper simulated exit price: {exit_record.exit_price}")
+        print(f"paper simulated points: {exit_record.simulated_points}")
+        print(f"paper simulated gross pnl: {exit_record.simulated_gross_pnl}")
 
     if position_after_close is None:
         print("paper position after close: None")
@@ -151,6 +164,8 @@ def run_demo() -> int:
         f"{_format_symbols(summary_after_close.symbols)}"
     )
 
+    print("paper pnl is simulation only")
+    print("charges and slippage are not included")
     print("no broker/FYERS")
     print("no live/real market data")
     print("no real orders placed")

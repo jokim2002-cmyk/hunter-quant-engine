@@ -43,9 +43,17 @@ def test_demo_output_and_safety_constraints() -> None:
 
     # Close-position demo messages.
     assert "paper close result: closed" in out
+    assert "paper exit id: paper-exit-000001" in out
     assert "paper close symbol: nifty26jul24200ce" in out
     assert "paper close quantity" in out
     assert "paper position after close: none" in out
+
+    # Paper-only simulated P&L messages.
+    assert "paper simulated exit price: 135.0" in out
+    assert "paper simulated points: 35.0" in out
+    assert "paper simulated gross pnl: 4550.0" in out
+    assert "paper pnl is simulation only" in out
+    assert "charges and slippage are not included" in out
 
     # Summary before close.
     assert "session summary total orders before close: 1" in out

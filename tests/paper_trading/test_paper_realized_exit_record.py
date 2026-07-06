@@ -63,7 +63,45 @@ def test_realized_exit_record_accepts_valid_values():
     assert record.opened_at == _OPENED_AT
     assert record.closed_at == _CLOSED_AT
     assert record.exit_reason is PaperExitReason.MANUAL
+    assert record.exit_price is None
+    assert record.has_exit_price is False
+    assert record.simulated_points is None
+    assert record.simulated_gross_pnl is None
     assert record.source == "paper"
+
+
+def test_realized_exit_record_accepts_exit_price_and_calculates_simulated_pnl():
+    record = PaperRealizedExitRecord(
+        exit_id="PAPER-EXIT-000001",
+        symbol="NIFTY_24200CE",
+        quantity=65,
+        average_entry_price=120.0,
+        opened_at=_OPENED_AT,
+        closed_at=_CLOSED_AT,
+        exit_reason=PaperExitReason.MANUAL,
+        exit_price=135.0,
+    )
+
+    assert record.exit_price == 135.0
+    assert record.has_exit_price is True
+    assert record.simulated_points == 15.0
+    assert record.simulated_gross_pnl == 975.0
+
+
+def test_realized_exit_record_calculates_simulated_negative_pnl():
+    record = PaperRealizedExitRecord(
+        exit_id="PAPER-EXIT-000001",
+        symbol="NIFTY_24200CE",
+        quantity=65,
+        average_entry_price=120.0,
+        opened_at=_OPENED_AT,
+        closed_at=_CLOSED_AT,
+        exit_reason=PaperExitReason.STOP_LOSS,
+        exit_price=100.0,
+    )
+
+    assert record.simulated_points == -20.0
+    assert record.simulated_gross_pnl == -1300.0
 
 
 def test_realized_exit_record_rejects_blank_exit_id():
@@ -115,6 +153,34 @@ def test_realized_exit_record_rejects_zero_entry_price():
             opened_at=_OPENED_AT,
             closed_at=_CLOSED_AT,
             exit_reason=PaperExitReason.MANUAL,
+        )
+
+
+def test_realized_exit_record_rejects_zero_exit_price():
+    with pytest.raises(ValueError, match="exit_price must be greater than 0"):
+        PaperRealizedExitRecord(
+            exit_id="PAPER-EXIT-000001",
+            symbol="NIFTY_24200CE",
+            quantity=65,
+            average_entry_price=120.0,
+            opened_at=_OPENED_AT,
+            closed_at=_CLOSED_AT,
+            exit_reason=PaperExitReason.MANUAL,
+            exit_price=0.0,
+        )
+
+
+def test_realized_exit_record_rejects_negative_exit_price():
+    with pytest.raises(ValueError, match="exit_price must be greater than 0"):
+        PaperRealizedExitRecord(
+            exit_id="PAPER-EXIT-000001",
+            symbol="NIFTY_24200CE",
+            quantity=65,
+            average_entry_price=120.0,
+            opened_at=_OPENED_AT,
+            closed_at=_CLOSED_AT,
+            exit_reason=PaperExitReason.MANUAL,
+            exit_price=-1.0,
         )
 
 
@@ -173,7 +239,22 @@ def test_create_realized_exit_record_from_position():
     assert record.opened_at == _OPENED_AT
     assert record.closed_at == _CLOSED_AT
     assert record.exit_reason is PaperExitReason.TARGET
+    assert record.exit_price is None
     assert record.source == "paper"
+
+
+def test_create_realized_exit_record_with_exit_price():
+    record = create_paper_realized_exit_record(
+        position=_position(quantity=130, average_entry_price=100.0),
+        exit_id="PAPER-EXIT-000001",
+        closed_at=_CLOSED_AT,
+        exit_reason=PaperExitReason.TARGET,
+        exit_price=125.0,
+    )
+
+    assert record.exit_price == 125.0
+    assert record.simulated_points == 25.0
+    assert record.simulated_gross_pnl == 3250.0
 
 
 def test_create_realized_exit_record_defaults_to_manual_reason():
@@ -204,11 +285,32 @@ def test_session_close_position_with_exit_record_closes_position_and_records_exi
     assert exit_record.opened_at == _OPENED_AT
     assert exit_record.closed_at == _CLOSED_AT
     assert exit_record.exit_reason is PaperExitReason.MANUAL
+    assert exit_record.exit_price is None
+    assert exit_record.simulated_points is None
+    assert exit_record.simulated_gross_pnl is None
 
     assert session.find_position("NIFTY_24200CE") is None
     assert session.total_open_quantity("NIFTY_24200CE") == 0
     assert session.list_exit_records() == (exit_record,)
     assert session.find_exit_record("PAPER-EXIT-000001") is exit_record
+
+
+def test_session_close_position_with_exit_record_accepts_exit_price():
+    session = PaperTradingSession()
+    session.submit_order(_request(quantity=65, planned_entry_price=120.0))
+
+    exit_record = session.close_position_with_exit_record(
+        "NIFTY_24200CE",
+        closed_at=_CLOSED_AT,
+        exit_reason=PaperExitReason.TARGET,
+        exit_price=150.0,
+    )
+
+    assert exit_record is not None
+    assert exit_record.exit_price == 150.0
+    assert exit_record.has_exit_price is True
+    assert exit_record.simulated_points == 30.0
+    assert exit_record.simulated_gross_pnl == 1950.0
 
 
 def test_session_close_position_with_exit_record_returns_none_for_unknown_symbol():
