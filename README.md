@@ -58,7 +58,7 @@ Engineer it right once. Improve it forever.
 HQE currently supports:
 
 - Clean Python architecture
-- 1335 tests passing
+- 1336 tests passing
 - Smart Money Concepts detection
 - SMC strategy signal generation
 - Strategy config presets
@@ -130,6 +130,10 @@ Run the safe local paper trading demo CLI:
 Run the safe local paper trading demo example wrapper:
 
     .\.venv\Scripts\python.exe examples\run_paper_trading_demo.py
+
+Run the safe local paper trading demo shortcut:
+
+    .\hqe_paper_demo.bat
 
 Check Git status:
 
