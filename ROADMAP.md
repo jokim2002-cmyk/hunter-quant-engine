@@ -643,6 +643,27 @@ Future phase:
 
 ---
 
+## Next Planned Phase: Paper Trading Design and Fake Execution Journal
+
+Next phase after offline data workflow:
+
+- Design first. No paper trading engine is implemented yet.
+- Offline/replayed data first. Paper trading must work without a live broker.
+- Risk controls before live execution:
+  - max trades per day
+  - max daily loss
+  - max position size
+  - cooldown
+  - kill switch
+- Broker/live execution remains a future phase and must stay isolated from core.
+- Real-money execution remains the last phase.
+
+Relevant path:
+
+- `docs/PAPER_TRADING_DESIGN.md`
+
+---
+
 ## HQE Philosophy
 
 HQE is not built to show fake profit.
