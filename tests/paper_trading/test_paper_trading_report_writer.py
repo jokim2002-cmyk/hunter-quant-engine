@@ -418,12 +418,16 @@ def test_write_paper_trading_report_text_contains_safety_lines(tmp_path):
 
     text = paths.report_text.read_text(encoding="utf-8").lower()
 
+    assert "local paper trading report" in text
+    assert "==========================" in text
     assert "paper trading session summary" in text
+    assert "-----------------------------" in text
     assert "paper trading report files" in text
     assert "orders count: 2" in text
     assert "open positions count: 1" in text
     assert "exit records count: 1" in text
     assert "paper trading p&l summary" in text
+    assert "-------------------------" in text
     assert "closed trades count: 1" in text
     assert "exits with pnl count: 1" in text
     assert "total simulated gross pnl: 2275.0" in text
@@ -440,6 +444,8 @@ def test_write_paper_trading_report_text_contains_safety_lines(tmp_path):
     assert "paper pnl is simulation only" in text
     assert "estimated costs are included in net pnl only" in text
     assert "gross pnl excludes costs" in text
+    assert "safety notes" in text
+    assert "------------" in text
     assert "local report/export only" in text
     assert "no broker/fyers" in text
     assert "no live/real market data" in text
