@@ -18,9 +18,17 @@ The older example script also works:
 
     .\.venv\Scripts\python.exe examples\run_paper_trading_demo.py
 
-The Windows shortcut also works:
+Paper demo shortcuts:
 
     .\hqe_paper_demo.bat
+    .\hqe_paper_report.bat
+    .\hqe_paper_demo_report.bat
+
+Shortcut meanings:
+
+- `hqe_paper_demo.bat` runs the safe local paper trading demo.
+- `hqe_paper_report.bat` opens the latest generated text report after a demo run.
+- `hqe_paper_demo_report.bat` runs the demo and then opens the report.
 
 Implementation path:
 
@@ -46,14 +54,6 @@ The demo runs a complete safe local paper flow:
 8. Prints a short trader-readable terminal summary.
 
 ---
-
-After running the demo, this shortcut opens the generated text report:
-
-    .\hqe_paper_report.bat
-
-This shortcut runs the demo and then opens the generated report:
-
-    .\hqe_paper_demo_report.bat
 
 ## Generated Report Files
 
