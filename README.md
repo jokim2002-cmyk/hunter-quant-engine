@@ -58,7 +58,7 @@ Engineer it right once. Improve it forever.
 HQE currently supports:
 
 - Clean Python architecture
-- 648 tests passing
+- 1334 tests passing
 - Smart Money Concepts detection
 - SMC strategy signal generation
 - Strategy config presets
@@ -74,6 +74,8 @@ HQE currently supports:
 - Experiment result ranking helpers
 - PC-only benchmark and experiment shortcuts
 - PC + laptop GitHub workflow
+- Safe local paper trading demo CLI
+- Local paper report bundle generation
 
 Current benchmark truth:
 
@@ -294,6 +296,37 @@ Current SMC strict/balanced/relaxed benchmarks remain useful as underlying signa
 
 - ROADMAP.md
 - docs/PC_BENCHMARK_RUNBOOK.md
+- docs/PAPER_TRADING_DESIGN.md
+- docs/PAPER_TRADING_DEMO_CLI.md
+- docs/OPTION_MARKET_DATA_RECORDING.md
+
+## Safe Local Paper Trading Demo CLI
+
+HQE now has a safe local paper trading demo CLI.
+
+Run it from the project root:
+
+    .\.venv\Scripts\python.exe -m src.paper_trading.paper_trading_demo_cli
+
+The example wrapper also works:
+
+    .\.venv\Scripts\python.exe examples\run_paper_trading_demo.py
+
+The CLI:
+
+- Uses a synthetic approved NIFTY CE option-buy trade plan.
+- Submits and closes a fake local paper position.
+- Shows paper-only simulated gross P&L, estimated costs, and simulated net P&L.
+- Cleans known generated report bundle files before writing fresh reports.
+- Writes local report files under reports/paper_trading/.
+- Does not use FYERS.
+- Does not use live or real market data.
+- Does not place real orders.
+- Is not a profitability claim.
+
+Detailed guide:
+
+- docs/PAPER_TRADING_DEMO_CLI.md
 
 ## Safe Offline Option Market Data Workflow
 
