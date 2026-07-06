@@ -370,3 +370,22 @@ Relevant path:
 - `tests/paper_trading/test_paper_trading_session_summary.py`
 
 This is local summary/report data only. It does not use FYERS, does not use live/real market data, does not place real orders, and is not a profitability claim.
+
+## Paper Trading Session Summary Export
+
+`paper_trading_session_summary_export.py` provides local report/export helpers for `PaperTradingSessionSummary`.
+
+It supports:
+
+- converting a paper trading session summary to a dictionary
+- formatting a beginner-friendly text summary
+- writing a JSON summary file
+- writing a one-row CSV summary file
+
+Relevant paths:
+
+- `src/paper_trading/paper_trading_session_summary_export.py`
+- `tests/paper_trading/test_paper_trading_session_summary_export.py`
+
+This is local summary/export data only. It does not use FYERS, does not use live/real market data, does not place real orders, and is not a profitability claim.
+\n

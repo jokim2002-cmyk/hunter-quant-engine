@@ -147,3 +147,23 @@ def test_paper_trading_design_docs_cover_session_summary():
     assert "does not use live/real market data" in text
     assert "does not place real orders" in text
     assert "not a profitability claim" in text
+
+
+def test_paper_trading_design_docs_cover_session_summary_export():
+    from pathlib import Path
+
+    text = Path("docs/PAPER_TRADING_DESIGN.md").read_text(encoding="utf-8")
+
+    assert "Paper Trading Session Summary Export" in text
+    assert "paper_trading_session_summary_export.py" in text
+    assert "PaperTradingSessionSummary" in text
+    assert "dictionary" in text
+    assert "beginner-friendly text summary" in text
+    assert "JSON summary file" in text
+    assert "one-row CSV summary file" in text
+    assert "src/paper_trading/paper_trading_session_summary_export.py" in text
+    assert "tests/paper_trading/test_paper_trading_session_summary_export.py" in text
+    assert "does not use FYERS" in text
+    assert "does not use live/real market data" in text
+    assert "does not place real orders" in text
+    assert "not a profitability claim" in text
