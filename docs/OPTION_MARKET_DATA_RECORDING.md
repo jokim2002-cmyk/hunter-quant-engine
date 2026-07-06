@@ -238,6 +238,17 @@ print(result.snapshots_recorded)       # 1
 print(result.premium_candles_recorded) # 1
 ```
 
+## CSV replay source
+
+CsvReplayOptionMarketDataSource replays previously recorded CSV data offline.
+
+- It is broker-agnostic. It does not use FYERS or any broker SDK.
+- It reads snapshot and premium candle CSV files written by CsvOptionMarketDataRecorder.
+- It does not use live or real market data by itself.
+- It does not place orders.
+- It is not a profitability claim.
+- It plugs into OptionMarketDataPoller using the same source interface.
+
 ## Offline in-memory recording demo
 
 The demo script at `examples/record_in_memory_option_market_data.py` runs the full broker-agnostic recording chain using synthetic in-memory data only.
