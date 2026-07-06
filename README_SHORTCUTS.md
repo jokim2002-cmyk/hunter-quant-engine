@@ -28,6 +28,12 @@ Run the full test suite shortcut:
 
     .\hqe_test.bat
 
+Run quick local check shortcut:
+
+    .\hqe_quick_check.bat
+
+This runs Git status, the full test suite, and Git status again.
+
 ## Git Check
 
 Check working tree status:

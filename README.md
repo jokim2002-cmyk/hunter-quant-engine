@@ -143,6 +143,10 @@ Run the full test suite shortcut:
 
     .\hqe_test.bat
 
+Run quick local check shortcut:
+
+    .\hqe_quick_check.bat
+
 Check Git status shortcut:
 
     .\hqe_status.bat
