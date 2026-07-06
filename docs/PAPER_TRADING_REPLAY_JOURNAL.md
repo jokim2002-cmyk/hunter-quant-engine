@@ -58,7 +58,9 @@ Run fake paper replay and save the journal bundle:
 
     .\hqe_paper_replay_journal.bat
 
-Print the generated summary JSON:
+Print the generated summary:
+
+The summary shortcut uses a friendly terminal view instead of raw summary JSON.
 
     .\hqe_paper_replay_journal_summary.bat
 

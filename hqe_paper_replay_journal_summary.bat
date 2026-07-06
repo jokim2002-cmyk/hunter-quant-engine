@@ -8,18 +8,15 @@ echo Prints local/generated fake paper replay journal summary.
 echo No broker. No live market data. No real orders.
 echo.
 
-set "SUMMARY_JSON=reports\paper_trading\journal\demo-replay-journal\summary.json"
-
-if not exist "%SUMMARY_JSON%" (
-    echo INFO: Replay journal summary does not exist yet.
-    echo Run hqe_paper_replay_journal.bat first to generate demo replay journal files.
+if not exist ".venv\Scripts\python.exe" (
+    echo ERROR: .venv\Scripts\python.exe not found.
+    echo Run this from the HQE repo after setting up the virtual environment.
     exit /b 1
 )
 
-type "%SUMMARY_JSON%"
+".venv\Scripts\python.exe" -m src.paper_trading.paper_trading_replay_journal_summary_cli
+if errorlevel 1 exit /b 1
 
 echo.
-echo.
-echo Printed: %SUMMARY_JSON%
-echo Paper PnL is simulation only.
+echo === Done ===
 endlocal

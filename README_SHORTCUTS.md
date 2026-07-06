@@ -80,7 +80,7 @@ This shows the current branch, latest commits, and working tree status.
 - No live or real market data is used by the paper demo.
 - No real orders are placed.
 - This is not a profitability claim.
-- `hqe_paper_replay_journal_summary.bat` - print replay journal summary
+- `hqe_paper_replay_journal_summary.bat` - print friendly replay journal summary
 - `hqe_paper_replay_journal_index.bat` - print replay journal index
 - `hqe_paper_replay_journal_runs.bat` - list replay journal runs
 - `hqe_paper_replay_journal_all.bat` - run replay journal, print summary/runs, and open folder
