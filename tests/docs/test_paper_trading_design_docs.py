@@ -108,3 +108,23 @@ def test_paper_trading_design_doc_documents_option_buy_plan_adapter():
     assert "Not a profitability claim" in text
     assert "src/paper_trading/option_buy_plan_to_paper_order.py" in text
     assert "tests/paper_trading/test_option_buy_plan_to_paper_order.py" in text
+
+
+def test_paper_trading_design_docs_cover_demo_script():
+    from pathlib import Path
+
+    text = Path("docs/PAPER_TRADING_DESIGN.md").read_text(encoding="utf-8")
+
+    assert "Paper Trading Demo Script" in text
+    assert "examples/run_paper_trading_demo.py" in text
+    assert "synthetic OptionBuyTradePlan" in text
+    assert "PaperOrderRequest" in text
+    assert "PaperTradingSession" in text
+    assert "PaperOrderRecord" in text
+    assert "PaperPosition" in text
+    assert "fake/local workflow" in text
+    assert "does not use FYERS" in text
+    assert "does not use live/real market data" in text
+    assert "does not place real orders" in text
+    assert "not a profitability claim" in text
+    assert "tests/examples/test_run_paper_trading_demo.py" in text

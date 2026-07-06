@@ -336,3 +336,19 @@ Relevant path:
 - `tests/paper_trading/test_option_buy_plan_to_paper_order.py`
 
 Note: The option-buy plan to paper order adapter is fake/local only.
+
+## Paper Trading Demo Script
+
+The local paper trading demo script is available at:
+
+- `examples/run_paper_trading_demo.py`
+
+It demonstrates this fake/local workflow:
+
+`synthetic OptionBuyTradePlan -> PaperOrderRequest -> PaperTradingSession -> PaperOrderRecord -> PaperPosition`
+
+The demo uses synthetic data only. It does not use FYERS, does not use live/real market data, does not place real orders, and is not a profitability claim.
+
+Related test:
+
+- `tests/examples/test_run_paper_trading_demo.py`
