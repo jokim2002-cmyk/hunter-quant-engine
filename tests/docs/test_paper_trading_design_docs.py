@@ -80,8 +80,6 @@ def test_roadmap_documents_paper_trading_design_next_phase():
 
 
 def test_paper_trading_design_docs_cover_session_skeleton():
-    from pathlib import Path
-
     text = Path("docs/PAPER_TRADING_DESIGN.md").read_text(encoding="utf-8")
 
     assert "Paper trading session skeleton" in text
@@ -95,3 +93,18 @@ def test_paper_trading_design_docs_cover_session_skeleton():
     assert "does not use live market data" in text
     assert "does not place real orders" in text
     assert "not a profitability claim" in text
+
+
+def test_paper_trading_design_doc_documents_option_buy_plan_adapter():
+    text = (PROJECT_ROOT / "docs" / "PAPER_TRADING_DESIGN.md").read_text(encoding="utf-8")
+
+    assert "Option-buy Plan to Paper Order Adapter" in text
+    assert "OptionBuyTradePlan" in text
+    assert "PaperOrderRequest" in text
+    assert "PaperTradingSession" in text
+    assert "fake/local only" in text
+    assert "No broker/FYERS" in text
+    assert "No real orders" in text
+    assert "Not a profitability claim" in text
+    assert "src/paper_trading/option_buy_plan_to_paper_order.py" in text
+    assert "tests/paper_trading/test_option_buy_plan_to_paper_order.py" in text

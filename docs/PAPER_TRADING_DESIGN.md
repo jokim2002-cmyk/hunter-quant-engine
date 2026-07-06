@@ -319,3 +319,20 @@ Relevant path:
 - `tests/paper_trading/test_paper_trading_session.py`
 
 It does not use FYERS, does not use live market data, does not place real orders, and is not a profitability claim.
+
+## Option-buy Plan to Paper Order Adapter
+
+The option-buy plan to paper order adapter converts `OptionBuyTradePlan` into `PaperOrderRequest` for the fake/local paper trading session.
+
+- Fake/local only.
+- Can feed `PaperTradingSession`.
+- No broker/FYERS.
+- No real orders.
+- Not a profitability claim.
+
+Relevant path:
+
+- `src/paper_trading/option_buy_plan_to_paper_order.py`
+- `tests/paper_trading/test_option_buy_plan_to_paper_order.py`
+
+Note: The option-buy plan to paper order adapter is fake/local only.
