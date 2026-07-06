@@ -33,6 +33,20 @@ def test_paper_trading_design_doc_content():
     assert "no short ce" in text.lower() or "No short CE" in text
 
 
+def test_paper_trading_design_doc_documents_implemented_skeleton():
+    text = (PROJECT_ROOT / "docs" / "PAPER_TRADING_DESIGN.md").read_text(encoding="utf-8")
+
+    assert "Implemented Skeleton" in text
+    assert "PaperOrderRequest" in text
+    assert "PaperOrderRecord" in text
+    assert "Fake/local records only" in text
+    assert "No real orders are placed" in text
+    assert "No broker or FYERS" in text
+    assert "Not a profitability claim" in text
+    assert "src/paper_trading/paper_order_journal.py" in text
+    assert "tests/paper_trading/test_paper_order_journal.py" in text
+
+
 def test_roadmap_documents_paper_trading_design_next_phase():
     text = (PROJECT_ROOT / "ROADMAP.md").read_text(encoding="utf-8")
 

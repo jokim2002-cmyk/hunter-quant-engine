@@ -248,3 +248,24 @@ Rules:
 - No profitability claim is made.
 - Paper trading output must stay under `data/paper_trading/` which is gitignored.
 - Real-money execution remains the last phase.
+
+## Implemented Skeleton
+
+The first paper trading building block is now implemented.
+
+- `PaperOrderRequest` — validated request to create a fake paper buy order.
+- `PaperOrderRecord` — immutable fake paper order record stored in the journal.
+- `PaperOrderJournal` — in-memory journal that accepts requests and stores records.
+
+Properties:
+
+- Fake/local records only. No real orders are placed.
+- No broker or FYERS integration.
+- No live or real market data required.
+- No real orders.
+- Not a profitability claim.
+
+Relevant path:
+
+- `src/paper_trading/paper_order_journal.py`
+- `tests/paper_trading/test_paper_order_journal.py`
