@@ -162,6 +162,82 @@ print(result.snapshots_recorded)       # 1
 print(result.premium_candles_recorded) # 1
 ```
 
+## In-memory demo source
+
+InMemoryOptionMarketDataSource is for tests and demos only. It is not real market data.
+
+- It is broker-agnostic. It contains no broker SDK or API calls.
+- It provides synthetic OptionChainSnapshot and OptionPremiumCandle data from memory.
+- It plugs directly into OptionMarketDataPoller and OptionMarketDataPollingRecorder.
+- It does not place orders.
+- It is not a profitability claim.
+- Use it in unit tests, integration tests, and documentation examples.
+
+```python
+from datetime import datetime, date
+
+from src.data_recording.csv_option_market_data_recorder import CsvOptionMarketDataRecorder
+from src.data_recording.in_memory_option_market_data_source import InMemoryOptionMarketDataSource
+from src.data_recording.option_market_data_poller import OptionMarketDataPoller
+from src.data_recording.option_market_data_polling_recorder import OptionMarketDataPollingRecorder
+from src.models.option_chain_entry import OptionChainEntry
+from src.models.option_chain_snapshot import OptionChainSnapshot
+from src.models.option_contract import OptionContract
+from src.models.option_premium_candle import OptionPremiumCandle
+from src.models.option_type import OptionType
+
+# Synthetic snapshot — not real market data.
+contract = OptionContract(
+    underlying_symbol="NIFTY",
+    expiry_date=date(2026, 7, 31),
+    strike_price=24200,
+    option_type=OptionType.CE,
+    lot_size=75,
+    symbol="NIFTY_DEMO_24200CE",
+)
+entry = OptionChainEntry(
+    contract=contract,
+    last_traded_price=120.0,
+    bid_price=119.5,
+    ask_price=120.5,
+    volume=500,
+    open_interest=10000,
+)
+snapshot = OptionChainSnapshot(
+    underlying_symbol="NIFTY",
+    underlying_price=24210.0,
+    timestamp=datetime(2026, 7, 6, 9, 15),
+    entries=(entry,),
+)
+candle = OptionPremiumCandle(
+    timestamp=datetime(2026, 7, 6, 9, 15),
+    open=118.0,
+    high=125.0,
+    low=115.0,
+    close=120.0,
+    volume=200,
+)
+
+source = InMemoryOptionMarketDataSource(
+    snapshot=snapshot,
+    premium_candles_by_symbol={"NIFTY_DEMO_24200CE": (candle,)},
+)
+poller = OptionMarketDataPoller(source)
+recorder = CsvOptionMarketDataRecorder(
+    snapshot_csv_path="data/recorded/demo_snapshots.csv",
+    premium_csv_path="data/recorded/demo_premiums.csv",
+)
+service = OptionMarketDataPollingRecorder(poller, recorder)
+
+result = service.poll_and_record(
+    premium_symbols=["NIFTY_DEMO_24200CE"],
+    include_snapshot=True,
+    snapshot_id="demo-001",
+)
+print(result.snapshots_recorded)       # 1
+print(result.premium_candles_recorded) # 1
+```
+
 ## Notes
 
 - This layer is broker-agnostic.

@@ -34,6 +34,20 @@ def test_option_market_data_recording_docs_cover_polling_recorder():
     assert "data/recorded/" in contents
 
 
+def test_option_market_data_recording_docs_cover_in_memory_source():
+    contents = Path("docs/OPTION_MARKET_DATA_RECORDING.md").read_text(encoding="utf-8")
+
+    assert "InMemoryOptionMarketDataSource" in contents
+    assert "tests" in contents.lower() and "demos" in contents.lower()
+    assert "synthetic" in contents.lower()
+    assert "not real market data" in contents.lower()
+    assert "OptionMarketDataPoller" in contents
+    assert "OptionMarketDataPollingRecorder" in contents
+    assert "CsvOptionMarketDataRecorder" in contents
+    assert "does not place orders" in contents.lower()
+    assert "not a profitability claim" in contents.lower()
+
+
 def test_gitignore_ignores_recording_data_directories():
     gitignore = Path(".gitignore").read_text(encoding="utf-8")
 
