@@ -24,6 +24,10 @@ Run the full test suite:
 
     .\.venv\Scripts\python.exe -m pytest
 
+Run the full test suite shortcut:
+
+    .\hqe_test.bat
+
 ## Git Check
 
 Check working tree status:

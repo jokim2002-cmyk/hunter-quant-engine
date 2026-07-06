@@ -139,6 +139,10 @@ Paper demo shortcuts:
     .\hqe_paper_report.bat
     .\hqe_paper_demo_report.bat
 
+Run the full test suite shortcut:
+
+    .\hqe_test.bat
+
 Check Git status:
 
 ```powershell
