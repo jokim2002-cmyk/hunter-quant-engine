@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import csv
 import json
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 
 import pytest
@@ -17,12 +17,17 @@ import pytest
 from src.paper_trading.paper_order_journal import PaperOrderRequest
 from src.paper_trading.paper_realized_exit_record import PaperExitReason
 from src.paper_trading.paper_trading_report_writer import (
+    PAPER_TRADING_REPORT_SOURCE,
+    PAPER_TRADING_REPORT_VERSION,
+    PaperTradingReportMetadata,
     PaperTradingReportPaths,
     PaperTradingReportSummary,
+    build_paper_trading_report_metadata,
     build_paper_trading_report_summary,
     paper_exit_record_to_dict,
     paper_order_record_to_dict,
     paper_position_to_dict,
+    paper_trading_report_metadata_to_dict,
     paper_trading_report_summary_to_csv_row,
     paper_trading_report_summary_to_dict,
     write_paper_trading_report,
@@ -31,6 +36,8 @@ from src.paper_trading.paper_trading_session import PaperTradingSession
 
 _OPENED_AT = datetime(2026, 7, 6, 9, 15)
 _CLOSED_AT = datetime(2026, 7, 6, 9, 30)
+_GENERATED_AT = datetime(2026, 7, 6, 10, 0, tzinfo=timezone.utc)
+_GENERATED_AT_ISO = "2026-07-06T10:00:00+00:00"
 
 
 def _request(**kwargs) -> PaperOrderRequest:
@@ -59,6 +66,35 @@ def _session_with_open_and_closed_positions() -> PaperTradingSession:
         estimated_slippage=10.0,
     )
     return session
+
+
+def test_build_paper_trading_report_metadata_with_fixed_time():
+    metadata = build_paper_trading_report_metadata(_GENERATED_AT)
+
+    assert isinstance(metadata, PaperTradingReportMetadata)
+    assert metadata.report_version == PAPER_TRADING_REPORT_VERSION
+    assert metadata.report_source == PAPER_TRADING_REPORT_SOURCE
+    assert metadata.generated_at == _GENERATED_AT_ISO
+    assert metadata.paper_pnl_is_simulation_only is True
+
+
+def test_build_paper_trading_report_metadata_adds_timezone_to_naive_time():
+    metadata = build_paper_trading_report_metadata(datetime(2026, 7, 6, 10, 0))
+
+    assert metadata.generated_at == _GENERATED_AT_ISO
+
+
+def test_paper_trading_report_metadata_to_dict():
+    metadata = build_paper_trading_report_metadata(_GENERATED_AT)
+
+    payload = paper_trading_report_metadata_to_dict(metadata)
+
+    assert payload == {
+        "report_version": 1,
+        "report_source": "paper",
+        "generated_at": _GENERATED_AT_ISO,
+        "paper_pnl_is_simulation_only": True,
+    }
 
 
 def test_paper_order_record_to_dict():
@@ -263,7 +299,7 @@ def test_write_paper_trading_report_creates_expected_files(tmp_path):
     session = _session_with_open_and_closed_positions()
     output_dir = tmp_path / "reports" / "paper_trading"
 
-    paths = write_paper_trading_report(session, output_dir)
+    paths = write_paper_trading_report(session, output_dir, generated_at=_GENERATED_AT)
 
     assert isinstance(paths, PaperTradingReportPaths)
     assert paths.output_dir == output_dir
@@ -287,11 +323,18 @@ def test_write_paper_trading_report_creates_expected_files(tmp_path):
 
 def test_write_paper_trading_report_writes_summary_json(tmp_path):
     session = _session_with_open_and_closed_positions()
-    paths = write_paper_trading_report(session, tmp_path / "reports" / "paper")
+    paths = write_paper_trading_report(
+        session,
+        tmp_path / "reports" / "paper",
+        generated_at=_GENERATED_AT,
+    )
 
     payload = json.loads(paths.summary_json.read_text(encoding="utf-8"))
 
     assert payload == {
+        "report_version": 1,
+        "report_source": "paper",
+        "generated_at": _GENERATED_AT_ISO,
         "total_orders": 2,
         "open_positions_count": 1,
         "total_open_quantity": 130,
@@ -319,13 +362,21 @@ def test_write_paper_trading_report_writes_summary_json(tmp_path):
 
 def test_write_paper_trading_report_writes_summary_csv(tmp_path):
     session = _session_with_open_and_closed_positions()
-    paths = write_paper_trading_report(session, tmp_path / "reports" / "paper")
+    paths = write_paper_trading_report(
+        session,
+        tmp_path / "reports" / "paper",
+        generated_at=_GENERATED_AT,
+    )
 
     with paths.summary_csv.open(encoding="utf-8", newline="") as handle:
         rows = list(csv.DictReader(handle))
 
     assert rows == [
         {
+            "report_version": "1",
+            "report_source": "paper",
+            "generated_at": _GENERATED_AT_ISO,
+            "paper_pnl_is_simulation_only": "True",
             "total_orders": "2",
             "open_positions_count": "1",
             "total_open_quantity": "130",
@@ -345,7 +396,6 @@ def test_write_paper_trading_report_writes_summary_csv(tmp_path):
             "net_losing_exits_count": "0",
             "net_flat_exits_count": "0",
             "unknown_net_pnl_exits_count": "0",
-            "paper_pnl_is_simulation_only": "True",
             "estimated_costs_included_in_net_pnl": "True",
             "gross_pnl_excludes_costs": "True",
         }
@@ -354,7 +404,11 @@ def test_write_paper_trading_report_writes_summary_csv(tmp_path):
 
 def test_write_paper_trading_report_writes_orders_json(tmp_path):
     session = _session_with_open_and_closed_positions()
-    paths = write_paper_trading_report(session, tmp_path / "reports" / "paper")
+    paths = write_paper_trading_report(
+        session,
+        tmp_path / "reports" / "paper",
+        generated_at=_GENERATED_AT,
+    )
 
     payload = json.loads(paths.orders_json.read_text(encoding="utf-8"))
 
@@ -367,7 +421,11 @@ def test_write_paper_trading_report_writes_orders_json(tmp_path):
 
 def test_write_paper_trading_report_writes_open_positions_csv(tmp_path):
     session = _session_with_open_and_closed_positions()
-    paths = write_paper_trading_report(session, tmp_path / "reports" / "paper")
+    paths = write_paper_trading_report(
+        session,
+        tmp_path / "reports" / "paper",
+        generated_at=_GENERATED_AT,
+    )
 
     with paths.open_positions_csv.open(encoding="utf-8", newline="") as handle:
         rows = list(csv.DictReader(handle))
@@ -385,7 +443,11 @@ def test_write_paper_trading_report_writes_open_positions_csv(tmp_path):
 
 def test_write_paper_trading_report_writes_exit_records_csv(tmp_path):
     session = _session_with_open_and_closed_positions()
-    paths = write_paper_trading_report(session, tmp_path / "reports" / "paper")
+    paths = write_paper_trading_report(
+        session,
+        tmp_path / "reports" / "paper",
+        generated_at=_GENERATED_AT,
+    )
 
     with paths.exit_records_csv.open(encoding="utf-8", newline="") as handle:
         rows = list(csv.DictReader(handle))
@@ -414,12 +476,22 @@ def test_write_paper_trading_report_writes_exit_records_csv(tmp_path):
 
 def test_write_paper_trading_report_text_contains_safety_lines(tmp_path):
     session = _session_with_open_and_closed_positions()
-    paths = write_paper_trading_report(session, tmp_path / "reports" / "paper")
+    paths = write_paper_trading_report(
+        session,
+        tmp_path / "reports" / "paper",
+        generated_at=_GENERATED_AT,
+    )
 
     text = paths.report_text.read_text(encoding="utf-8").lower()
 
     assert "local paper trading report" in text
     assert "==========================" in text
+    assert "report metadata" in text
+    assert "---------------" in text
+    assert "report version: 1" in text
+    assert "report source: paper" in text
+    assert f"generated at: {_GENERATED_AT_ISO.lower()}" in text
+    assert "paper pnl is simulation only: true" in text
     assert "paper trading session summary" in text
     assert "-----------------------------" in text
     assert "paper trading report files" in text
@@ -462,13 +534,20 @@ def test_write_paper_trading_report_rejects_output_outside_reports(tmp_path):
 
 def test_write_empty_paper_trading_report(tmp_path):
     session = PaperTradingSession()
-    paths = write_paper_trading_report(session, tmp_path / "reports" / "empty")
+    paths = write_paper_trading_report(
+        session,
+        tmp_path / "reports" / "empty",
+        generated_at=_GENERATED_AT,
+    )
 
     summary_payload = json.loads(paths.summary_json.read_text(encoding="utf-8"))
     orders_payload = json.loads(paths.orders_json.read_text(encoding="utf-8"))
     positions_payload = json.loads(paths.open_positions_json.read_text(encoding="utf-8"))
     exits_payload = json.loads(paths.exit_records_json.read_text(encoding="utf-8"))
 
+    assert summary_payload["report_version"] == 1
+    assert summary_payload["report_source"] == "paper"
+    assert summary_payload["generated_at"] == _GENERATED_AT_ISO
     assert summary_payload["total_orders"] == 0
     assert summary_payload["closed_trades_count"] == 0
     assert summary_payload["exits_with_pnl_count"] == 0

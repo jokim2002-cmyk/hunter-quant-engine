@@ -11,6 +11,7 @@ from __future__ import annotations
 import csv
 import json
 from dataclasses import dataclass
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -27,7 +28,28 @@ from src.paper_trading.paper_trading_session_summary_export import (
 )
 
 
+PAPER_TRADING_REPORT_VERSION = 1
+PAPER_TRADING_REPORT_SOURCE = "paper"
+
 PaperTradingReportSummary = PaperTradingSessionSummary
+
+
+@dataclass(frozen=True)
+class PaperTradingReportMetadata:
+    """
+    Trace metadata for a generated local paper trading report.
+    """
+
+    report_version: int
+    report_source: str
+    generated_at: str
+
+    @property
+    def paper_pnl_is_simulation_only(self) -> bool:
+        """
+        Make report safety meaning explicit in metadata too.
+        """
+        return True
 
 
 @dataclass(frozen=True)
@@ -46,6 +68,51 @@ class PaperTradingReportPaths:
     exit_records_json: Path
     exit_records_csv: Path
     report_text: Path
+
+
+def build_paper_trading_report_metadata(
+    generated_at: datetime | None = None,
+) -> PaperTradingReportMetadata:
+    """
+    Build deterministic trace metadata for a generated paper report.
+
+    If generated_at is omitted, current UTC time is used. Passing generated_at
+    keeps tests and replay-style report generation deterministic.
+    """
+    timestamp = generated_at if generated_at is not None else datetime.now(timezone.utc)
+    if timestamp.tzinfo is None:
+        timestamp = timestamp.replace(tzinfo=timezone.utc)
+
+    return PaperTradingReportMetadata(
+        report_version=PAPER_TRADING_REPORT_VERSION,
+        report_source=PAPER_TRADING_REPORT_SOURCE,
+        generated_at=timestamp.isoformat(),
+    )
+
+
+def paper_trading_report_metadata_to_dict(
+    metadata: PaperTradingReportMetadata,
+) -> dict[str, Any]:
+    """
+    Convert paper report metadata to a serializable dictionary.
+    """
+    return {
+        "report_version": metadata.report_version,
+        "report_source": metadata.report_source,
+        "generated_at": metadata.generated_at,
+        "paper_pnl_is_simulation_only": metadata.paper_pnl_is_simulation_only,
+    }
+
+
+def _with_report_metadata(
+    payload: dict[str, Any],
+    metadata: PaperTradingReportMetadata,
+) -> dict[str, Any]:
+    """
+    Prefix a report payload with trace metadata fields.
+    """
+    metadata_payload = paper_trading_report_metadata_to_dict(metadata)
+    return {**metadata_payload, **payload}
 
 
 def _ensure_reports_output_dir(output_dir: str | Path) -> Path:
@@ -174,6 +241,7 @@ def paper_trading_report_summary_to_csv_row(
 
 
 def _format_report_text(
+    metadata: PaperTradingReportMetadata,
     report_summary: PaperTradingReportSummary,
     orders_count: int,
     open_positions_count: int,
@@ -185,6 +253,13 @@ def _format_report_text(
         [
             "Local Paper Trading Report",
             "==========================",
+            "",
+            "Report Metadata",
+            "---------------",
+            f"report version: {metadata.report_version}",
+            f"report source: {metadata.report_source}",
+            f"generated at: {metadata.generated_at}",
+            f"paper pnl is simulation only: {metadata.paper_pnl_is_simulation_only}",
             "",
             "Paper Trading Session Summary",
             "-----------------------------",
@@ -235,6 +310,7 @@ def _format_report_text(
 def write_paper_trading_report(
     session,
     output_dir: str | Path = Path("reports") / "paper_trading",
+    generated_at: datetime | None = None,
 ) -> PaperTradingReportPaths:
     """
     Write a local paper trading report bundle under reports/.
@@ -244,9 +320,16 @@ def write_paper_trading_report(
     """
     base_dir = _ensure_reports_output_dir(output_dir)
 
+    metadata = build_paper_trading_report_metadata(generated_at)
     report_summary = build_paper_trading_report_summary(session)
-    report_summary_payload = paper_trading_report_summary_to_dict(report_summary)
-    report_summary_csv_row = paper_trading_report_summary_to_csv_row(report_summary)
+    report_summary_payload = _with_report_metadata(
+        paper_trading_report_summary_to_dict(report_summary),
+        metadata,
+    )
+    report_summary_csv_row = _with_report_metadata(
+        paper_trading_report_summary_to_csv_row(report_summary),
+        metadata,
+    )
 
     orders = [paper_order_record_to_dict(record) for record in session.list_orders()]
     open_positions = [
@@ -332,6 +415,7 @@ def write_paper_trading_report(
 
     paths.report_text.write_text(
         _format_report_text(
+            metadata=metadata,
             report_summary=report_summary,
             orders_count=len(orders),
             open_positions_count=len(open_positions),
