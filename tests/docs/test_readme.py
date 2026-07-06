@@ -25,6 +25,10 @@ def test_readme_documents_current_hqe_workflow():
     assert "hqe_run_experiments.bat" in text
     assert "No fake profit claims." in text
     assert "docs/PC_BENCHMARK_RUNBOOK.md" in text
+    assert "Run the safe local paper trading demo CLI:" in text
+    assert ".\\.venv\\Scripts\\python.exe -m src.paper_trading.paper_trading_demo_cli" in text
+    assert "Run the safe local paper trading demo example wrapper:" in text
+    assert ".\\.venv\\Scripts\\python.exe examples\\run_paper_trading_demo.py" in text
 
 
 def test_readme_no_longer_contains_old_architecture_typos():

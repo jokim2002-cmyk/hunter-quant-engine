@@ -123,6 +123,14 @@ Run experiment dry-run only:
 py scripts\run_strategy_experiments.py
 ```
 
+Run the safe local paper trading demo CLI:
+
+    .\.venv\Scripts\python.exe -m src.paper_trading.paper_trading_demo_cli
+
+Run the safe local paper trading demo example wrapper:
+
+    .\.venv\Scripts\python.exe examples\run_paper_trading_demo.py
+
 Check Git status:
 
 ```powershell
