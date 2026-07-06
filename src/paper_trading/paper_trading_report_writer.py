@@ -18,11 +18,17 @@ from src.paper_trading.paper_order_journal import PaperOrderRecord
 from src.paper_trading.paper_position_state import PaperPosition
 from src.paper_trading.paper_realized_exit_record import PaperRealizedExitRecord
 from src.paper_trading.paper_trading_session_summary import (
+    PaperTradingSessionSummary,
     build_paper_trading_session_summary,
 )
 from src.paper_trading.paper_trading_session_summary_export import (
     format_paper_trading_session_summary,
+    paper_trading_session_summary_to_csv_row,
+    paper_trading_session_summary_to_dict,
 )
+
+
+PaperTradingReportSummary = PaperTradingSessionSummary
 
 
 @dataclass(frozen=True)
@@ -41,69 +47,6 @@ class PaperTradingReportPaths:
     exit_records_json: Path
     exit_records_csv: Path
     report_text: Path
-
-
-@dataclass(frozen=True)
-class PaperTradingReportSummary:
-    """
-    Trader-friendly local paper report summary.
-
-    P&L values are paper-only simulation values. Net P&L includes only
-    estimated charges/slippage.
-    """
-
-    total_orders: int
-    open_positions_count: int
-    total_open_quantity: int
-    symbols: tuple[str, ...]
-    closed_trades_count: int
-    exits_with_pnl_count: int
-    total_simulated_gross_pnl: float
-    total_estimated_costs: float
-    total_simulated_net_pnl: float
-    winning_exits_count: int
-    losing_exits_count: int
-    flat_exits_count: int
-    unknown_pnl_exits_count: int
-    net_winning_exits_count: int
-    net_losing_exits_count: int
-    net_flat_exits_count: int
-    unknown_net_pnl_exits_count: int
-
-    @property
-    def has_open_positions(self) -> bool:
-        """
-        Return True when the report has open paper positions.
-        """
-        return self.open_positions_count > 0
-
-    @property
-    def has_closed_trades(self) -> bool:
-        """
-        Return True when at least one local paper exit record exists.
-        """
-        return self.closed_trades_count > 0
-
-    @property
-    def paper_pnl_is_simulation_only(self) -> bool:
-        """
-        Make the report safety meaning explicit.
-        """
-        return True
-
-    @property
-    def estimated_costs_included_in_net_pnl(self) -> bool:
-        """
-        Return True because net P&L subtracts estimated charges/slippage.
-        """
-        return True
-
-    @property
-    def gross_pnl_excludes_costs(self) -> bool:
-        """
-        Return True because gross P&L is before costs.
-        """
-        return True
 
 
 def _ensure_reports_output_dir(output_dir: str | Path) -> Path:
@@ -210,51 +153,7 @@ def build_paper_trading_report_summary(session) -> PaperTradingReportSummary:
     """
     Build a trader-friendly report summary from a paper trading session.
     """
-    session_summary = build_paper_trading_session_summary(session)
-    exit_records = list(session.list_exit_records())
-
-    gross_pnl_values = [
-        exit_record.simulated_gross_pnl
-        for exit_record in exit_records
-        if exit_record.simulated_gross_pnl is not None
-    ]
-    net_pnl_values = [
-        exit_record.simulated_net_pnl
-        for exit_record in exit_records
-        if exit_record.simulated_net_pnl is not None
-    ]
-
-    winning_exits_count = len([value for value in gross_pnl_values if value > 0])
-    losing_exits_count = len([value for value in gross_pnl_values if value < 0])
-    flat_exits_count = len([value for value in gross_pnl_values if value == 0])
-    unknown_pnl_exits_count = len(exit_records) - len(gross_pnl_values)
-
-    net_winning_exits_count = len([value for value in net_pnl_values if value > 0])
-    net_losing_exits_count = len([value for value in net_pnl_values if value < 0])
-    net_flat_exits_count = len([value for value in net_pnl_values if value == 0])
-    unknown_net_pnl_exits_count = len(exit_records) - len(net_pnl_values)
-
-    return PaperTradingReportSummary(
-        total_orders=session_summary.total_orders,
-        open_positions_count=session_summary.open_positions_count,
-        total_open_quantity=session_summary.total_open_quantity,
-        symbols=session_summary.symbols,
-        closed_trades_count=len(exit_records),
-        exits_with_pnl_count=len(gross_pnl_values),
-        total_simulated_gross_pnl=sum(gross_pnl_values),
-        total_estimated_costs=sum(
-            exit_record.total_estimated_costs for exit_record in exit_records
-        ),
-        total_simulated_net_pnl=sum(net_pnl_values),
-        winning_exits_count=winning_exits_count,
-        losing_exits_count=losing_exits_count,
-        flat_exits_count=flat_exits_count,
-        unknown_pnl_exits_count=unknown_pnl_exits_count,
-        net_winning_exits_count=net_winning_exits_count,
-        net_losing_exits_count=net_losing_exits_count,
-        net_flat_exits_count=net_flat_exits_count,
-        unknown_net_pnl_exits_count=unknown_net_pnl_exits_count,
-    )
+    return build_paper_trading_session_summary(session)
 
 
 def paper_trading_report_summary_to_dict(
@@ -263,32 +162,7 @@ def paper_trading_report_summary_to_dict(
     """
     Convert a paper trading report summary to a serializable dictionary.
     """
-    return {
-        "total_orders": report_summary.total_orders,
-        "open_positions_count": report_summary.open_positions_count,
-        "total_open_quantity": report_summary.total_open_quantity,
-        "symbols": list(report_summary.symbols),
-        "has_open_positions": report_summary.has_open_positions,
-        "closed_trades_count": report_summary.closed_trades_count,
-        "has_closed_trades": report_summary.has_closed_trades,
-        "exits_with_pnl_count": report_summary.exits_with_pnl_count,
-        "total_simulated_gross_pnl": report_summary.total_simulated_gross_pnl,
-        "total_estimated_costs": report_summary.total_estimated_costs,
-        "total_simulated_net_pnl": report_summary.total_simulated_net_pnl,
-        "winning_exits_count": report_summary.winning_exits_count,
-        "losing_exits_count": report_summary.losing_exits_count,
-        "flat_exits_count": report_summary.flat_exits_count,
-        "unknown_pnl_exits_count": report_summary.unknown_pnl_exits_count,
-        "net_winning_exits_count": report_summary.net_winning_exits_count,
-        "net_losing_exits_count": report_summary.net_losing_exits_count,
-        "net_flat_exits_count": report_summary.net_flat_exits_count,
-        "unknown_net_pnl_exits_count": report_summary.unknown_net_pnl_exits_count,
-        "paper_pnl_is_simulation_only": report_summary.paper_pnl_is_simulation_only,
-        "estimated_costs_included_in_net_pnl": (
-            report_summary.estimated_costs_included_in_net_pnl
-        ),
-        "gross_pnl_excludes_costs": report_summary.gross_pnl_excludes_costs,
-    }
+    return paper_trading_session_summary_to_dict(report_summary)
 
 
 def paper_trading_report_summary_to_csv_row(
@@ -297,14 +171,11 @@ def paper_trading_report_summary_to_csv_row(
     """
     Convert report summary to a one-row CSV-friendly dictionary.
     """
-    payload = paper_trading_report_summary_to_dict(report_summary)
-    payload["symbols"] = "|".join(report_summary.symbols)
-    return payload
+    return paper_trading_session_summary_to_csv_row(report_summary)
 
 
 def _format_report_text(
     summary_text: str,
-    report_summary: PaperTradingReportSummary,
     orders_count: int,
     open_positions_count: int,
     exit_records_count: int,
@@ -317,24 +188,6 @@ def _format_report_text(
             f"orders count: {orders_count}",
             f"open positions count: {open_positions_count}",
             f"exit records count: {exit_records_count}",
-            "",
-            "Paper Trading P&L Summary",
-            f"closed trades count: {report_summary.closed_trades_count}",
-            f"exits with pnl count: {report_summary.exits_with_pnl_count}",
-            f"total simulated gross pnl: {report_summary.total_simulated_gross_pnl}",
-            f"total estimated costs: {report_summary.total_estimated_costs}",
-            f"total simulated net pnl: {report_summary.total_simulated_net_pnl}",
-            f"winning exits count: {report_summary.winning_exits_count}",
-            f"losing exits count: {report_summary.losing_exits_count}",
-            f"flat exits count: {report_summary.flat_exits_count}",
-            f"unknown pnl exits count: {report_summary.unknown_pnl_exits_count}",
-            f"net winning exits count: {report_summary.net_winning_exits_count}",
-            f"net losing exits count: {report_summary.net_losing_exits_count}",
-            f"net flat exits count: {report_summary.net_flat_exits_count}",
-            f"unknown net pnl exits count: {report_summary.unknown_net_pnl_exits_count}",
-            "paper pnl is simulation only",
-            "estimated costs are included in net pnl only",
-            "gross pnl excludes costs",
             "local report/export only",
             "no broker/fyers",
             "no live/real market data",
@@ -357,7 +210,6 @@ def write_paper_trading_report(
     """
     base_dir = _ensure_reports_output_dir(output_dir)
 
-    session_summary = build_paper_trading_session_summary(session)
     report_summary = build_paper_trading_report_summary(session)
     report_summary_payload = paper_trading_report_summary_to_dict(report_summary)
     report_summary_csv_row = paper_trading_report_summary_to_csv_row(report_summary)
@@ -444,11 +296,10 @@ def write_paper_trading_report(
         ],
     )
 
-    summary_text = format_paper_trading_session_summary(session_summary)
+    summary_text = format_paper_trading_session_summary(report_summary)
     paths.report_text.write_text(
         _format_report_text(
             summary_text=summary_text,
-            report_summary=report_summary,
             orders_count=len(orders),
             open_positions_count=len(open_positions),
             exit_records_count=len(exit_records),
