@@ -151,6 +151,7 @@ Show safe local shortcuts:
 Run quick local check shortcut:
 
     .\hqe_quick_check.bat
+    .\hqe_daily.bat
 
 Check Git status shortcut:
 

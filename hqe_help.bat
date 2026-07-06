@@ -6,6 +6,7 @@ echo ========================
 echo.
 echo Daily checks:
 echo   .\hqe_quick_check.bat       - git status, full tests, git status
+echo   .\hqe_daily.bat             - quick check, demo, open report
 echo   .\hqe_test.bat              - full pytest suite
 echo   .\hqe_status.bat            - git status --short
 echo.

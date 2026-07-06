@@ -44,6 +44,12 @@ Run quick local check shortcut:
 
 This runs Git status, the full test suite, and Git status again.
 
+Run the daily workflow shortcut:
+
+    .\hqe_daily.bat
+
+This runs the quick local check, then runs the paper demo and opens the generated report.
+
 ## Git Check
 
 Check working tree status:
