@@ -238,6 +238,40 @@ print(result.snapshots_recorded)       # 1
 print(result.premium_candles_recorded) # 1
 ```
 
+## Offline in-memory recording demo
+
+The demo script at `examples/record_in_memory_option_market_data.py` runs the full broker-agnostic recording chain using synthetic in-memory data only.
+
+What it uses:
+
+- InMemoryOptionMarketDataSource — synthetic data, not real market data
+- OptionMarketDataPoller
+- OptionMarketDataPollingRecorder
+- CsvOptionMarketDataRecorder
+
+What it does not do:
+
+- It does not use FYERS or any broker SDK.
+- It does not use real market data.
+- It does not place orders.
+- It is not a profitability claim.
+- It is only a safe offline workflow demo.
+
+Output is written to `data/recorded/in_memory_demo/` which is generated output and stays gitignored under `data/recorded/`.
+
+Run on Windows PowerShell from the repository root:
+
+```powershell
+.\.venv\Scripts\python.exe examples\record_in_memory_option_market_data.py
+```
+
+Expected safe output:
+
+- Snapshot CSV created at `data/recorded/in_memory_demo/demo_snapshots.csv`
+- Premium CSV created at `data/recorded/in_memory_demo/demo_premiums.csv`
+- Synthetic/demo summary printed to console
+- No orders placed
+
 ## Notes
 
 - This layer is broker-agnostic.
