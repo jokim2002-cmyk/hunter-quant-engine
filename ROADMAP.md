@@ -23,6 +23,7 @@ Current checkpoint:
 - Replay journal cleanup helper completed.
 - Replay journal index completed.
 - Replay journal index shortcut completed.
+- Replay journal all-in-one shortcut prints index completed.
 - Paper P&L is simulation only.
 - Real-money execution remains the final phase only.
 

@@ -4,7 +4,7 @@ cd /d "%~dp0"
 
 echo.
 echo === HQE Paper Replay Journal All-In-One ===
-echo Runs fake paper replay, prints summary, and opens the journal folder.
+echo Runs fake paper replay, prints summary, prints index, and opens the journal folder.
 echo No broker. No live market data. No real orders.
 echo.
 
@@ -13,6 +13,10 @@ if errorlevel 1 exit /b 1
 
 echo.
 call hqe_paper_replay_journal_summary.bat
+if errorlevel 1 exit /b 1
+
+echo.
+call hqe_paper_replay_journal_index.bat
 if errorlevel 1 exit /b 1
 
 echo.

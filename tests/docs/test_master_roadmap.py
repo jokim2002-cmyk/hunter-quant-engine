@@ -25,6 +25,7 @@ def test_master_roadmap_has_current_status_override_before_historical_notes():
     assert "Replay journal cleanup helper completed." in text
     assert "Replay journal index completed." in text
     assert "Replay journal index shortcut completed." in text
+    assert "Replay journal all-in-one shortcut prints index completed." in text
     assert "Paper P&L is simulation only." in text
     assert "Real-money execution remains the final phase only." in text
     assert "hqe_paper_demo_report.bat" in text
