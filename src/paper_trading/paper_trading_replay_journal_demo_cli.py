@@ -12,6 +12,9 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from src.paper_trading.paper_order_journal import PaperOrderRequest
+from src.paper_trading.paper_trading_journal_store import (
+    clean_paper_trading_journal_run,
+)
 from src.paper_trading.paper_realized_exit_record import PaperExitReason
 from src.paper_trading.paper_trading_replay_journal import (
     run_paper_trading_replay_journal,
@@ -43,6 +46,8 @@ def run_demo() -> int:
         created_at=_OPENED_AT,
         plan_id="demo-replay-journal-plan",
     )
+
+    clean_paper_trading_journal_run(REPORT_OUTPUT_DIR, run_id=DEMO_RUN_ID)
 
     result = run_paper_trading_replay_journal(
         (

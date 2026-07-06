@@ -113,3 +113,30 @@ def test_replay_journal_demo_cli_source_has_no_external_order_execution_imports(
     assert "place" + "_order" not in source
     assert "send" + "_order" not in source
     assert "execute" + "_order" not in source
+
+
+def test_replay_journal_demo_cleans_known_generated_files_before_writing(
+    monkeypatch,
+    tmp_path,
+):
+    monkeypatch.chdir(tmp_path)
+
+    output_dir = (
+        tmp_path
+        / "reports"
+        / "paper_trading"
+        / "journal"
+        / DEMO_RUN_ID
+    )
+    output_dir.mkdir(parents=True)
+
+    stale_manifest = output_dir / "manifest.json"
+    stale_manifest.write_text("stale", encoding="utf-8")
+
+    unknown_file = output_dir / "manual-note.txt"
+    unknown_file.write_text("keep", encoding="utf-8")
+
+    assert run_demo() == 0
+
+    assert stale_manifest.read_text(encoding="utf-8") != "stale"
+    assert unknown_file.read_text(encoding="utf-8") == "keep"

@@ -13,8 +13,10 @@ import pytest
 from src.paper_trading.paper_order_journal import PaperOrderRequest
 from src.paper_trading.paper_realized_exit_record import PaperExitReason
 from src.paper_trading.paper_trading_journal_store import (
+    PAPER_TRADING_JOURNAL_RUN_FILENAMES,
     PaperTradingJournalRunPaths,
     build_paper_trading_journal_run_id,
+    clean_paper_trading_journal_run,
     write_paper_trading_journal_run,
 )
 from src.paper_trading.paper_trading_session import PaperTradingSession
@@ -175,3 +177,54 @@ def test_paper_trading_journal_store_source_has_no_external_order_execution_impo
     assert "place" + "_order" not in source
     assert "send" + "_order" not in source
     assert "execute" + "_order" not in source
+
+
+def test_clean_paper_trading_journal_run_removes_only_known_generated_files(tmp_path):
+    output_dir = tmp_path / "reports" / "paper_trading" / "journal"
+    run_dir = output_dir / "cleanup-demo"
+    run_dir.mkdir(parents=True)
+
+    known_files = []
+    for filename in PAPER_TRADING_JOURNAL_RUN_FILENAMES:
+        path = run_dir / filename
+        path.write_text("generated", encoding="utf-8")
+        known_files.append(path)
+
+    unknown_file = run_dir / "keep-me.txt"
+    unknown_file.write_text("do not delete", encoding="utf-8")
+
+    removed = clean_paper_trading_journal_run(output_dir, run_id="cleanup-demo")
+
+    assert removed == tuple(known_files)
+
+    for path in known_files:
+        assert not path.exists()
+
+    assert unknown_file.exists()
+    assert unknown_file.read_text(encoding="utf-8") == "do not delete"
+
+
+def test_clean_paper_trading_journal_run_returns_empty_for_missing_run(tmp_path):
+    removed = clean_paper_trading_journal_run(
+        tmp_path / "reports" / "paper_trading" / "journal",
+        run_id="missing-run",
+    )
+
+    assert removed == ()
+
+
+def test_clean_paper_trading_journal_run_requires_reports_directory(tmp_path):
+    with pytest.raises(ValueError, match="must be written under reports"):
+        clean_paper_trading_journal_run(
+            tmp_path / "paper_trading" / "journal",
+            run_id="bad",
+        )
+
+
+def test_clean_paper_trading_journal_run_rejects_known_path_directory(tmp_path):
+    output_dir = tmp_path / "reports" / "paper_trading" / "journal"
+    bad_path = output_dir / "bad-run" / "summary.json"
+    bad_path.mkdir(parents=True)
+
+    with pytest.raises(ValueError, match="not a file"):
+        clean_paper_trading_journal_run(output_dir, run_id="bad-run")

@@ -28,6 +28,16 @@ from src.paper_trading.paper_trading_session_summary_export import (
 )
 
 
+PAPER_TRADING_JOURNAL_RUN_FILENAMES = (
+    "metadata.json",
+    "summary.json",
+    "orders.json",
+    "open_positions.json",
+    "exit_records.json",
+    "manifest.json",
+)
+
+
 @dataclass(frozen=True)
 class PaperTradingJournalRunPaths:
     """
@@ -49,6 +59,41 @@ def build_paper_trading_journal_run_id(generated_at: datetime | None = None) -> 
     """
     timestamp = _normalize_generated_at(generated_at)
     return timestamp.strftime("%Y%m%dT%H%M%SZ")
+
+
+def clean_paper_trading_journal_run(
+    output_dir: str | Path = Path("reports") / "paper_trading" / "journal",
+    *,
+    run_id: str,
+) -> tuple[Path, ...]:
+    """
+    Safely remove known generated files for one fake/paper journal run.
+
+    Only known journal bundle files are deleted. Unknown files are left
+    untouched. The output directory must be under reports/.
+    """
+    base_dir = _ensure_reports_output_dir(output_dir)
+    safe_run_id = _sanitize_run_id(run_id)
+    run_dir = base_dir / safe_run_id
+
+    if not run_dir.exists():
+        return ()
+
+    if not run_dir.is_dir():
+        raise ValueError(f"paper journal run path is not a directory: {run_dir}")
+
+    removed: list[Path] = []
+
+    for filename in PAPER_TRADING_JOURNAL_RUN_FILENAMES:
+        path = run_dir / filename
+        if not path.exists():
+            continue
+        if not path.is_file():
+            raise ValueError(f"paper journal file path is not a file: {path}")
+        path.unlink()
+        removed.append(path)
+
+    return tuple(removed)
 
 
 def write_paper_trading_journal_run(
