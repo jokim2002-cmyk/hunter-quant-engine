@@ -103,6 +103,18 @@ def test_option_market_data_recording_docs_cover_record_to_replay_workflow():
     assert "safe local workflow check" in contents.lower()
 
 
+def test_option_market_data_recording_docs_cover_csv_validation():
+    contents = Path("docs/OPTION_MARKET_DATA_RECORDING.md").read_text(encoding="utf-8")
+
+    assert "recorded csv validation" in contents.lower()
+    assert "validate_option_market_data_csvs" in contents
+    assert "OptionMarketDataCsvValidationResult" in contents
+    assert "broker-agnostic" in contents.lower()
+    assert "does not use fyers" in contents.lower()
+    assert "does not place orders" in contents.lower()
+    assert "not a profitability claim" in contents.lower()
+
+
 def test_gitignore_ignores_recording_data_directories():
     gitignore = Path(".gitignore").read_text(encoding="utf-8")
 
