@@ -82,7 +82,7 @@ def test_demo_output_and_safety_constraints() -> None:
     assert "import " + "fy" + "ers" not in source
     assert "from " + "fy" + "ers" not in source
 
-    assert "clean_paper_trading_report_bundle" in source
+    assert "src.paper_trading.paper_trading_demo_cli" in source
 
     # No broker order execution method names.
     forbidden_tokens = ["place" + "_order", "send" + "_order", "execute" + "_order"]
@@ -92,6 +92,7 @@ def test_demo_output_and_safety_constraints() -> None:
 
 def test_demo_cleans_report_bundle_before_writing(monkeypatch) -> None:
     demo = importlib.import_module("examples.run_paper_trading_demo")
+    cli = importlib.import_module("src.paper_trading.paper_trading_demo_cli")
     from src.paper_trading.paper_trading_report_writer import (
         clean_paper_trading_report_bundle,
     )
@@ -103,7 +104,7 @@ def test_demo_cleans_report_bundle_before_writing(monkeypatch) -> None:
         return clean_paper_trading_report_bundle(output_dir)
 
     monkeypatch.setattr(
-        demo,
+        cli,
         "clean_paper_trading_report_bundle",
         spy_clean_report_bundle,
     )
