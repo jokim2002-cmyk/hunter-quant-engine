@@ -8,7 +8,7 @@ Older roadmap sections below are retained as historical planning notes and docum
 
 Current checkpoint:
 
-- 1368 tests passing after replay journal all-in-one shortcut.
+- 1372 tests passing after replay journal guide.
 - Repository shortcut cleanup completed.
 - Old unused/risky root shortcuts removed.
 - Safe local shortcut layer completed.
@@ -19,6 +19,7 @@ Current checkpoint:
 - Replay journal folder shortcut completed.
 - Replay journal summary shortcut completed.
 - Replay journal all-in-one shortcut completed.
+- Replay journal guide completed.
 - Paper P&L is simulation only.
 - Real-money execution remains the final phase only.
 
@@ -36,6 +37,7 @@ Current safe local shortcuts:
 - `hqe_paper_replay_journal_folder.bat`
 - `hqe_paper_replay_journal_summary.bat`
 - `hqe_paper_replay_journal_all.bat`
+- `docs/PAPER_TRADING_REPLAY_JOURNAL.md`
 - `hqe_paper_report.bat`
 - `hqe_paper_report_text.bat`
 - `hqe_paper_folder.bat`

@@ -334,6 +334,7 @@ Current SMC strict/balanced/relaxed benchmarks remain useful as underlying signa
 - docs/PC_BENCHMARK_RUNBOOK.md
 - docs/PAPER_TRADING_DESIGN.md
 - docs/PAPER_TRADING_DEMO_CLI.md
+- `docs/PAPER_TRADING_REPLAY_JOURNAL.md`
 - docs/OPTION_MARKET_DATA_RECORDING.md
 
 ## Safe Local Paper Trading Demo CLI

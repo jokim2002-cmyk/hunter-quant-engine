@@ -82,3 +82,5 @@ This shows the current branch, latest commits, and working tree status.
 - This is not a profitability claim.
 - `hqe_paper_replay_journal_summary.bat` - print replay journal summary
 - `hqe_paper_replay_journal_all.bat` - run replay journal, print summary, and open folder
+
+See also: `docs/PAPER_TRADING_REPLAY_JOURNAL.md`
