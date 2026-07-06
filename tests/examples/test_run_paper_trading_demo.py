@@ -139,6 +139,16 @@ def test_demo_writes_local_report_files_under_reports() -> None:
     assert summary_payload["total_open_quantity"] == 0
     assert summary_payload["symbols"] == []
     assert summary_payload["has_open_positions"] is False
+    assert summary_payload["closed_trades_count"] == 1
+    assert summary_payload["has_closed_trades"] is True
+    assert summary_payload["exits_with_pnl_count"] == 1
+    assert summary_payload["total_simulated_gross_pnl"] == 4550.0
+    assert summary_payload["winning_exits_count"] == 1
+    assert summary_payload["losing_exits_count"] == 0
+    assert summary_payload["flat_exits_count"] == 0
+    assert summary_payload["unknown_pnl_exits_count"] == 0
+    assert summary_payload["paper_pnl_is_simulation_only"] is True
+    assert summary_payload["charges_and_slippage_included"] is False
 
     assert len(exit_records_payload) == 1
     assert exit_records_payload[0]["exit_id"] == "PAPER-EXIT-000001"
@@ -146,6 +156,10 @@ def test_demo_writes_local_report_files_under_reports() -> None:
     assert exit_records_payload[0]["simulated_points"] == 35.0
     assert exit_records_payload[0]["simulated_gross_pnl"] == 4550.0
 
+    assert "paper trading p&l summary" in report_text
+    assert "closed trades count: 1" in report_text
+    assert "total simulated gross pnl: 4550.0" in report_text
+    assert "winning exits count: 1" in report_text
     assert "paper pnl is simulation only" in report_text
     assert "charges and slippage are not included" in report_text
     assert "not a profitability claim" in report_text

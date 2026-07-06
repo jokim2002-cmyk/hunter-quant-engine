@@ -18,9 +18,13 @@ from src.paper_trading.paper_order_journal import PaperOrderRequest
 from src.paper_trading.paper_realized_exit_record import PaperExitReason
 from src.paper_trading.paper_trading_report_writer import (
     PaperTradingReportPaths,
+    PaperTradingReportSummary,
+    build_paper_trading_report_summary,
     paper_exit_record_to_dict,
     paper_order_record_to_dict,
     paper_position_to_dict,
+    paper_trading_report_summary_to_csv_row,
+    paper_trading_report_summary_to_dict,
     write_paper_trading_report,
 )
 from src.paper_trading.paper_trading_session import PaperTradingSession
@@ -121,6 +125,90 @@ def test_paper_exit_record_to_dict():
     }
 
 
+def test_build_paper_trading_report_summary_with_closed_trade():
+    summary = build_paper_trading_report_summary(
+        _session_with_open_and_closed_positions()
+    )
+
+    assert isinstance(summary, PaperTradingReportSummary)
+    assert summary.total_orders == 2
+    assert summary.open_positions_count == 1
+    assert summary.total_open_quantity == 130
+    assert summary.symbols == ("NIFTY26JUL24300CE",)
+    assert summary.has_open_positions is True
+    assert summary.closed_trades_count == 1
+    assert summary.has_closed_trades is True
+    assert summary.exits_with_pnl_count == 1
+    assert summary.total_simulated_gross_pnl == 2275.0
+    assert summary.winning_exits_count == 1
+    assert summary.losing_exits_count == 0
+    assert summary.flat_exits_count == 0
+    assert summary.unknown_pnl_exits_count == 0
+    assert summary.paper_pnl_is_simulation_only is True
+    assert summary.charges_and_slippage_included is False
+
+
+def test_build_paper_trading_report_summary_counts_losing_flat_and_unknown_exits():
+    session = PaperTradingSession()
+    session.submit_order(_request(symbol="WIN", planned_entry_price=100.0))
+    session.submit_order(_request(symbol="LOSS", planned_entry_price=100.0))
+    session.submit_order(_request(symbol="FLAT", planned_entry_price=100.0))
+    session.submit_order(_request(symbol="UNKNOWN", planned_entry_price=100.0))
+
+    session.close_position_with_exit_record("WIN", _CLOSED_AT, exit_price=110.0)
+    session.close_position_with_exit_record("LOSS", _CLOSED_AT, exit_price=90.0)
+    session.close_position_with_exit_record("FLAT", _CLOSED_AT, exit_price=100.0)
+    session.close_position_with_exit_record("UNKNOWN", _CLOSED_AT)
+
+    summary = build_paper_trading_report_summary(session)
+
+    assert summary.closed_trades_count == 4
+    assert summary.exits_with_pnl_count == 3
+    assert summary.total_simulated_gross_pnl == 0.0
+    assert summary.winning_exits_count == 1
+    assert summary.losing_exits_count == 1
+    assert summary.flat_exits_count == 1
+    assert summary.unknown_pnl_exits_count == 1
+
+
+def test_paper_trading_report_summary_to_dict():
+    summary = build_paper_trading_report_summary(
+        _session_with_open_and_closed_positions()
+    )
+
+    payload = paper_trading_report_summary_to_dict(summary)
+
+    assert payload == {
+        "total_orders": 2,
+        "open_positions_count": 1,
+        "total_open_quantity": 130,
+        "symbols": ["NIFTY26JUL24300CE"],
+        "has_open_positions": True,
+        "closed_trades_count": 1,
+        "has_closed_trades": True,
+        "exits_with_pnl_count": 1,
+        "total_simulated_gross_pnl": 2275.0,
+        "winning_exits_count": 1,
+        "losing_exits_count": 0,
+        "flat_exits_count": 0,
+        "unknown_pnl_exits_count": 0,
+        "paper_pnl_is_simulation_only": True,
+        "charges_and_slippage_included": False,
+    }
+
+
+def test_paper_trading_report_summary_to_csv_row():
+    summary = build_paper_trading_report_summary(
+        _session_with_open_and_closed_positions()
+    )
+
+    payload = paper_trading_report_summary_to_csv_row(summary)
+
+    assert payload["symbols"] == "NIFTY26JUL24300CE"
+    assert payload["closed_trades_count"] == 1
+    assert payload["total_simulated_gross_pnl"] == 2275.0
+
+
 def test_write_paper_trading_report_creates_expected_files(tmp_path):
     session = _session_with_open_and_closed_positions()
     output_dir = tmp_path / "reports" / "paper_trading"
@@ -159,7 +247,45 @@ def test_write_paper_trading_report_writes_summary_json(tmp_path):
         "total_open_quantity": 130,
         "symbols": ["NIFTY26JUL24300CE"],
         "has_open_positions": True,
+        "closed_trades_count": 1,
+        "has_closed_trades": True,
+        "exits_with_pnl_count": 1,
+        "total_simulated_gross_pnl": 2275.0,
+        "winning_exits_count": 1,
+        "losing_exits_count": 0,
+        "flat_exits_count": 0,
+        "unknown_pnl_exits_count": 0,
+        "paper_pnl_is_simulation_only": True,
+        "charges_and_slippage_included": False,
     }
+
+
+def test_write_paper_trading_report_writes_summary_csv(tmp_path):
+    session = _session_with_open_and_closed_positions()
+    paths = write_paper_trading_report(session, tmp_path / "reports" / "paper")
+
+    with paths.summary_csv.open(encoding="utf-8", newline="") as handle:
+        rows = list(csv.DictReader(handle))
+
+    assert rows == [
+        {
+            "total_orders": "2",
+            "open_positions_count": "1",
+            "total_open_quantity": "130",
+            "symbols": "NIFTY26JUL24300CE",
+            "has_open_positions": "True",
+            "closed_trades_count": "1",
+            "has_closed_trades": "True",
+            "exits_with_pnl_count": "1",
+            "total_simulated_gross_pnl": "2275.0",
+            "winning_exits_count": "1",
+            "losing_exits_count": "0",
+            "flat_exits_count": "0",
+            "unknown_pnl_exits_count": "0",
+            "paper_pnl_is_simulation_only": "True",
+            "charges_and_slippage_included": "False",
+        }
+    ]
 
 
 def test_write_paper_trading_report_writes_orders_json(tmp_path):
@@ -229,6 +355,14 @@ def test_write_paper_trading_report_text_contains_safety_lines(tmp_path):
     assert "orders count: 2" in text
     assert "open positions count: 1" in text
     assert "exit records count: 1" in text
+    assert "paper trading p&l summary" in text
+    assert "closed trades count: 1" in text
+    assert "exits with pnl count: 1" in text
+    assert "total simulated gross pnl: 2275.0" in text
+    assert "winning exits count: 1" in text
+    assert "losing exits count: 0" in text
+    assert "flat exits count: 0" in text
+    assert "unknown pnl exits count: 0" in text
     assert "paper pnl is simulation only" in text
     assert "charges and slippage are not included" in text
     assert "local report/export only" in text
@@ -255,6 +389,15 @@ def test_write_empty_paper_trading_report(tmp_path):
     exits_payload = json.loads(paths.exit_records_json.read_text(encoding="utf-8"))
 
     assert summary_payload["total_orders"] == 0
+    assert summary_payload["closed_trades_count"] == 0
+    assert summary_payload["exits_with_pnl_count"] == 0
+    assert summary_payload["total_simulated_gross_pnl"] == 0
+    assert summary_payload["winning_exits_count"] == 0
+    assert summary_payload["losing_exits_count"] == 0
+    assert summary_payload["flat_exits_count"] == 0
+    assert summary_payload["unknown_pnl_exits_count"] == 0
+    assert summary_payload["paper_pnl_is_simulation_only"] is True
+    assert summary_payload["charges_and_slippage_included"] is False
     assert orders_payload == []
     assert positions_payload == []
     assert exits_payload == []
