@@ -86,6 +86,23 @@ def test_option_market_data_recording_docs_cover_csv_replay_demo():
     assert "not a profitability claim" in contents.lower()
 
 
+def test_option_market_data_recording_docs_cover_record_to_replay_workflow():
+    contents = Path("docs/OPTION_MARKET_DATA_RECORDING.md").read_text(encoding="utf-8")
+
+    assert "safe record-to-replay workflow" in contents.lower()
+    assert "\\.venv\\Scripts\\python.exe examples\\record_in_memory_option_market_data.py" in contents
+    assert "\\.venv\\Scripts\\python.exe examples\\replay_csv_option_market_data.py" in contents
+    assert "data/recorded/in_memory_demo/" in contents
+    assert "CsvReplayOptionMarketDataSource" in contents
+    assert "OptionMarketDataPoller" in contents
+    assert "broker-agnostic" in contents.lower()
+    assert "does not use fyers" in contents.lower()
+    assert "not real market data" in contents.lower() or "not live" in contents.lower()
+    assert "does not place orders" in contents.lower()
+    assert "not a profitability claim" in contents.lower()
+    assert "safe local workflow check" in contents.lower()
+
+
 def test_gitignore_ignores_recording_data_directories():
     gitignore = Path(".gitignore").read_text(encoding="utf-8")
 

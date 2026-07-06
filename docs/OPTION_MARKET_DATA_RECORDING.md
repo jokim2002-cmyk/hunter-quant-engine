@@ -304,6 +304,34 @@ Then run the replay demo:
 .\.venv\Scripts\python.exe examples\replay_csv_option_market_data.py
 ```
 
+## Safe record-to-replay workflow
+
+This is a beginner-friendly offline workflow check using synthetic/demo data only.
+
+Step 1 — Run the in-memory recording demo to generate synthetic CSV files:
+
+```powershell
+.\.venv\Scripts\python.exe examples\record_in_memory_option_market_data.py
+```
+
+This creates synthetic demo CSV files under `data/recorded/in_memory_demo/`.
+
+Step 2 — Run the CSV replay demo to replay those files offline:
+
+```powershell
+.\.venv\Scripts\python.exe examples\replay_csv_option_market_data.py
+```
+
+The replay step uses CsvReplayOptionMarketDataSource and OptionMarketDataPoller to read the CSV files written in Step 1.
+
+Properties of this workflow:
+
+- It is broker-agnostic. It does not use FYERS or any broker SDK.
+- It does not use live or real market data.
+- It does not place orders.
+- It is not a profitability claim.
+- It is only a safe local workflow check using synthetic/demo data.
+
 ## Notes
 
 - This layer is broker-agnostic.
