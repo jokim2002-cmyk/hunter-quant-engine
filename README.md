@@ -138,6 +138,7 @@ Paper demo shortcuts:
     .\hqe_paper_demo.bat
     .\hqe_paper_report.bat
     .\hqe_paper_demo_report.bat
+    .\hqe_paper_folder.bat
 
 Run the full test suite shortcut:
 

@@ -24,6 +24,10 @@ Run the demo and then open the generated report:
 
     .\hqe_paper_demo_report.bat
 
+Open the generated paper trading reports folder:
+
+    .\hqe_paper_folder.bat
+
 ## Tests
 
 Run the full test suite:

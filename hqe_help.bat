@@ -13,6 +13,7 @@ echo Paper trading demo:
 echo   .\hqe_paper_demo.bat        - run safe paper demo
 echo   .\hqe_paper_report.bat      - open latest generated paper report
 echo   .\hqe_paper_demo_report.bat - run demo and open report
+echo   .\hqe_paper_folder.bat      - open paper report folder
 echo.
 echo Docs:
 echo   README_SHORTCUTS.md
