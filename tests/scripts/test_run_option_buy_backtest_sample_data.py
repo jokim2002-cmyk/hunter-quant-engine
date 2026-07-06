@@ -57,3 +57,23 @@ def test_sample_readme_states_synthetic_demo_and_no_profitability_claim():
     assert "synthetic/demo" in readme
     assert "not real market data" in readme
     assert "not a profitability claim" in readme
+
+
+def test_sample_readme_includes_all_report_output_examples():
+    readme = README.read_text(encoding="utf-8")
+
+    assert "--summary-json" in readme
+    assert "--summary-csv" in readme
+    assert "--trades-json" in readme
+    assert "--trades-csv" in readme
+
+
+def test_gitignore_ignores_generated_reports_but_not_sample_csvs():
+    gitignore = Path(".gitignore").read_text(encoding="utf-8")
+
+    assert "reports/" in gitignore
+    assert "*.generated.json" in gitignore
+    assert "*.generated.csv" in gitignore
+    assert "examples/option_buy_backtest/*.csv" not in gitignore
+    assert "examples/option_buy_backtest/sample_scenario.csv" not in gitignore
+    assert "examples/option_buy_backtest/sample_premium.csv" not in gitignore

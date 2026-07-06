@@ -24,3 +24,6 @@ data/processed/*mode_benchmark*
 data/processed/experiments/
 data/processed/strategy_experiment_report.txt
 data/processed/strategy_experiment_summary.csv
+reports/
+*.generated.json
+*.generated.csv
