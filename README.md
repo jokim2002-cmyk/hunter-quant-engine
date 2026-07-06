@@ -143,6 +143,10 @@ Run the full test suite shortcut:
 
     .\hqe_test.bat
 
+Show safe local shortcuts:
+
+    .\hqe_help.bat
+
 Run quick local check shortcut:
 
     .\hqe_quick_check.bat

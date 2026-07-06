@@ -1,0 +1,23 @@
+@echo off
+setlocal
+cd /d "%~dp0"
+echo HQE safe local shortcuts
+echo ========================
+echo.
+echo Daily checks:
+echo   .\hqe_quick_check.bat       - git status, full tests, git status
+echo   .\hqe_test.bat              - full pytest suite
+echo   .\hqe_status.bat            - git status --short
+echo.
+echo Paper trading demo:
+echo   .\hqe_paper_demo.bat        - run safe paper demo
+echo   .\hqe_paper_report.bat      - open latest generated paper report
+echo   .\hqe_paper_demo_report.bat - run demo and open report
+echo.
+echo Docs:
+echo   README_SHORTCUTS.md
+echo   docs\PAPER_TRADING_DEMO_CLI.md
+echo.
+echo Safety:
+echo   paper demo only, no broker/FYERS, no live data, no real orders
+exit /b 0
