@@ -46,6 +46,8 @@ def run_demo() -> int:
     ts = datetime(2026, 7, 6, 9, 15)
     closed_at = datetime(2026, 7, 6, 9, 30)
     synthetic_exit_price = 135.0
+    estimated_exit_charges = 40.0
+    estimated_slippage = 10.0
 
     signal = TradeSignal(
         signal_type=SignalType.LONG,
@@ -103,6 +105,8 @@ def run_demo() -> int:
         closed_at=closed_at,
         exit_reason=PaperExitReason.MANUAL,
         exit_price=synthetic_exit_price,
+        estimated_exit_charges=estimated_exit_charges,
+        estimated_slippage=estimated_slippage,
     )
 
     position_after_close = session.find_position(symbol)
@@ -146,6 +150,10 @@ def run_demo() -> int:
         print(f"paper simulated exit price: {exit_record.exit_price}")
         print(f"paper simulated points: {exit_record.simulated_points}")
         print(f"paper simulated gross pnl: {exit_record.simulated_gross_pnl}")
+        print(f"paper estimated exit charges: {exit_record.estimated_exit_charges}")
+        print(f"paper estimated slippage: {exit_record.estimated_slippage}")
+        print(f"paper total estimated costs: {exit_record.total_estimated_costs}")
+        print(f"paper simulated net pnl: {exit_record.simulated_net_pnl}")
 
     if position_after_close is None:
         print("paper position after close: None")
@@ -180,7 +188,8 @@ def run_demo() -> int:
 
     print("paper report files are local/generated")
     print("paper pnl is simulation only")
-    print("charges and slippage are not included")
+    print("estimated costs are included in net pnl only")
+    print("gross pnl excludes costs")
     print("no broker/FYERS")
     print("no live/real market data")
     print("no real orders placed")
