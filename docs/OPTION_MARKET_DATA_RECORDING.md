@@ -62,6 +62,106 @@ Use output paths such as:
 
 Avoid committing real recorded market data. Generated data should stay ignored unless you intentionally create tiny fixtures for tests or documentation.
 
+## Poll-and-record workflow
+
+The poll-and-record workflow connects a broker-agnostic data source to the CSV recorder through a single coordinating service.
+
+```
+OptionMarketDataSource
+↓
+OptionMarketDataPoller
+↓
+OptionMarketDataPollingRecorder
+↓
+CsvOptionMarketDataRecorder
+↓
+snapshot CSV + premium CSV
+↓
+offline option-buy backtest CLI
+```
+
+Key properties of this workflow:
+
+- It is broker-agnostic. No broker SDK is imported by any layer in this chain.
+- A future broker adapter can implement OptionMarketDataSource to feed real data into the poller without touching the recorder or the backtest CLI.
+- OptionMarketDataPollingRecorder does not place orders. It only records market data to CSV files.
+- It does not claim profitability. Recorded data is raw market observation only.
+- It should be used for offline backtesting and paper observer preparation, not for live execution.
+- Real recorded market data should not be committed to the repository.
+
+### Synthetic/demo poll-and-record example
+
+The example below is synthetic/demo only. It uses an in-memory fake source and should not be used as real market data.
+
+```python
+from pathlib import Path
+from datetime import datetime, date
+
+from src.data_recording.csv_option_market_data_recorder import CsvOptionMarketDataRecorder
+from src.data_recording.option_market_data_poller import OptionMarketDataPoller
+from src.data_recording.option_market_data_polling_recorder import OptionMarketDataPollingRecorder
+from src.models.option_chain_entry import OptionChainEntry
+from src.models.option_chain_snapshot import OptionChainSnapshot
+from src.models.option_contract import OptionContract
+from src.models.option_premium_candle import OptionPremiumCandle
+from src.models.option_type import OptionType
+
+
+class DemoDataSource:
+    """Fake in-memory source for demo/documentation purposes only."""
+
+    def get_option_chain_snapshot(self):
+        contract = OptionContract(
+            underlying_symbol="NIFTY",
+            expiry_date=date(2026, 7, 31),
+            strike_price=24200,
+            option_type=OptionType.CE,
+            lot_size=75,
+            symbol="NIFTY_DEMO_24200CE",
+        )
+        entry = OptionChainEntry(
+            contract=contract,
+            last_traded_price=120.0,
+            bid_price=119.5,
+            ask_price=120.5,
+            volume=500,
+            open_interest=10000,
+        )
+        return OptionChainSnapshot(
+            underlying_symbol="NIFTY",
+            underlying_price=24210.0,
+            timestamp=datetime(2026, 7, 6, 9, 15),
+            entries=(entry,),
+        )
+
+    def get_option_premium_candles(self, symbols):
+        candle = OptionPremiumCandle(
+            timestamp=datetime(2026, 7, 6, 9, 15),
+            open=118.0,
+            high=125.0,
+            low=115.0,
+            close=120.0,
+            volume=200,
+        )
+        return {s: (candle,) for s in symbols}
+
+
+poller = OptionMarketDataPoller(DemoDataSource())
+recorder = CsvOptionMarketDataRecorder(
+    snapshot_csv_path="data/recorded/demo_snapshots.csv",
+    premium_csv_path="data/recorded/demo_premiums.csv",
+)
+service = OptionMarketDataPollingRecorder(poller, recorder)
+
+result = service.poll_and_record(
+    premium_symbols=["NIFTY_DEMO_24200CE"],
+    include_snapshot=True,
+    snapshot_id="demo-001",
+)
+print(result.snapshots_recorded)       # 1
+print(result.premium_candles_recorded) # 1
+```
+
 ## Notes
 
 - This layer is broker-agnostic.

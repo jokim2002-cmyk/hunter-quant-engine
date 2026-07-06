@@ -21,6 +21,19 @@ def test_option_market_data_recording_docs_cover_core_guidance():
     assert "offline option-buy backtest cli" in contents.lower()
 
 
+def test_option_market_data_recording_docs_cover_polling_recorder():
+    contents = Path("docs/OPTION_MARKET_DATA_RECORDING.md").read_text(encoding="utf-8")
+
+    assert "OptionMarketDataSource" in contents
+    assert "OptionMarketDataPoller" in contents
+    assert "OptionMarketDataPollingRecorder" in contents
+    assert "CsvOptionMarketDataRecorder" in contents
+    assert "poll-and-record workflow" in contents.lower()
+    assert "does not place orders" in contents.lower()
+    assert "not a profitability claim" in contents.lower()
+    assert "data/recorded/" in contents
+
+
 def test_gitignore_ignores_recording_data_directories():
     gitignore = Path(".gitignore").read_text(encoding="utf-8")
 
