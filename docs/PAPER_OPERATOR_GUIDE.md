@@ -72,6 +72,14 @@ The evidence runner blocks unsafe live-readiness when:
 
 Passing evidence gates is not a profitability claim.
 
+## Release Gate
+
+Run:
+
+    .\hqe_paper_mvp_release_check.bat
+
+This checks Paper MVP release readiness. It does not create a git tag.
+
 ## Before Live Readiness
 
 Do not move to live-readiness unless:

@@ -32,9 +32,11 @@ def test_master_roadmap_has_current_status_override_before_historical_notes():
     assert "Strategy-to-paper bridge completed." in text
     assert "Backtest evidence runner completed." in text
     assert "Paper MVP operator workflow completed." in text
+    assert "Paper MVP release gate completed." in text
     assert "docs/DEFERRED_POLISH_BACKLOG.md" in text
     assert "docs/PAPER_MVP_RELEASE_CHECKLIST.md" in text
     assert "docs/PAPER_OPERATOR_GUIDE.md" in text
+    assert "hqe_paper_mvp_release_check.bat" in text
     assert "docs/PAPER_MVP_V0_1_SCOPE.md" in text
     assert "Replay journal all-in-one shortcut prints index completed." in text
     assert "Paper P&L is simulation only." in text

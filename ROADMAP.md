@@ -30,6 +30,7 @@ Current checkpoint:
 - Strategy-to-paper bridge completed.
 - Backtest evidence runner completed.
 - Paper MVP operator workflow completed.
+- Paper MVP release gate completed.
 - Replay journal all-in-one shortcut prints index completed.
 - Paper P&L is simulation only.
 - Real-money execution remains the final phase only.
@@ -774,12 +775,12 @@ Scope docs:
 - `docs/PAPER_MVP_V0_1_SCOPE.md`
 - `docs/PAPER_MVP_RELEASE_CHECKLIST.md`
 - `docs/PAPER_OPERATOR_GUIDE.md`
+- `hqe_paper_mvp_release_check.bat`
 - `docs/DEFERRED_POLISH_BACKLOG.md`
 
 Only these items can block Paper MVP v0.1:
 
-1. Release checklist pass.
-2. Paper MVP release tag.
+1. Paper MVP release tag.
 
 Deferred beyond v0.1:
 

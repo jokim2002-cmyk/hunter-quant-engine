@@ -34,6 +34,7 @@ The Paper MVP includes these completed or required capabilities:
 - Strategy-to-paper bridge.
 - Backtest evidence runner.
 - Paper MVP operator demo workflow.
+- Paper MVP release gate.
 - Paper replay journal persistence.
 - Paper replay journal cleanup.
 - Paper replay journal index.
@@ -44,8 +45,7 @@ The Paper MVP includes these completed or required capabilities:
 
 Only these roadmap items can block Paper MVP v0.1:
 
-1. Release checklist pass.
-2. Git tag for the paper MVP release.
+1. Git tag for the paper MVP release.
 
 ## Deferred Beyond v0.1
 

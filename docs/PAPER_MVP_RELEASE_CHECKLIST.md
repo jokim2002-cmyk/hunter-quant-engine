@@ -28,6 +28,7 @@ release.
 Run these before release:
 
     .\hqe_quick_check.bat
+    .\hqe_paper_mvp_release_check.bat
 
 Expected result:
 
@@ -75,5 +76,7 @@ Before live-readiness phase starts:
 Use a tag name like:
 
     v0.1-paper-mvp
+
+The release gate checks readiness but does not create a git tag.
 
 Do not create the release tag until all checklist items above are complete.

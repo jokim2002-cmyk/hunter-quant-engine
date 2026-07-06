@@ -40,3 +40,11 @@ def test_paper_operator_guide_documents_evidence_gates():
     assert "open positions remain above the configured maximum" in text
     assert "Passing evidence gates is not a profitability claim." in text
     assert "Live trading remains disabled by default." in text
+
+
+def test_paper_operator_guide_documents_release_gate():
+    text = GUIDE.read_text(encoding="utf-8")
+
+    assert ".\\hqe_paper_mvp_release_check.bat" in text
+    assert "This checks Paper MVP release readiness." in text
+    assert "It does not create a git tag." in text
