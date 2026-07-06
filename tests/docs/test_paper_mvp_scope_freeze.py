@@ -34,7 +34,7 @@ def test_paper_mvp_scope_doc_limits_remaining_blockers():
 
     assert "Strategy-to-paper bridge" in text
     assert "Backtest evidence runner" in text
-    assert "Final paper operator guide" in text
+    assert "Paper MVP operator demo workflow" in text
     assert "Release checklist pass" in text
     assert "Git tag for the paper MVP release" in text
 
@@ -86,3 +86,13 @@ def test_paper_mvp_scope_doc_marks_backtest_evidence_included_after_module_c():
 
     assert "Backtest evidence runner" in included
     assert "Backtest evidence runner" not in blockers
+
+
+def test_paper_mvp_scope_doc_marks_operator_workflow_included_after_module_d():
+    text = SCOPE_DOC.read_text(encoding="utf-8")
+
+    included = text.split("## Included in Paper MVP v0.1", 1)[1].split("##", 1)[0]
+    blockers = text.split("## Must Finish Before v0.1 Release", 1)[1].split("##", 1)[0]
+
+    assert "Paper MVP operator demo workflow" in included
+    assert "Final paper operator guide" not in blockers

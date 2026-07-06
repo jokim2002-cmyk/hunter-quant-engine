@@ -40,6 +40,7 @@ Expected result:
 
 The paper operator should be able to run:
 
+    .\hqe_paper_mvp_operator_demo.bat
     .\hqe_paper_replay_journal_all.bat
 
 The workflow should:
@@ -64,6 +65,7 @@ Before live-readiness phase starts:
 - [ ] Roadmap says Paper MVP v0.1 scope is frozen.
 - [ ] Deferred polish backlog exists.
 - [ ] Operator guide exists.
+- [ ] Paper operator guide completed.
 - [ ] Full suite is green.
 - [ ] Release commit is pushed.
 - [ ] Git tag is created only after all required gates pass.

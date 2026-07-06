@@ -27,11 +27,13 @@ quick-check validation.
 
 Module B added the Strategy-to-paper bridge for approved option-buy plans.
 Module C added the Backtest evidence runner for paper pass/fail gates.
+Module D added the Paper MVP operator demo and operator guide.
 
 Key scope documents:
 
 - `docs/PAPER_MVP_V0_1_SCOPE.md`
 - `docs/PAPER_MVP_RELEASE_CHECKLIST.md`
+- `docs/PAPER_OPERATOR_GUIDE.md`
 - `docs/DEFERRED_POLISH_BACKLOG.md`
 
 ## Corrected First Module Direction
@@ -82,7 +84,7 @@ Engineer it right once. Improve it forever.
 HQE currently supports:
 
 - Clean Python architecture
-- 1418 tests passing
+- 1432 tests passing
 - Smart Money Concepts detection
 - SMC strategy signal generation
 - Strategy config presets

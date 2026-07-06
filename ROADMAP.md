@@ -8,7 +8,7 @@ Older roadmap sections below are retained as historical planning notes and docum
 
 Current checkpoint:
 
-- 1396 tests passing after friendly replay journal summary viewer.
+- 1432 tests passing after Paper MVP operator workflow.
 - Repository shortcut cleanup completed.
 - Old unused/risky root shortcuts removed.
 - Safe local shortcut layer completed.
@@ -29,6 +29,7 @@ Current checkpoint:
 - Paper MVP v0.1 scope freeze completed.
 - Strategy-to-paper bridge completed.
 - Backtest evidence runner completed.
+- Paper MVP operator workflow completed.
 - Replay journal all-in-one shortcut prints index completed.
 - Paper P&L is simulation only.
 - Real-money execution remains the final phase only.
@@ -772,13 +773,13 @@ Scope docs:
 
 - `docs/PAPER_MVP_V0_1_SCOPE.md`
 - `docs/PAPER_MVP_RELEASE_CHECKLIST.md`
+- `docs/PAPER_OPERATOR_GUIDE.md`
 - `docs/DEFERRED_POLISH_BACKLOG.md`
 
 Only these items can block Paper MVP v0.1:
 
-1. Final paper operator guide.
-2. Release checklist pass.
-3. Paper MVP release tag.
+1. Release checklist pass.
+2. Paper MVP release tag.
 
 Deferred beyond v0.1:
 
