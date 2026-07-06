@@ -128,3 +128,22 @@ def test_paper_trading_design_docs_cover_demo_script():
     assert "does not place real orders" in text
     assert "not a profitability claim" in text
     assert "tests/examples/test_run_paper_trading_demo.py" in text
+
+
+def test_paper_trading_design_docs_cover_session_summary():
+    from pathlib import Path
+
+    text = Path("docs/PAPER_TRADING_DESIGN.md").read_text(encoding="utf-8")
+
+    assert "Paper Trading Session Summary" in text
+    assert "PaperTradingSessionSummary" in text
+    assert "total paper orders" in text
+    assert "open positions count" in text
+    assert "total open paper quantity" in text
+    assert "open position symbols" in text
+    assert "src/paper_trading/paper_trading_session_summary.py" in text
+    assert "tests/paper_trading/test_paper_trading_session_summary.py" in text
+    assert "does not use FYERS" in text
+    assert "does not use live/real market data" in text
+    assert "does not place real orders" in text
+    assert "not a profitability claim" in text

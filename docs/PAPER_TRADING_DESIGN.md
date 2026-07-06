@@ -352,3 +352,21 @@ The demo uses synthetic data only. It does not use FYERS, does not use live/real
 Related test:
 
 - `tests/examples/test_run_paper_trading_demo.py`
+
+## Paper Trading Session Summary
+
+`PaperTradingSessionSummary` provides a local summary of fake paper orders and open paper positions.
+
+It can report:
+
+- total paper orders
+- open positions count
+- total open paper quantity
+- open position symbols
+
+Relevant path:
+
+- `src/paper_trading/paper_trading_session_summary.py`
+- `tests/paper_trading/test_paper_trading_session_summary.py`
+
+This is local summary/report data only. It does not use FYERS, does not use live/real market data, does not place real orders, and is not a profitability claim.
