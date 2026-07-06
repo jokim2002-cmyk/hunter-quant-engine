@@ -29,11 +29,9 @@ def test_readme_documents_current_hqe_workflow():
     assert ".\\.venv\\Scripts\\python.exe -m src.paper_trading.paper_trading_demo_cli" in text
     assert "Run the safe local paper trading demo example wrapper:" in text
     assert ".\\.venv\\Scripts\\python.exe examples\\run_paper_trading_demo.py" in text
-    assert "Run the safe local paper trading demo shortcut:" in text
+    assert "Paper demo shortcuts:" in text
     assert ".\\hqe_paper_demo.bat" in text
-    assert "Open the latest generated paper trading report:" in text
     assert ".\\hqe_paper_report.bat" in text
-    assert "Run the safe local paper demo and open the report:" in text
     assert ".\\hqe_paper_demo_report.bat" in text
 
 

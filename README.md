@@ -131,16 +131,10 @@ Run the safe local paper trading demo example wrapper:
 
     .\.venv\Scripts\python.exe examples\run_paper_trading_demo.py
 
-Run the safe local paper trading demo shortcut:
+Paper demo shortcuts:
 
     .\hqe_paper_demo.bat
-
-Open the latest generated paper trading report:
-
     .\hqe_paper_report.bat
-
-Run the safe local paper demo and open the report:
-
     .\hqe_paper_demo_report.bat
 
 Check Git status:
