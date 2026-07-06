@@ -13,18 +13,20 @@ def test_master_roadmap_has_current_status_override_before_historical_notes():
     historical_index = text.index("648 tests passing")
 
     assert current_index < historical_index
-    assert "1364 tests passing after replay journal folder shortcut." in text
+    assert "1366 tests passing after replay journal summary shortcut." in text
     assert "Paper trading demo/report workflow completed." in text
     assert "Paper journal persistence skeleton completed." in text
     assert "Replay journal persistence bridge completed." in text
     assert "Replay journal demo shortcut completed." in text
     assert "Replay journal folder shortcut completed." in text
+    assert "Replay journal summary shortcut completed." in text
     assert "Paper P&L is simulation only." in text
     assert "Real-money execution remains the final phase only." in text
     assert "hqe_paper_demo_report.bat" in text
     assert "hqe_paper_report_text.bat" in text
     assert "hqe_paper_replay_journal.bat" in text
     assert "hqe_paper_replay_journal_folder.bat" in text
+    assert "hqe_paper_replay_journal_summary.bat" in text
     assert "reports/paper_trading/report.txt" in text
     assert "Older roadmap sections below are retained as historical planning notes" in text
 
