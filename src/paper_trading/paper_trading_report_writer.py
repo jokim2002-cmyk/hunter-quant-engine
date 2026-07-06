@@ -59,6 +59,7 @@ class PaperTradingReportPaths:
     """
 
     output_dir: Path
+    manifest_json: Path
     summary_json: Path
     summary_csv: Path
     orders_json: Path
@@ -113,6 +114,34 @@ def _with_report_metadata(
     """
     metadata_payload = paper_trading_report_metadata_to_dict(metadata)
     return {**metadata_payload, **payload}
+
+
+def paper_trading_report_manifest_to_dict(
+    metadata: PaperTradingReportMetadata,
+    paths: PaperTradingReportPaths,
+) -> dict[str, Any]:
+    """
+    Build a manifest for the generated local paper report bundle.
+    """
+    return {
+        "report_version": metadata.report_version,
+        "report_source": metadata.report_source,
+        "generated_at": metadata.generated_at,
+        "paper_pnl_is_simulation_only": metadata.paper_pnl_is_simulation_only,
+        "output_dir": str(paths.output_dir),
+        "files": {
+            "manifest_json": str(paths.manifest_json),
+            "summary_json": str(paths.summary_json),
+            "summary_csv": str(paths.summary_csv),
+            "orders_json": str(paths.orders_json),
+            "orders_csv": str(paths.orders_csv),
+            "open_positions_json": str(paths.open_positions_json),
+            "open_positions_csv": str(paths.open_positions_csv),
+            "exit_records_json": str(paths.exit_records_json),
+            "exit_records_csv": str(paths.exit_records_csv),
+            "report_text": str(paths.report_text),
+        },
+    }
 
 
 def _ensure_reports_output_dir(output_dir: str | Path) -> Path:
@@ -342,6 +371,7 @@ def write_paper_trading_report(
 
     paths = PaperTradingReportPaths(
         output_dir=base_dir,
+        manifest_json=base_dir / "manifest.json",
         summary_json=base_dir / "summary.json",
         summary_csv=base_dir / "summary.csv",
         orders_json=base_dir / "orders.json",
@@ -353,6 +383,10 @@ def write_paper_trading_report(
         report_text=base_dir / "report.txt",
     )
 
+    _write_json(
+        paths.manifest_json,
+        paper_trading_report_manifest_to_dict(metadata, paths),
+    )
     _write_json(paths.summary_json, report_summary_payload)
     _write_csv(
         paths.summary_csv,

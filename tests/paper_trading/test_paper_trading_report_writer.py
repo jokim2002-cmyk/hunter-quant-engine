@@ -28,6 +28,7 @@ from src.paper_trading.paper_trading_report_writer import (
     paper_order_record_to_dict,
     paper_position_to_dict,
     paper_trading_report_metadata_to_dict,
+    paper_trading_report_manifest_to_dict,
     paper_trading_report_summary_to_csv_row,
     paper_trading_report_summary_to_dict,
     write_paper_trading_report,
@@ -305,6 +306,7 @@ def test_write_paper_trading_report_creates_expected_files(tmp_path):
     assert paths.output_dir == output_dir
 
     expected_paths = [
+        paths.manifest_json,
         paths.summary_json,
         paths.summary_csv,
         paths.orders_json,
@@ -319,6 +321,65 @@ def test_write_paper_trading_report_creates_expected_files(tmp_path):
     for path in expected_paths:
         assert path.exists()
         assert "reports" in [part.lower() for part in path.parts]
+
+
+def test_paper_trading_report_manifest_to_dict(tmp_path):
+    session = _session_with_open_and_closed_positions()
+    paths = write_paper_trading_report(
+        session,
+        tmp_path / "reports" / "paper",
+        generated_at=_GENERATED_AT,
+    )
+    metadata = build_paper_trading_report_metadata(_GENERATED_AT)
+
+    payload = paper_trading_report_manifest_to_dict(metadata, paths)
+
+    assert payload == {
+        "report_version": 1,
+        "report_source": "paper",
+        "generated_at": _GENERATED_AT_ISO,
+        "paper_pnl_is_simulation_only": True,
+        "output_dir": str(paths.output_dir),
+        "files": {
+            "manifest_json": str(paths.manifest_json),
+            "summary_json": str(paths.summary_json),
+            "summary_csv": str(paths.summary_csv),
+            "orders_json": str(paths.orders_json),
+            "orders_csv": str(paths.orders_csv),
+            "open_positions_json": str(paths.open_positions_json),
+            "open_positions_csv": str(paths.open_positions_csv),
+            "exit_records_json": str(paths.exit_records_json),
+            "exit_records_csv": str(paths.exit_records_csv),
+            "report_text": str(paths.report_text),
+        },
+    }
+
+
+def test_write_paper_trading_report_writes_manifest_json(tmp_path):
+    session = _session_with_open_and_closed_positions()
+    paths = write_paper_trading_report(
+        session,
+        tmp_path / "reports" / "paper",
+        generated_at=_GENERATED_AT,
+    )
+
+    payload = json.loads(paths.manifest_json.read_text(encoding="utf-8"))
+
+    assert payload["report_version"] == 1
+    assert payload["report_source"] == "paper"
+    assert payload["generated_at"] == _GENERATED_AT_ISO
+    assert payload["paper_pnl_is_simulation_only"] is True
+    assert payload["output_dir"] == str(paths.output_dir)
+    assert payload["files"]["manifest_json"] == str(paths.manifest_json)
+    assert payload["files"]["summary_json"] == str(paths.summary_json)
+    assert payload["files"]["summary_csv"] == str(paths.summary_csv)
+    assert payload["files"]["orders_json"] == str(paths.orders_json)
+    assert payload["files"]["orders_csv"] == str(paths.orders_csv)
+    assert payload["files"]["open_positions_json"] == str(paths.open_positions_json)
+    assert payload["files"]["open_positions_csv"] == str(paths.open_positions_csv)
+    assert payload["files"]["exit_records_json"] == str(paths.exit_records_json)
+    assert payload["files"]["exit_records_csv"] == str(paths.exit_records_csv)
+    assert payload["files"]["report_text"] == str(paths.report_text)
 
 
 def test_write_paper_trading_report_writes_summary_json(tmp_path):

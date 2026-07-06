@@ -97,6 +97,7 @@ def test_demo_writes_local_report_files_under_reports() -> None:
 
     output_dir = Path("reports") / "paper_trading"
     expected_files = [
+        output_dir / "manifest.json",
         output_dir / "summary.json",
         output_dir / "summary.csv",
         output_dir / "orders.json",
@@ -112,6 +113,9 @@ def test_demo_writes_local_report_files_under_reports() -> None:
         assert path.exists()
         assert "reports" in [part.lower() for part in path.parts]
 
+    manifest_payload = json.loads(
+        (output_dir / "manifest.json").read_text(encoding="utf-8")
+    )
     summary_payload = json.loads(
         (output_dir / "summary.json").read_text(encoding="utf-8")
     )
@@ -120,6 +124,17 @@ def test_demo_writes_local_report_files_under_reports() -> None:
     )
     report_text = (output_dir / "report.txt").read_text(encoding="utf-8").lower()
 
+    assert manifest_payload["report_version"] == 1
+    assert manifest_payload["report_source"] == "paper"
+    assert "generated_at" in manifest_payload
+    assert manifest_payload["paper_pnl_is_simulation_only"] is True
+    assert manifest_payload["files"]["manifest_json"].endswith("manifest.json")
+    assert manifest_payload["files"]["summary_json"].endswith("summary.json")
+    assert manifest_payload["files"]["report_text"].endswith("report.txt")
+
+    assert summary_payload["report_version"] == 1
+    assert summary_payload["report_source"] == "paper"
+    assert "generated_at" in summary_payload
     assert summary_payload["total_orders"] == 1
     assert summary_payload["open_positions_count"] == 0
     assert summary_payload["total_open_quantity"] == 0
