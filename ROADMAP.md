@@ -2390,3 +2390,29 @@ Progress:
 - Full HQE product estimate after Module PPPP: 86-91%.
 
 Expected full quick-check suite after Module PPPP: 2413 passed.
+
+## Module QQQQ - Paper improvement candidate registry pack
+
+Status: implemented in this module.
+
+Scope:
+- Read paper improvement readiness launch pack.
+- Validate required improvement readiness items.
+- Create planning-only paper improvement candidate registry items.
+- Add shortcut .\hqe_paper_improvement_candidate_registry_pack.bat.
+- Keep actual backtest execution, dashboard UI startup, Streamlit runtime, strategy selection, strategy logic changes, broker/live execution, live market data, real orders, real money, and profitability claims out of scope for this module.
+
+Progress:
+- v1.0 Testing Edition: 63/63 modules complete.
+- v1.0 pending: 0 modules.
+- Phase 1 Real Backtest Usage Sprint complete.
+- Phase 2 Dashboard Sprint complete.
+- Phase 3 Recorded Backtest Review Workflow complete.
+- Phase 4 Paper Backtest Evidence Analysis Sprint complete.
+- Completed total before Module QQQQ: 94 modules.
+- Completed total after Module QQQQ: 95 modules.
+- Phase 5 pending before Module QQQQ: 5 modules.
+- Phase 5 pending after Module QQQQ: 4 modules.
+- Full HQE product estimate after Module QQQQ: 87-92%.
+
+Expected full quick-check suite after Module QQQQ: 2424 passed.

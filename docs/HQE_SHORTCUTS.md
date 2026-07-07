@@ -653,3 +653,11 @@ Shortcut:
 .\hqe_paper_improvement_readiness_launch_pack.bat
 
 Starts the paper-only improvement readiness sprint from closed paper evidence. This is not a profitability claim.
+
+## Paper improvement candidate registry pack
+
+Shortcut:
+
+.\hqe_paper_improvement_candidate_registry_pack.bat
+
+Builds a planning-only paper improvement candidate registry. This is not a profitability claim.
