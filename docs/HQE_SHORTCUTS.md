@@ -57,3 +57,11 @@ Shortcut:
 .\hqe_recorded_data_strategy_input_contract.bat
 
 Converts recorded-data replay dry-run events into a future paper-strategy input contract while blocking execution/trading/profit fields. This is not a profitability claim.
+
+## Recorded data strategy replay preflight
+
+Shortcut:
+
+.\hqe_recorded_data_strategy_replay_preflight.bat
+
+Runs replay readiness plus strategy input contract and writes a final paper/simulation-only preflight report for future paper strategy replay. This is not a profitability claim.

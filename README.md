@@ -535,3 +535,13 @@ This paper/simulation-only evidence module converts recorded-data replay dry-run
 It checks JSONL event shape, required timestamp/close fields, expected recorded market-data bar event type, minimum accepted bar count, and blocks execution/trading/profit fields from entering the contract.
 
 This module does not run strategies, create signals, create trade plans, connect to brokers, request live market data, place real orders, use real money, or prove profitability. This is not a profitability claim.
+
+## Module V - Recorded data strategy replay preflight
+
+Shortcut:
+
+.\hqe_recorded_data_strategy_replay_preflight.bat
+
+This paper/simulation-only evidence module runs recorded-data replay readiness plus the recorded-data strategy input contract, then writes a final preflight report for a future paper strategy replay phase.
+
+It checks structural readiness only. It does not run strategies, create signals, create trade plans, connect to brokers, request live market data, place real orders, use real money, or prove profitability. This is not a profitability claim.

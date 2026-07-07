@@ -911,3 +911,16 @@ Scope:
 - Keep strategy execution, signal generation, trade plans, broker/live execution, live market data, real orders, real money, and profitability claims out of scope.
 
 Expected full quick-check suite after Module U: 1623 passed.
+
+## Module V - Recorded data strategy replay preflight
+
+Status: implemented in this module.
+
+Scope:
+- Run the recorded-data replay readiness gate.
+- Run the recorded-data strategy input contract.
+- Write final preflight report under reports\paper_trading\recorded_data_strategy_replay_preflight.
+- Add shortcut .\hqe_recorded_data_strategy_replay_preflight.bat.
+- Keep strategy execution, signal generation, trade plans, broker/live execution, live market data, real orders, real money, and profitability claims out of scope.
+
+Expected full quick-check suite after Module V: 1634 passed.
