@@ -513,3 +513,13 @@ This paper/simulation-only evidence module reads the combined recorded-data repl
 It checks required stage presence, stage status, bundle status, warning policy, and minimum replay dry-run event count.
 
 This module does not run strategies, create trade plans, connect to brokers, request live market data, place real orders, use real money, or prove profitability. This is not a profitability claim.
+
+## Module T - Recorded data replay readiness gate
+
+Shortcut:
+
+.\hqe_recorded_data_replay_readiness.bat
+
+This paper/simulation-only evidence module runs the recorded-data replay evidence bundle and acceptance gate, then writes a final readiness report for future paper replay.
+
+It checks structural replay readiness only. It does not run strategies, create trade plans, connect to brokers, request live market data, place real orders, use real money, or prove profitability. This is not a profitability claim.

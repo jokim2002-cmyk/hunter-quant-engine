@@ -882,3 +882,16 @@ Scope:
 - Keep strategy execution, trade plans, broker/live execution, live market data, real orders, real money, and profitability claims out of scope.
 
 Expected full quick-check suite after Module S: 1599 passed.
+
+## Module T - Recorded data replay readiness gate
+
+Status: implemented in this module.
+
+Scope:
+- Run the recorded-data replay evidence bundle.
+- Run the recorded-data replay acceptance gate.
+- Write final readiness report under reports\paper_trading\recorded_data_replay_readiness.
+- Add shortcut .\hqe_recorded_data_replay_readiness.bat.
+- Keep strategy execution, trade plans, broker/live execution, live market data, real orders, real money, and profitability claims out of scope.
+
+Expected full quick-check suite after Module T: 1611 passed.

@@ -41,3 +41,11 @@ Shortcut:
 .\hqe_recorded_data_replay_acceptance.bat
 
 Gates the recorded-data replay evidence bundle for future paper/simulation replay readiness using required stages, warning policy, and minimum event count. This is not a profitability claim.
+
+## Recorded data replay readiness gate
+
+Shortcut:
+
+.\hqe_recorded_data_replay_readiness.bat
+
+Runs the recorded-data replay evidence bundle plus acceptance gate and writes a final paper/simulation-only readiness report. This is not a profitability claim.
