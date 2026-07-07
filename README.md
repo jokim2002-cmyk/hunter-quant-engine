@@ -1157,3 +1157,29 @@ Progress:
 - v1.0 pending after Module III: 2 modules.
 
 Expected full quick-check suite after Module III: 2053 passed.
+
+## Module JJJ - v1.0 Testing Edition release candidate gate
+
+Shortcut:
+
+.\hqe_v1_testing_release_candidate_gate.bat
+
+This module validates the v1.0 Testing Edition release notes pack before final release close. It checks release-note readiness, required safety phrases, required sections, and final evidence output paths.
+
+Paper-only v1.0 testing release candidate gate safety:
+- LONG = CE BUY paper plan only.
+- SHORT = PE BUY paper plan only.
+- NEUTRAL = no trade.
+- No option selling.
+- No broker orders.
+- No live market data.
+- No real money.
+
+It does not connect to brokers, request live market data, place real orders, use real money, or prove profitability. This is not a profitability claim.
+
+Progress:
+- Completed total before Module JJJ: 61 modules.
+- v1.0 pending before Module JJJ: 2 modules.
+- v1.0 pending after Module JJJ: 1 module.
+
+Expected full quick-check suite after Module JJJ: 2064 passed.

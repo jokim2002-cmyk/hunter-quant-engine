@@ -1602,3 +1602,22 @@ Progress:
 - v1.0 pending after Module III: 2 modules.
 
 Expected full quick-check suite after Module III: 2053 passed.
+
+## Module JJJ - v1.0 Testing Edition release candidate gate
+
+Status: implemented in this module.
+
+Scope:
+- Read the v1 testing release notes pack.
+- Validate release-note readiness and final evidence paths.
+- Validate release-note sections and paper-only safety phrases.
+- Write release candidate gate evidence.
+- Add shortcut .\hqe_v1_testing_release_candidate_gate.bat.
+- Keep broker/live execution, live market data, real orders, real money, and profitability claims out of scope.
+
+Progress:
+- Completed total before Module JJJ: 61 modules.
+- v1.0 pending before Module JJJ: 2 modules.
+- v1.0 pending after Module JJJ: 1 module.
+
+Expected full quick-check suite after Module JJJ: 2064 passed.

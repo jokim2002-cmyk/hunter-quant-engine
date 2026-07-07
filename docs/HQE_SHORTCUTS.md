@@ -383,3 +383,11 @@ Shortcut:
 .\hqe_v1_testing_release_notes.bat
 
 Builds paper-only v1.0 Testing Edition release notes evidence before the release-candidate gate. This is not a profitability claim.
+
+## v1.0 Testing Edition release candidate gate
+
+Shortcut:
+
+.\hqe_v1_testing_release_candidate_gate.bat
+
+Validates paper-only v1.0 Testing Edition release notes evidence before final release close. This is not a profitability claim.
