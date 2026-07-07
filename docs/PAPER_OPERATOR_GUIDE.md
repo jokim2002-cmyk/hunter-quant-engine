@@ -92,6 +92,14 @@ Run:
 
 This checks Paper MVP release readiness. It does not create a git tag.
 
+## Live Readiness Preflight
+
+Run the full safe local preflight chain:
+
+    .\hqe_live_readiness_preflight.bat
+
+A pass does not approve live trading, real money, broker execution, or real orders.
+
 ## Live Safety Lock
 
 Before any future live-readiness engineering work, run:

@@ -8,7 +8,7 @@ Older roadmap sections below are retained as historical planning notes and docum
 
 Current checkpoint:
 
-- 1486 tests passing after Live safety lock scaffold.1 release close.1 release close.
+- 1498 tests passing after Live-readiness preflight.1 release close.1 release close.
 - Repository shortcut cleanup completed.
 - Old unused/risky root shortcuts removed.
 - Safe local shortcut layer completed.
@@ -35,6 +35,7 @@ Current checkpoint:
 - Paper evidence aggregate runner completed.
 - Live-readiness gate scaffold completed.
 - Live safety lock scaffold completed.
+- Live-readiness preflight completed.
 - Replay journal all-in-one shortcut prints index completed.
 - Paper P&L is simulation only.
 - Real-money execution remains the final phase only.
@@ -782,6 +783,7 @@ Scope docs:
 - `docs/PAPER_MVP_V0_1_RELEASE_NOTES.md`
 - `docs/LIVE_READINESS_GATE.md`
 - `docs/LIVE_SAFETY_LOCK.md`
+- `docs/LIVE_READINESS_PREFLIGHT.md`
 - `hqe_paper_mvp_release_check.bat`
 - `docs/DEFERRED_POLISH_BACKLOG.md`
 

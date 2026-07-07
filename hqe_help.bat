@@ -25,6 +25,7 @@ echo   .\hqe_paper_mvp_release_check.bat - run Paper MVP release gate
 echo   .\hqe_paper_evidence_aggregate.bat - aggregate paper evidence
 echo   .\hqe_live_readiness_check.bat - check live-readiness gate
 echo   .\hqe_live_safety_lock_check.bat - check disabled live safety lock
+echo   .\hqe_live_readiness_preflight.bat - run full live-readiness preflight
 echo   .\hqe_paper_replay_journal_all.bat - run replay journal, print summary/runs, open folder
 echo   .\hqe_paper_folder.bat      - open paper report folder
 echo   .\hqe_paper_report_text.bat - print paper report in terminal
