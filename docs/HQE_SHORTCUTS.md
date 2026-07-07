@@ -485,3 +485,11 @@ Shortcut:
 .\hqe_real_backtest_usage_sprint_readiness_close.bat
 
 Closes the post-v1.0 Real Backtest Usage Sprint as a paper-only evidence workflow. This is not a profitability claim.
+
+## Dashboard input index pack
+
+Shortcut:
+
+.\hqe_dashboard_input_index_pack.bat
+
+Builds a paper-only dashboard input index from Phase 1 readiness evidence. This is not a profitability claim.
