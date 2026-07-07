@@ -265,3 +265,11 @@ Shortcut:
 .\hqe_recorded_data_strategy_replay_sandbox.bat
 
 Converts validated recorded-data strategy input bars into strategy replay sandbox events for future decision audit. This is not a profitability claim.
+
+## Recorded data strategy decision audit
+
+Shortcut:
+
+.\hqe_recorded_data_strategy_decision_audit.bat
+
+Converts strategy replay sandbox events into deterministic LONG / SHORT / NEUTRAL decision audit events. This is paper/simulation only and is not a profitability claim.

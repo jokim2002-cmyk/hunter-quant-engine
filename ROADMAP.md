@@ -1335,3 +1335,22 @@ Progress:
 - v1.0 pending after Module UU: 16 modules.
 
 Expected full quick-check suite after Module UU: 1902 passed.
+
+## Module VV - Recorded data strategy decision audit
+
+Status: implemented in this module.
+
+Scope:
+- Read strategy replay sandbox report.
+- Validate sandbox event safety/mode fields.
+- Convert valid sandbox events into deterministic LONG / SHORT / NEUTRAL decision audit events.
+- Preserve decision mapping: LONG = future CE buy paper plan only, SHORT = future PE buy paper plan only, NEUTRAL = no trade.
+- Add shortcut .\hqe_recorded_data_strategy_decision_audit.bat.
+- Keep CE/PE trade plans, broker/live execution, live market data, real orders, real money, PnL, and profitability claims out of scope.
+
+Progress:
+- Completed total before Module VV: 47 modules.
+- v1.0 pending before Module VV: 16 modules.
+- v1.0 pending after Module VV: 15 modules.
+
+Expected full quick-check suite after Module VV: 1913 passed.
