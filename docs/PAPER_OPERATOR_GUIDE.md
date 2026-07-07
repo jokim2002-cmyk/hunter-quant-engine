@@ -92,6 +92,15 @@ Run:
 
 This checks Paper MVP release readiness. It does not create a git tag.
 
+## Live Safety Lock
+
+Before any future live-readiness engineering work, run:
+
+    .\hqe_live_safety_lock_check.bat
+
+A pass means the live safety lock is closed and dangerous live features are disabled.
+It does not approve live trading or real money.
+
 ## Live Readiness Gate
 
 After aggregating paper evidence, run:
