@@ -25,3 +25,11 @@ Shortcut:
 .\hqe_recorded_data_replay_dry_run.bat
 
 Converts normalized recorded-data replay records into a deterministic paper/simulation-only dry-run event stream under reports\paper_trading\recorded_data_replay_dry_run. This is not a profitability claim.
+
+## Recorded data replay evidence bundle
+
+Shortcut:
+
+.\hqe_recorded_data_replay_evidence.bat
+
+Runs the recorded-data replay dataset normalizer, quality gate, dry-run player, and combined paper/simulation-only evidence summary. This is not a profitability claim.

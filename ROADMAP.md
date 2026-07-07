@@ -852,3 +852,17 @@ Scope:
 - Keep strategy execution, trade plans, broker/live execution, live market data, real orders, real money, and profitability claims out of scope.
 
 Expected full quick-check suite after Module Q: 1574 passed.
+
+## Module R - Recorded data replay evidence bundle
+
+Status: implemented in this module.
+
+Scope:
+- Run the recorded-data replay dataset normalizer.
+- Run the recorded-data replay quality gate.
+- Run the recorded-data replay dry-run player.
+- Write a combined evidence summary and manifest.
+- Add shortcut .\hqe_recorded_data_replay_evidence.bat.
+- Keep strategy execution, trade plans, broker/live execution, live market data, real orders, real money, and profitability claims out of scope.
+
+Expected full quick-check suite after Module R: 1587 passed.

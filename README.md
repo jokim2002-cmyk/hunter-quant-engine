@@ -489,3 +489,15 @@ This paper/simulation-only evidence module converts the normalized recorded-data
 It reads the replay dataset and the replay quality gate output, blocks event generation when the quality gate has failed, and writes dry-run report, event JSONL, and manifest files.
 
 This module does not run strategies, create trade plans, connect to brokers, request live market data, place real orders, use real money, or prove profitability. This is not a profitability claim.
+
+## Module R - Recorded data replay evidence bundle
+
+Shortcut:
+
+.\hqe_recorded_data_replay_evidence.bat
+
+This paper/simulation-only evidence module runs the recorded-data replay readiness pipeline end to end: dataset normalizer, quality gate, dry-run player, and combined evidence summary.
+
+It writes the combined bundle under reports\paper_trading\recorded_data_replay_evidence while preserving stage outputs under reports\paper_trading.
+
+This module does not run strategies, create trade plans, connect to brokers, request live market data, place real orders, use real money, or prove profitability. This is not a profitability claim.
