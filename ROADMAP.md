@@ -866,3 +866,19 @@ Scope:
 - Keep strategy execution, trade plans, broker/live execution, live market data, real orders, real money, and profitability claims out of scope.
 
 Expected full quick-check suite after Module R: 1587 passed.
+
+## Module S - Recorded data replay acceptance gate
+
+Status: implemented in this module.
+
+Scope:
+- Read reports\paper_trading\recorded_data_replay_evidence\evidence_summary.json.
+- Verify required replay evidence stages are present.
+- Gate stage status and bundle status.
+- Enforce configurable minimum replay dry-run event count.
+- Add optional warning acceptance via --allow-warnings.
+- Write paper/evidence-only output under reports\paper_trading\recorded_data_replay_acceptance.
+- Add shortcut .\hqe_recorded_data_replay_acceptance.bat.
+- Keep strategy execution, trade plans, broker/live execution, live market data, real orders, real money, and profitability claims out of scope.
+
+Expected full quick-check suite after Module S: 1599 passed.

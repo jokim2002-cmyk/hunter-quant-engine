@@ -33,3 +33,11 @@ Shortcut:
 .\hqe_recorded_data_replay_evidence.bat
 
 Runs the recorded-data replay dataset normalizer, quality gate, dry-run player, and combined paper/simulation-only evidence summary. This is not a profitability claim.
+
+## Recorded data replay acceptance gate
+
+Shortcut:
+
+.\hqe_recorded_data_replay_acceptance.bat
+
+Gates the recorded-data replay evidence bundle for future paper/simulation replay readiness using required stages, warning policy, and minimum event count. This is not a profitability claim.
