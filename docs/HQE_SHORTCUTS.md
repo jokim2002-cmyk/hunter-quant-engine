@@ -297,3 +297,11 @@ Shortcut:
 .\hqe_recorded_data_paper_fill_exit_simulator.bat
 
 Converts CE/PE paper option trade plans into deterministic paper entry/exit lifecycle events. This is paper/simulation only and is not a profitability claim.
+
+## Recorded data backtest trade ledger
+
+Shortcut:
+
+.\hqe_recorded_data_backtest_trade_ledger.bat
+
+Converts paper fill/exit lifecycle records into a paper-only backtest trade ledger. This is not a profitability claim.

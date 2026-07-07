@@ -914,3 +914,24 @@ Progress:
 - v1.0 pending after Module YY: 12 modules.
 
 Expected full quick-check suite after Module YY: 1946 passed.
+
+## Module ZZ - Recorded data backtest trade ledger
+
+Shortcut:
+
+.\hqe_recorded_data_backtest_trade_ledger.bat
+
+This module converts paper fill/exit lifecycle records into a paper-only backtest ledger.
+
+Paper result formula:
+
+simulated_gross_result = option_points_result * quantity_lots * lot_size
+
+It does not connect to brokers, request live market data, place real orders, use real money, or prove profitability. This is not a profitability claim.
+
+Progress:
+- Completed total before Module ZZ: 51 modules.
+- v1.0 pending before Module ZZ: 12 modules.
+- v1.0 pending after Module ZZ: 11 modules.
+
+Expected full quick-check suite after Module ZZ: 1957 passed.

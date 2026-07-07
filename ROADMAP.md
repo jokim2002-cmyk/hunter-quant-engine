@@ -1412,3 +1412,22 @@ Progress:
 - v1.0 pending after Module YY: 12 modules.
 
 Expected full quick-check suite after Module YY: 1946 passed.
+
+## Module ZZ - Recorded data backtest trade ledger
+
+Status: implemented in this module.
+
+Scope:
+- Read paper fill/exit simulator report.
+- Validate CE/PE paper lifecycle safety/mode fields.
+- Convert valid lifecycle records into paper-only backtest ledger rows.
+- Calculate simulated paper reference result using option_points_result * quantity_lots * lot_size.
+- Add shortcut .\hqe_recorded_data_backtest_trade_ledger.bat.
+- Keep broker/live execution, live market data, real orders, real money, and profitability claims out of scope.
+
+Progress:
+- Completed total before Module ZZ: 51 modules.
+- v1.0 pending before Module ZZ: 12 modules.
+- v1.0 pending after Module ZZ: 11 modules.
+
+Expected full quick-check suite after Module ZZ: 1957 passed.
