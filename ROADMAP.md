@@ -805,3 +805,17 @@ Deferred beyond v0.1:
 - dashboard polish
 - cosmetic shortcut/docs polish
 - profitability claims without evidence
+
+## Module O - Recorded data replay dataset normalizer
+
+Status: implemented in this module.
+
+Scope:
+- Read recorded-data inventory output when available.
+- Fall back to discovery under data\recorded and data\live_recording.
+- Normalize simple CSV/JSON/JSONL rows into replay records with timestamp/open/high/low/close/volume when available.
+- Write paper/evidence-only output under reports\paper_trading\recorded_data_replay_dataset.
+- Add shortcut .\hqe_recorded_data_replay_dataset.bat.
+- Keep broker/live execution, live market data, real orders, real money, and profitability claims out of scope.
+
+Expected full quick-check suite after Module O: 1546 passed.

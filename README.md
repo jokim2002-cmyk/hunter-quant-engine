@@ -453,3 +453,15 @@ HQE is built to answer honestly:
 - What survives out-of-sample?
 - What is safe enough for paper trading?
 - What is safe enough for tiny real-money testing?
+
+## Module O - Recorded data replay dataset normalizer
+
+Shortcut:
+
+.\hqe_recorded_data_replay_dataset.bat
+
+This paper/simulation-only evidence module reads the recorded-data inventory output and/or discovered files under data\recorded and data\live_recording, then writes normalized replay dataset reports under reports\paper_trading\recorded_data_replay_dataset.
+
+It safely parses simple CSV, JSON, and JSONL samples into timestamp/open/high/low/close/volume fields when available. Parquet discovery is tracked but parsing is intentionally deferred in this scaffold.
+
+This module does not connect to brokers, request live market data, place real orders, use real money, or prove profitability. This is not a profitability claim.
