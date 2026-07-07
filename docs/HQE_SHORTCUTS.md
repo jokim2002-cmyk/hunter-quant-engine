@@ -89,3 +89,11 @@ Shortcut:
 .\hqe_recorded_data_strategy_replay_scenario_readiness.bat
 
 Runs future paper strategy replay preflight, scenario manifest, scenario acceptance, and final paper/simulation-only scenario readiness report. This is not a profitability claim.
+
+## Recorded data paper strategy replay plan
+
+Shortcut:
+
+.\hqe_recorded_data_paper_strategy_replay_plan.bat
+
+Builds a no-execution paper/simulation-only replay plan from scenario readiness, scenario manifest, and strategy input bars. This is not a profitability claim.

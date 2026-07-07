@@ -593,3 +593,13 @@ The release does not run strategies, create signals, create trade plans, connect
 Release notes:
 
 docs\V0_3_RECORDED_DATA_REPLAY_READINESS_RELEASE.md
+
+## Module AA - Recorded data paper strategy replay plan scaffold
+
+Shortcut:
+
+.\hqe_recorded_data_paper_strategy_replay_plan.bat
+
+This paper/simulation-only evidence module builds a no-execution replay plan from scenario readiness, scenario manifest, and strategy input bars.
+
+It does not run strategies, create signals, create trade plans, connect to brokers, request live market data, place real orders, use real money, calculate PnL, or prove profitability. This is not a profitability claim.

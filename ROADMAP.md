@@ -986,3 +986,19 @@ Scope:
 - Create release tag v0.3-recorded-data-replay-readiness after green checks and commit.
 
 Expected full quick-check suite after Module Z: 1676 passed.
+
+## Module AA - Recorded data paper strategy replay plan scaffold
+
+Status: implemented in this module.
+
+Scope:
+- Read reports\paper_trading\recorded_data_strategy_replay_scenario_readiness\scenario_readiness_report.json.
+- Read reports\paper_trading\recorded_data_strategy_replay_scenario\scenario_manifest.json.
+- Read reports\paper_trading\recorded_data_strategy_input_contract\strategy_input_bars.jsonl.
+- Build deterministic no-execution replay scenario plans.
+- Block execution/profit fields from the plan.
+- Write paper/evidence-only output under reports\paper_trading\recorded_data_paper_strategy_replay_plan.
+- Add shortcut .\hqe_recorded_data_paper_strategy_replay_plan.bat.
+- Keep strategy execution, signal generation, trade plans, broker/live execution, live market data, real orders, real money, PnL, and profitability claims out of scope.
+
+Expected full quick-check suite after Module AA: 1687 passed.
