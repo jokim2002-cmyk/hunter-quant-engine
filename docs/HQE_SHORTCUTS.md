@@ -405,3 +405,11 @@ Final release-candidate shortcut:
 .\hqe_v1_testing_release_candidate_gate.bat
 
 This closes the paper-only v1.0 Testing Edition path. This is not a profitability claim.
+
+## Real dataset backtest input pack
+
+Shortcut:
+
+.\hqe_real_dataset_backtest_input_pack.bat
+
+Discovers saved recorded-data files and writes the first real recorded-data paper backtest input pack. This is not a profitability claim.

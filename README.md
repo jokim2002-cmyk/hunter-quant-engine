@@ -1216,3 +1216,40 @@ Progress:
 - v1.0 pending after Module KKK: 0 modules.
 
 Expected full quick-check suite after Module KKK: 2072 passed.
+
+## Module LLL - Real dataset backtest input pack
+
+Shortcut:
+
+.\hqe_real_dataset_backtest_input_pack.bat
+
+This module starts the post-v1.0 Real Backtest Usage Sprint by discovering saved recorded-data files and writing a safe first real backtest input pack.
+
+Default input directories:
+- data\recorded
+- data\live_recording
+
+Supported files:
+- .csv
+- .json
+- .jsonl
+- .parquet
+
+Safety:
+- LONG = CE BUY paper plan only.
+- SHORT = PE BUY paper plan only.
+- NEUTRAL = no trade.
+- No option selling.
+- No broker orders.
+- No live market data.
+- No real money.
+- This is not a profitability claim.
+
+Progress:
+- v1.0 Testing Edition: 63/63 modules complete.
+- v1.0 pending: 0 modules.
+- Completed total after Module LLL: 64 modules.
+- Phase 1 pending after Module LLL: 9 modules.
+- Full HQE product estimate after Module LLL: 56-61%.
+
+Expected full quick-check suite after Module LLL: 2083 passed.

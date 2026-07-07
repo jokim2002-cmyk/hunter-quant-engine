@@ -1658,3 +1658,25 @@ Progress:
 - v1.0 pending after Module KKK: 0 modules.
 
 Expected full quick-check suite after Module KKK: 2072 passed.
+
+## Module LLL - Real dataset backtest input pack
+
+Status: implemented in this module.
+
+Scope:
+- Discover saved recorded-data files.
+- Support .csv, .json, .jsonl, and .parquet file discovery.
+- Write operator input pack and suggested real backtest command sequence.
+- Add shortcut .\hqe_real_dataset_backtest_input_pack.bat.
+- Keep broker/live execution, live market data, real orders, real money, and profitability claims out of scope.
+
+Progress:
+- v1.0 Testing Edition: 63/63 modules complete.
+- v1.0 pending: 0 modules.
+- Completed total before Module LLL: 63 modules.
+- Phase 1 pending before Module LLL: 10 modules.
+- Completed total after Module LLL: 64 modules.
+- Phase 1 pending after Module LLL: 9 modules.
+- Full HQE product estimate after Module LLL: 56-61%.
+
+Expected full quick-check suite after Module LLL: 2083 passed.
