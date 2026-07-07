@@ -35,6 +35,7 @@ Module H added the Live-readiness gate scaffold.
 Module I added the disabled live safety lock scaffold.
 Module J added the full live-readiness preflight.
 Module K added the deny-only live execution firewall.
+Module L integrated the live execution firewall into the preflight.
 
 Key scope documents:
 
@@ -97,7 +98,7 @@ Engineer it right once. Improve it forever.
 HQE currently supports:
 
 - Clean Python architecture
-- 1512 tests passing
+- 1513 tests passing
 - Smart Money Concepts detection
 - SMC strategy signal generation
 - Strategy config presets

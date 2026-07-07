@@ -6,7 +6,8 @@ The live-readiness preflight runs the full safe local chain:
 2. Paper evidence aggregate
 3. Live-readiness gate
 4. Live safety lock
-5. Final preflight report
+5. Live execution firewall
+6. Final preflight report
 
 It is not live trading.
 
@@ -34,6 +35,7 @@ It also refreshes local stage outputs under:
     reports\paper_trading\evidence_aggregate
     reports\paper_trading\live_readiness
     reports\paper_trading\live_safety_lock
+    reports\paper_trading\live_execution_firewall
 
 ## Meaning of Pass
 
@@ -55,3 +57,6 @@ A pass does not mean:
 Run this before any future live-readiness engineering module.
 
 If it fails, stop and fix the blocker before continuing.
+
+The preflight also fails if the live execution firewall fails or if any
+live order intent is allowed.

@@ -13,7 +13,7 @@ def test_master_roadmap_has_current_status_override_before_historical_notes():
     historical_index = text.index("648 tests passing")
 
     assert current_index < historical_index
-    assert "1512 tests passing after Live execution firewall scaffold." in text
+    assert "1513 tests passing after Preflight firewall integration." in text
     assert "Paper trading demo/report workflow completed." in text
     assert "Paper journal persistence skeleton completed." in text
     assert "Replay journal persistence bridge completed." in text
@@ -39,6 +39,7 @@ def test_master_roadmap_has_current_status_override_before_historical_notes():
     assert "Live safety lock scaffold completed." in text
     assert "Live-readiness preflight completed." in text
     assert "Live execution firewall scaffold completed." in text
+    assert "Preflight firewall integration completed." in text
     assert "docs/DEFERRED_POLISH_BACKLOG.md" in text
     assert "docs/PAPER_MVP_RELEASE_CHECKLIST.md" in text
     assert "docs/PAPER_OPERATOR_GUIDE.md" in text

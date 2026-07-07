@@ -8,7 +8,7 @@ Older roadmap sections below are retained as historical planning notes and docum
 
 Current checkpoint:
 
-- 1512 tests passing after Live execution firewall scaffold.1 release close.1 release close.
+- 1513 tests passing after Preflight firewall integration.1 release close.1 release close.
 - Repository shortcut cleanup completed.
 - Old unused/risky root shortcuts removed.
 - Safe local shortcut layer completed.
@@ -37,6 +37,7 @@ Current checkpoint:
 - Live safety lock scaffold completed.
 - Live-readiness preflight completed.
 - Live execution firewall scaffold completed.
+- Preflight firewall integration completed.
 - Replay journal all-in-one shortcut prints index completed.
 - Paper P&L is simulation only.
 - Real-money execution remains the final phase only.

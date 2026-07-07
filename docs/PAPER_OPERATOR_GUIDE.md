@@ -108,6 +108,7 @@ Run the full safe local preflight chain:
     .\hqe_live_readiness_preflight.bat
 
 A pass does not approve live trading, real money, broker execution, or real orders.
+The preflight includes the deny-only live execution firewall.
 
 ## Live Safety Lock
 

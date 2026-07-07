@@ -4,7 +4,7 @@ Live Readiness Preflight
 Runs the safe local live-readiness preflight chain:
 
 paper MVP operator demo -> evidence aggregate -> live-readiness gate
--> live safety lock -> final preflight report
+-> live safety lock -> live execution firewall -> final preflight report
 
 This is not live trading.
 No broker code. No live market data. No real orders.
@@ -20,6 +20,11 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from src.paper_trading.live_execution_firewall import (
+    LiveExecutionFirewallDecision,
+    LiveExecutionFirewallPaths,
+    run_live_execution_firewall,
+)
 from src.paper_trading.live_readiness_gate import (
     LiveReadinessPaths,
     LiveReadinessReport,
@@ -63,6 +68,7 @@ class LiveReadinessPreflightPaths:
     evidence_aggregate_output_dir: Path
     live_readiness_output_dir: Path
     live_safety_lock_output_dir: Path
+    live_execution_firewall_output_dir: Path
 
 
 @dataclass(frozen=True)
@@ -88,6 +94,8 @@ class LiveReadinessPreflightReport:
     evidence_aggregate_passed: bool
     live_readiness_allowed: bool
     live_safety_lock_passed: bool
+    live_execution_firewall_passed: bool
+    live_order_intent_allowed: bool
     paper_closed_trades: int
     aggregate_report_count: int
     aggregate_total_closed_trades: int
@@ -108,6 +116,8 @@ class LiveReadinessPreflightResult:
     live_readiness_paths: LiveReadinessPaths
     live_safety_lock_report: LiveSafetyLockReport
     live_safety_lock_paths: LiveSafetyLockPaths
+    live_execution_firewall_decision: LiveExecutionFirewallDecision
+    live_execution_firewall_paths: LiveExecutionFirewallPaths
     preflight_report: LiveReadinessPreflightReport
     preflight_paths: LiveReadinessPreflightPaths
 
@@ -127,6 +137,7 @@ def run_live_readiness_preflight(
     evidence_aggregate_dir = safe_output_root / "evidence_aggregate"
     live_readiness_dir = safe_output_root / "live_readiness"
     live_safety_lock_dir = safe_output_root / "live_safety_lock"
+    live_execution_firewall_dir = safe_output_root / "live_execution_firewall"
     preflight_dir = safe_output_root / "live_readiness_preflight"
 
     operator_demo_result = run_paper_mvp_operator_demo(
@@ -151,11 +162,17 @@ def run_live_readiness_preflight(
         generated_at=generated,
     )
 
+    firewall_decision, firewall_paths = run_live_execution_firewall(
+        output_dir=live_execution_firewall_dir,
+        generated_at=generated,
+    )
+
     preflight_report = build_live_readiness_preflight_report(
         operator_demo_result=operator_demo_result,
         evidence_aggregate_report=aggregate_report,
         live_readiness_report=readiness_report,
         live_safety_lock_report=safety_report,
+        live_execution_firewall_decision=firewall_decision,
         generated_at=generated,
     )
 
@@ -166,6 +183,7 @@ def run_live_readiness_preflight(
         evidence_aggregate_output_dir=evidence_aggregate_dir,
         live_readiness_output_dir=live_readiness_dir,
         live_safety_lock_output_dir=live_safety_lock_dir,
+        live_execution_firewall_output_dir=live_execution_firewall_dir,
     )
 
     return LiveReadinessPreflightResult(
@@ -176,6 +194,8 @@ def run_live_readiness_preflight(
         live_readiness_paths=readiness_paths,
         live_safety_lock_report=safety_report,
         live_safety_lock_paths=safety_paths,
+        live_execution_firewall_decision=firewall_decision,
+        live_execution_firewall_paths=firewall_paths,
         preflight_report=preflight_report,
         preflight_paths=preflight_paths,
     )
@@ -187,6 +207,7 @@ def build_live_readiness_preflight_report(
     evidence_aggregate_report: PaperEvidenceAggregateReport,
     live_readiness_report: LiveReadinessReport,
     live_safety_lock_report: LiveSafetyLockReport,
+    live_execution_firewall_decision: LiveExecutionFirewallDecision,
     generated_at: datetime | None = None,
 ) -> LiveReadinessPreflightReport:
     """
@@ -202,14 +223,19 @@ def build_live_readiness_preflight_report(
     evidence_aggregate_passed = evidence_aggregate_report.passed
     live_readiness_allowed = live_readiness_report.live_readiness_allowed
     live_safety_lock_passed = live_safety_lock_report.safety_lock_passed
+    live_execution_firewall_passed = live_execution_firewall_decision.firewall_passed
+    live_order_intent_allowed = live_execution_firewall_decision.intent_allowed
 
     blocking_reasons = _build_blocking_reasons(
         operator_demo_passed=operator_demo_passed,
         evidence_aggregate_passed=evidence_aggregate_passed,
         live_readiness_allowed=live_readiness_allowed,
         live_safety_lock_passed=live_safety_lock_passed,
+        live_execution_firewall_passed=live_execution_firewall_passed,
+        live_order_intent_allowed=live_order_intent_allowed,
         live_readiness_report=live_readiness_report,
         live_safety_lock_report=live_safety_lock_report,
+        live_execution_firewall_decision=live_execution_firewall_decision,
     )
 
     return LiveReadinessPreflightReport(
@@ -227,6 +253,8 @@ def build_live_readiness_preflight_report(
         evidence_aggregate_passed=evidence_aggregate_passed,
         live_readiness_allowed=live_readiness_allowed,
         live_safety_lock_passed=live_safety_lock_passed,
+        live_execution_firewall_passed=live_execution_firewall_passed,
+        live_order_intent_allowed=live_order_intent_allowed,
         paper_closed_trades=operator_demo_result.bridge_result.summary.closed_trades_count,
         aggregate_report_count=evidence_aggregate_report.report_count,
         aggregate_total_closed_trades=evidence_aggregate_report.total_closed_trades,
@@ -245,6 +273,7 @@ def write_live_readiness_preflight_report(
     evidence_aggregate_output_dir: str | Path,
     live_readiness_output_dir: str | Path,
     live_safety_lock_output_dir: str | Path,
+    live_execution_firewall_output_dir: str | Path,
 ) -> LiveReadinessPreflightPaths:
     """
     Write final preflight output files under reports/.
@@ -261,6 +290,7 @@ def write_live_readiness_preflight_report(
         evidence_aggregate_output_dir=Path(evidence_aggregate_output_dir),
         live_readiness_output_dir=Path(live_readiness_output_dir),
         live_safety_lock_output_dir=Path(live_safety_lock_output_dir),
+        live_execution_firewall_output_dir=Path(live_execution_firewall_output_dir),
     )
 
     _write_json(paths.preflight_json, live_readiness_preflight_report_to_dict(report))
@@ -306,6 +336,7 @@ def live_readiness_preflight_manifest_to_dict(
             "evidence_aggregate": str(paths.evidence_aggregate_output_dir),
             "live_readiness": str(paths.live_readiness_output_dir),
             "live_safety_lock": str(paths.live_safety_lock_output_dir),
+            "live_execution_firewall": str(paths.live_execution_firewall_output_dir),
         },
     }
 
@@ -335,6 +366,8 @@ def format_live_readiness_preflight_report(
         f"evidence aggregate passed: {report.evidence_aggregate_passed}",
         f"live-readiness allowed: {report.live_readiness_allowed}",
         f"live safety lock passed: {report.live_safety_lock_passed}",
+        f"live execution firewall passed: {report.live_execution_firewall_passed}",
+        f"live order intent allowed: {report.live_order_intent_allowed}",
         "",
         "Evidence Summary",
         f"paper closed trades: {report.paper_closed_trades}",
@@ -376,8 +409,11 @@ def _build_blocking_reasons(
     evidence_aggregate_passed: bool,
     live_readiness_allowed: bool,
     live_safety_lock_passed: bool,
+    live_execution_firewall_passed: bool,
+    live_order_intent_allowed: bool,
     live_readiness_report: LiveReadinessReport,
     live_safety_lock_report: LiveSafetyLockReport,
+    live_execution_firewall_decision: LiveExecutionFirewallDecision,
 ) -> list[str]:
     reasons: list[str] = []
 
@@ -394,6 +430,13 @@ def _build_blocking_reasons(
     if not live_safety_lock_passed:
         reasons.append("live safety lock did not pass")
         reasons.extend(live_safety_lock_report.blocking_reasons)
+
+    if not live_execution_firewall_passed:
+        reasons.append("live execution firewall did not pass")
+        reasons.extend(live_execution_firewall_decision.safety_violations)
+
+    if live_order_intent_allowed:
+        reasons.append("live order intent must remain denied")
 
     return reasons
 
