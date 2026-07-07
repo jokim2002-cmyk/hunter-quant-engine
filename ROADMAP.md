@@ -1791,3 +1791,25 @@ Progress:
 - Full HQE product estimate after Module QQQ: 61-66%.
 
 Expected full quick-check suite after Module QQQ: 2138 passed.
+
+## Module RRR - Strategy mode backtest run matrix pack
+
+Status: implemented in this module.
+
+Scope:
+- Read strategy mode comparison pack.
+- Validate strict, balanced, and relaxed modes.
+- Write future paper-only run matrix and command preview.
+- Add shortcut .\hqe_strategy_mode_backtest_run_matrix_pack.bat.
+- Keep actual backtest execution, strategy logic changes, broker/live execution, live market data, real orders, real money, and profitability claims out of scope.
+
+Progress:
+- v1.0 Testing Edition: 63/63 modules complete.
+- v1.0 pending: 0 modules.
+- Completed total before Module RRR: 69 modules.
+- Phase 1 pending before Module RRR: 4 modules.
+- Completed total after Module RRR: 70 modules.
+- Phase 1 pending after Module RRR: 3 modules.
+- Full HQE product estimate after Module RRR: 62-67%.
+
+Expected full quick-check suite after Module RRR: 2149 passed.

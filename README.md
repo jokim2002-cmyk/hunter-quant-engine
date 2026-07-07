@@ -1388,3 +1388,30 @@ Progress:
 - Full HQE product estimate after Module QQQ: 61-66%.
 
 Expected full quick-check suite after Module QQQ: 2138 passed.
+
+## Module RRR - Strategy mode backtest run matrix pack
+
+Shortcut:
+
+.\hqe_strategy_mode_backtest_run_matrix_pack.bat
+
+This module reads the strategy mode comparison pack and creates a future paper-only run matrix for strict, balanced, and relaxed recorded-data backtests. It does not run a backtest and does not change strategy logic.
+
+Safety:
+- LONG = CE BUY paper plan only.
+- SHORT = PE BUY paper plan only.
+- NEUTRAL = no trade.
+- No option selling.
+- No broker orders.
+- No live market data.
+- No real money.
+- This is not a profitability claim.
+
+Progress:
+- v1.0 Testing Edition: 63/63 modules complete.
+- v1.0 pending: 0 modules.
+- Completed total after Module RRR: 70 modules.
+- Phase 1 pending after Module RRR: 3 modules.
+- Full HQE product estimate after Module RRR: 62-67%.
+
+Expected full quick-check suite after Module RRR: 2149 passed.
