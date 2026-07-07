@@ -2021,3 +2021,26 @@ Progress:
 - Full HQE product estimate after Module AAAA: 71-76%.
 
 Expected full quick-check suite after Module AAAA: 2248 passed.
+
+## Module BBBB - Dashboard dry run validation pack
+
+Status: implemented in this module.
+
+Scope:
+- Read dashboard smoke test plan pack.
+- Validate required smoke steps, pages, components, and sections.
+- Create future dashboard dry-run validation items.
+- Add shortcut .\hqe_dashboard_dry_run_validation_pack.bat.
+- Keep dashboard UI startup, actual Streamlit runtime, actual backtest execution, strategy selection, broker/live execution, live market data, real orders, real money, and profitability claims out of scope.
+
+Progress:
+- v1.0 Testing Edition: 63/63 modules complete.
+- v1.0 pending: 0 modules.
+- Phase 1 pending after Module UUU: 0 modules.
+- Completed total before Module BBBB: 79 modules.
+- Completed total after Module BBBB: 80 modules.
+- Phase 2 pending before Module BBBB: 2 modules.
+- Phase 2 pending after Module BBBB: 1 module.
+- Full HQE product estimate after Module BBBB: 72-77%.
+
+Expected full quick-check suite after Module BBBB: 2259 passed.

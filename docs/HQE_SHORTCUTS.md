@@ -533,3 +533,11 @@ Shortcut:
 .\hqe_dashboard_smoke_test_plan_pack.bat
 
 Builds a paper-only future dashboard smoke-test plan. This is not a profitability claim.
+
+## Dashboard dry run validation pack
+
+Shortcut:
+
+.\hqe_dashboard_dry_run_validation_pack.bat
+
+Builds paper-only future dashboard dry-run validation items. This is not a profitability claim.
