@@ -819,3 +819,20 @@ Scope:
 - Keep broker/live execution, live market data, real orders, real money, and profitability claims out of scope.
 
 Expected full quick-check suite after Module O: 1546 passed.
+
+## Module P - Recorded data replay quality gate
+
+Status: implemented in this module.
+
+Scope:
+- Read the normalized replay dataset from reports\paper_trading\recorded_data_replay_dataset\dataset.json.
+- Audit dataset JSON shape and replay record availability.
+- Flag missing timestamp/open/high/low/close fields.
+- Flag invalid OHLC relationships and negative volume.
+- Warn on duplicate replay rows and out-of-order parseable timestamps.
+- Surface source parse errors, skipped rows, and skipped sources.
+- Write paper/evidence-only output under reports\paper_trading\recorded_data_replay_quality_gate.
+- Add shortcut .\hqe_recorded_data_replay_quality_gate.bat.
+- Keep broker/live execution, live market data, real orders, real money, and profitability claims out of scope.
+
+Expected full quick-check suite after Module P: 1560 passed.

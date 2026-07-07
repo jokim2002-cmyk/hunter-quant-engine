@@ -465,3 +465,15 @@ This paper/simulation-only evidence module reads the recorded-data inventory out
 It safely parses simple CSV, JSON, and JSONL samples into timestamp/open/high/low/close/volume fields when available. Parquet discovery is tracked but parsing is intentionally deferred in this scaffold.
 
 This module does not connect to brokers, request live market data, place real orders, use real money, or prove profitability. This is not a profitability claim.
+
+## Module P - Recorded data replay quality gate
+
+Shortcut:
+
+.\hqe_recorded_data_replay_quality_gate.bat
+
+This paper/simulation-only evidence module audits the normalized replay dataset from Module O and writes quality-gate reports under reports\paper_trading\recorded_data_replay_quality_gate.
+
+It checks dataset shape, required timestamp/open/high/low/close fields, OHLC sanity, negative volume, duplicate replay rows, timestamp ordering, source parse errors, and skipped rows.
+
+This module does not connect to brokers, request live market data, place real orders, use real money, or prove profitability. This is not a profitability claim.
