@@ -289,3 +289,11 @@ Shortcut:
 .\hqe_recorded_data_paper_option_trade_plan_simulator.bat
 
 Converts accepted LONG / SHORT / NEUTRAL strategy decision audit events into paper-only NIFTY option buy plans. LONG = CE BUY paper plan, SHORT = PE BUY paper plan, NEUTRAL = no trade. This is not a profitability claim.
+
+## Recorded data paper fill and exit simulator
+
+Shortcut:
+
+.\hqe_recorded_data_paper_fill_exit_simulator.bat
+
+Converts CE/PE paper option trade plans into deterministic paper entry/exit lifecycle events. This is paper/simulation only and is not a profitability claim.

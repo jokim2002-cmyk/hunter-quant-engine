@@ -1394,3 +1394,21 @@ Progress:
 - v1.0 pending after Module XX: 13 modules.
 
 Expected full quick-check suite after Module XX: 1935 passed.
+
+## Module YY - Recorded data paper fill and exit simulator
+
+Status: implemented in this module.
+
+Scope:
+- Read paper option trade-plan simulator report.
+- Read strategy decision audit report for recorded close references.
+- Convert CE/PE paper plans into paper entry/exit lifecycle records.
+- Keep broker/live execution, live market data, real orders, real money, account PnL, and profitability claims out of scope.
+- Add shortcut .\hqe_recorded_data_paper_fill_exit_simulator.bat.
+
+Progress:
+- Completed total before Module YY: 50 modules.
+- v1.0 pending before Module YY: 13 modules.
+- v1.0 pending after Module YY: 12 modules.
+
+Expected full quick-check suite after Module YY: 1946 passed.

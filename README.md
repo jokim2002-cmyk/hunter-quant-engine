@@ -892,3 +892,25 @@ Progress:
 - v1.0 pending after Module XX: 13 modules.
 
 Expected full quick-check suite after Module XX: 1935 passed.
+
+## Module YY - Recorded data paper fill and exit simulator
+
+Shortcut:
+
+.\hqe_recorded_data_paper_fill_exit_simulator.bat
+
+This module converts CE/PE paper option trade plans into deterministic paper entry/exit lifecycle events for the future backtest ledger.
+
+Paper lifecycle mapping:
+- LONG / CE BUY paper plan benefits when underlying close moves up.
+- SHORT / PE BUY paper plan benefits when underlying close moves down.
+- NEUTRAL creates no trade and is not filled.
+
+It does not connect to brokers, request live market data, place real orders, use real money, calculate account PnL, or prove profitability. This is not a profitability claim.
+
+Progress:
+- Completed total before Module YY: 50 modules.
+- v1.0 pending before Module YY: 13 modules.
+- v1.0 pending after Module YY: 12 modules.
+
+Expected full quick-check suite after Module YY: 1946 passed.
