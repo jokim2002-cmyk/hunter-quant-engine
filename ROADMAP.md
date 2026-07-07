@@ -1092,3 +1092,20 @@ Scope:
 - Add shortcut .\hqe_recorded_data_paper_strategy_adapter_dry_run.bat.
 
 Expected full quick-check suite after Module GG: 1754 passed.
+
+## Module HH - Recorded data paper strategy adapter dry-run acceptance gate
+
+Status: implemented in this module.
+
+Scope:
+- Read reports\paper_trading\recorded_data_paper_strategy_adapter_dry_run\paper_strategy_adapter_dry_run.json.
+- Gate adapter dry-run status and ready_for_future_adapter_evidence flag.
+- Enforce configurable minimum dry-run events.
+- Enforce configurable minimum total planned bars.
+- Verify dry-run-only mode, no-execution strategy mode, broker-disabled mode, and manifest-only output mode.
+- Block execution/trading/profit fields from adapter dry-run output.
+- Write paper/evidence-only output under reports\paper_trading\recorded_data_paper_strategy_adapter_dry_run_acceptance.
+- Add shortcut .\hqe_recorded_data_paper_strategy_adapter_dry_run_acceptance.bat.
+- Keep strategy execution, signal generation, trade plans, broker/live execution, live market data, real orders, real money, PnL, and profitability claims out of scope.
+
+Expected full quick-check suite after Module HH: 1765 passed.
