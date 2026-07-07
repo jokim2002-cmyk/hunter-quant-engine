@@ -367,3 +367,11 @@ Shortcut:
 .\hqe_v1_testing_release_gate.bat
 
 Validates recorded-data backtest readiness evidence before the final paper-only v1.0 Testing Edition release close. This is not a profitability claim.
+
+## v1.0 Testing Edition operator handoff pack
+
+Shortcut:
+
+.\hqe_v1_testing_operator_handoff_pack.bat
+
+Builds the final paper-only v1.0 Testing Edition operator handoff pack before release notes. This is not a profitability claim.
