@@ -493,3 +493,11 @@ Shortcut:
 .\hqe_dashboard_input_index_pack.bat
 
 Builds a paper-only dashboard input index from Phase 1 readiness evidence. This is not a profitability claim.
+
+## Dashboard overview snapshot pack
+
+Shortcut:
+
+.\hqe_dashboard_overview_snapshot_pack.bat
+
+Builds paper-only static overview cards from dashboard input evidence. This is not a profitability claim.
