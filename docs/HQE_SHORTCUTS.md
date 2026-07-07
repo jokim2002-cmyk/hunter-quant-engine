@@ -621,3 +621,11 @@ Shortcut:
 .\hqe_paper_backtest_metrics_context_snapshot_pack.bat
 
 Builds metrics-focused paper evidence context items. This is not a profitability claim.
+
+## Paper backtest report safety language snapshot pack
+
+Shortcut:
+
+.\hqe_paper_backtest_report_safety_language_snapshot_pack.bat
+
+Builds paper-only report wording and safety language snapshot items. This is not a profitability claim.
