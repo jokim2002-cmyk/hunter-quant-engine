@@ -34,6 +34,7 @@ Module G added the Paper evidence aggregate runner.
 Module H added the Live-readiness gate scaffold.
 Module I added the disabled live safety lock scaffold.
 Module J added the full live-readiness preflight.
+Module K added the deny-only live execution firewall.
 
 Key scope documents:
 
@@ -44,6 +45,7 @@ Key scope documents:
 - `docs/LIVE_READINESS_GATE.md`
 - `docs/LIVE_SAFETY_LOCK.md`
 - `docs/LIVE_READINESS_PREFLIGHT.md`
+- `docs/LIVE_EXECUTION_FIREWALL.md`
 - `hqe_paper_mvp_release_check.bat`
 - `docs/DEFERRED_POLISH_BACKLOG.md`
 
@@ -95,7 +97,7 @@ Engineer it right once. Improve it forever.
 HQE currently supports:
 
 - Clean Python architecture
-- 1498 tests passing
+- 1512 tests passing
 - Smart Money Concepts detection
 - SMC strategy signal generation
 - Strategy config presets

@@ -89,6 +89,7 @@ This shows the current branch, latest commits, and working tree status.
 - `hqe_live_readiness_check.bat` - check live-readiness gate
 - `hqe_live_safety_lock_check.bat` - check disabled live safety lock
 - `hqe_live_readiness_preflight.bat` - run full live-readiness preflight
+- `hqe_live_execution_firewall_check.bat` - check deny-only live execution firewall
 - `hqe_paper_replay_journal_all.bat` - run replay journal, print summary/runs, and open folder
 
 See also: `docs/PAPER_TRADING_REPLAY_JOURNAL.md`

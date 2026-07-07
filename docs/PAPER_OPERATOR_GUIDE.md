@@ -92,6 +92,15 @@ Run:
 
 This checks Paper MVP release readiness. It does not create a git tag.
 
+## Live Execution Firewall
+
+Before any future live order-intent engineering, run:
+
+    .\hqe_live_execution_firewall_check.bat
+
+A pass means the firewall stayed safely closed and the intent remains denied.
+It does not approve live trading or real money.
+
 ## Live Readiness Preflight
 
 Run the full safe local preflight chain:
