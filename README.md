@@ -771,3 +771,13 @@ Shortcut:
 This paper/simulation-only evidence module runs adapter evidence readiness plus adapter dry-run consumer readiness, then writes a final consumer evidence bundle.
 
 It does not execute strategy logic, create signals, create trade plans, connect to brokers, request live market data, place real orders, use real money, calculate PnL, or prove profitability. This is not a profitability claim.
+
+## Module RR - Recorded data paper strategy adapter dry-run consumer evidence bundle acceptance gate
+
+Shortcut:
+
+.\hqe_recorded_data_paper_strategy_adapter_dry_run_consumer_evidence_bundle_acceptance.bat
+
+This paper/simulation-only evidence module gates the consumer evidence bundle from Module QQ before future consumer readiness/release modules can consume it.
+
+It does not execute strategy logic, create signals, create trade plans, connect to brokers, request live market data, place real orders, use real money, calculate PnL, or prove profitability. This is not a profitability claim.

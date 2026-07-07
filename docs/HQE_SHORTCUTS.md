@@ -229,3 +229,11 @@ Shortcut:
 .\hqe_recorded_data_paper_strategy_adapter_dry_run_consumer_evidence_bundle.bat
 
 Runs adapter evidence readiness plus consumer readiness and writes final audit-only consumer evidence bundle. This is not a profitability claim.
+
+## Recorded data paper strategy adapter dry-run consumer evidence bundle acceptance gate
+
+Shortcut:
+
+.\hqe_recorded_data_paper_strategy_adapter_dry_run_consumer_evidence_bundle_acceptance.bat
+
+Gates final audit-only consumer evidence bundle for future readiness/release modules. This is not a profitability claim.
