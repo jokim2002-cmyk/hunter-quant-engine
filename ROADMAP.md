@@ -1813,3 +1813,26 @@ Progress:
 - Full HQE product estimate after Module RRR: 62-67%.
 
 Expected full quick-check suite after Module RRR: 2149 passed.
+
+## Module SSS - Strategy mode backtest result comparison pack
+
+Status: implemented in this module.
+
+Scope:
+- Read strategy mode backtest run matrix pack.
+- Validate strict, balanced, and relaxed mode result paths.
+- Verify ledger, metrics, report, and readiness result files per mode.
+- Write result path CSV and mode summary CSV.
+- Add shortcut .\hqe_strategy_mode_backtest_result_comparison_pack.bat.
+- Keep actual backtest execution, strategy logic changes, broker/live execution, live market data, real orders, real money, and profitability claims out of scope.
+
+Progress:
+- v1.0 Testing Edition: 63/63 modules complete.
+- v1.0 pending: 0 modules.
+- Completed total before Module SSS: 70 modules.
+- Phase 1 pending before Module SSS: 3 modules.
+- Completed total after Module SSS: 71 modules.
+- Phase 1 pending after Module SSS: 2 modules.
+- Full HQE product estimate after Module SSS: 63-68%.
+
+Expected full quick-check suite after Module SSS: 2160 passed.

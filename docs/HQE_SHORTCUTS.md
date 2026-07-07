@@ -461,3 +461,11 @@ Shortcut:
 .\hqe_strategy_mode_backtest_run_matrix_pack.bat
 
 Builds a future paper-only strict, balanced, and relaxed backtest run matrix. This is not a profitability claim.
+
+## Strategy mode backtest result comparison pack
+
+Shortcut:
+
+.\hqe_strategy_mode_backtest_result_comparison_pack.bat
+
+Verifies strict, balanced, and relaxed paper-only mode result outputs for future comparison. This is not a profitability claim.
