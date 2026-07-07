@@ -1680,3 +1680,26 @@ Progress:
 - Full HQE product estimate after Module LLL: 56-61%.
 
 Expected full quick-check suite after Module LLL: 2083 passed.
+
+## Module MMM - First real dataset backtest run pack
+
+Status: implemented in this module.
+
+Scope:
+- Read the real dataset backtest input pack.
+- Validate selected dataset path and discovered file count.
+- Write safe operator run order for first real recorded-data paper backtest.
+- Write expected output checks for report, metrics, ledger, readiness, and handoff evidence.
+- Add shortcut .\hqe_first_real_dataset_backtest_run_pack.bat.
+- Keep broker/live execution, live market data, real orders, real money, and profitability claims out of scope.
+
+Progress:
+- v1.0 Testing Edition: 63/63 modules complete.
+- v1.0 pending: 0 modules.
+- Completed total before Module MMM: 64 modules.
+- Phase 1 pending before Module MMM: 9 modules.
+- Completed total after Module MMM: 65 modules.
+- Phase 1 pending after Module MMM: 8 modules.
+- Full HQE product estimate after Module MMM: 57-62%.
+
+Expected full quick-check suite after Module MMM: 2094 passed.

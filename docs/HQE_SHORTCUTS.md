@@ -413,3 +413,11 @@ Shortcut:
 .\hqe_real_dataset_backtest_input_pack.bat
 
 Discovers saved recorded-data files and writes the first real recorded-data paper backtest input pack. This is not a profitability claim.
+
+## First real dataset backtest run pack
+
+Shortcut:
+
+.\hqe_first_real_dataset_backtest_run_pack.bat
+
+Builds an operator-safe first real recorded-data paper backtest run pack from the real dataset input pack. This is not a profitability claim.
