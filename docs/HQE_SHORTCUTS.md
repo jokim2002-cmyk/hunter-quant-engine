@@ -517,3 +517,11 @@ Shortcut:
 .\hqe_dashboard_component_scaffold_pack.bat
 
 Builds paper-only future Streamlit component definitions from dashboard section registry evidence. This is not a profitability claim.
+
+## Dashboard app shell pack
+
+Shortcut:
+
+.\hqe_dashboard_app_shell_pack.bat
+
+Builds a paper-only future Streamlit app shell template and page registry. This is not a profitability claim.
