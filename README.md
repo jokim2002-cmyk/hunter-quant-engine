@@ -645,3 +645,13 @@ Shortcut:
 This paper/simulation-only evidence module gates the adapter contract from Module DD before any future adapter dry-run consumer can use it.
 
 It does not execute strategy logic, create signals, create trade plans, connect to brokers, request live market data, place real orders, use real money, calculate PnL, or prove profitability. This is not a profitability claim.
+
+## Module FF - Recorded data paper strategy adapter readiness gate
+
+Shortcut:
+
+.\hqe_recorded_data_paper_strategy_adapter_readiness.bat
+
+This paper/simulation-only evidence module runs the adapter contract plus adapter contract acceptance gate, then writes final adapter readiness for a future adapter dry-run phase.
+
+It does not execute strategy logic, create signals, create trade plans, connect to brokers, request live market data, place real orders, use real money, calculate PnL, or prove profitability. This is not a profitability claim.
