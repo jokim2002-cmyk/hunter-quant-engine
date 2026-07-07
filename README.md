@@ -1751,3 +1751,32 @@ Progress:
 - Full HQE product estimate after Module DDDD: 74-79%.
 
 Expected full quick-check suite after Module DDDD: 2281 passed.
+
+## Module EEEE - Recorded backtest command plan pack
+
+Shortcut:
+
+.\hqe_recorded_backtest_command_plan_pack.bat
+
+This module creates paper-only manual command steps for the recorded-data paper backtest workflow. It does not run backtests.
+
+Safety:
+- LONG = CE BUY paper plan only.
+- SHORT = PE BUY paper plan only.
+- NEUTRAL = no trade.
+- No option selling.
+- No broker orders.
+- No live market data.
+- No real money.
+- This is not a profitability claim.
+
+Progress:
+- v1.0 Testing Edition: 63/63 modules complete.
+- v1.0 pending: 0 modules.
+- Phase 1 Real Backtest Usage Sprint complete.
+- Phase 2 Dashboard Sprint complete.
+- Completed total after Module EEEE: 83 modules.
+- Phase 3 pending after Module EEEE: 4 modules.
+- Full HQE product estimate after Module EEEE: 75-80%.
+
+Expected full quick-check suite after Module EEEE: 2292 passed.

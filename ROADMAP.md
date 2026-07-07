@@ -2091,3 +2091,28 @@ Progress:
 - Full HQE product estimate after Module DDDD: 74-79%.
 
 Expected full quick-check suite after Module DDDD: 2281 passed.
+
+## Module EEEE - Recorded backtest command plan pack
+
+Status: implemented in this module.
+
+Scope:
+- Read recorded backtest launch gate pack.
+- Validate required launch steps.
+- Create paper-only manual command plan.
+- Create recorded_backtest_manual_commands.ps1 as a generated report output, not a committed source file.
+- Add shortcut .\hqe_recorded_backtest_command_plan_pack.bat.
+- Keep actual backtest execution, dashboard UI startup, Streamlit runtime, strategy selection, broker/live execution, live market data, real orders, real money, and profitability claims out of scope for this module.
+
+Progress:
+- v1.0 Testing Edition: 63/63 modules complete.
+- v1.0 pending: 0 modules.
+- Phase 1 Real Backtest Usage Sprint complete.
+- Phase 2 Dashboard Sprint complete.
+- Completed total before Module EEEE: 82 modules.
+- Completed total after Module EEEE: 83 modules.
+- Phase 3 pending before Module EEEE: 5 modules.
+- Phase 3 pending after Module EEEE: 4 modules.
+- Full HQE product estimate after Module EEEE: 75-80%.
+
+Expected full quick-check suite after Module EEEE: 2292 passed.

@@ -557,3 +557,11 @@ Shortcut:
 .\hqe_recorded_backtest_launch_gate_pack.bat
 
 Builds a paper-only launch gate for the recorded-data paper backtest review workflow. This is not a profitability claim.
+
+## Recorded backtest command plan pack
+
+Shortcut:
+
+.\hqe_recorded_backtest_command_plan_pack.bat
+
+Builds paper-only manual command steps for the recorded-data paper backtest workflow. This is not a profitability claim.
