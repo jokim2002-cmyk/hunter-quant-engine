@@ -523,3 +523,15 @@ Shortcut:
 This paper/simulation-only evidence module runs the recorded-data replay evidence bundle and acceptance gate, then writes a final readiness report for future paper replay.
 
 It checks structural replay readiness only. It does not run strategies, create trade plans, connect to brokers, request live market data, place real orders, use real money, or prove profitability. This is not a profitability claim.
+
+## Module U - Recorded data strategy input contract
+
+Shortcut:
+
+.\hqe_recorded_data_strategy_input_contract.bat
+
+This paper/simulation-only evidence module converts recorded-data replay dry-run events into structurally safe input bars for a future paper strategy replay phase.
+
+It checks JSONL event shape, required timestamp/close fields, expected recorded market-data bar event type, minimum accepted bar count, and blocks execution/trading/profit fields from entering the contract.
+
+This module does not run strategies, create signals, create trade plans, connect to brokers, request live market data, place real orders, use real money, or prove profitability. This is not a profitability claim.

@@ -895,3 +895,19 @@ Scope:
 - Keep strategy execution, trade plans, broker/live execution, live market data, real orders, real money, and profitability claims out of scope.
 
 Expected full quick-check suite after Module T: 1611 passed.
+
+## Module U - Recorded data strategy input contract
+
+Status: implemented in this module.
+
+Scope:
+- Read reports\paper_trading\recorded_data_replay_dry_run\dry_run_events.jsonl.
+- Convert safe recorded_market_data_bar events into strategy input bars.
+- Enforce timestamp and close as required fields.
+- Reject execution/trading/profit fields from the input contract.
+- Enforce configurable minimum accepted bar count.
+- Write paper/evidence-only output under reports\paper_trading\recorded_data_strategy_input_contract.
+- Add shortcut .\hqe_recorded_data_strategy_input_contract.bat.
+- Keep strategy execution, signal generation, trade plans, broker/live execution, live market data, real orders, real money, and profitability claims out of scope.
+
+Expected full quick-check suite after Module U: 1623 passed.

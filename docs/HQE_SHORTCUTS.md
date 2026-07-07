@@ -49,3 +49,11 @@ Shortcut:
 .\hqe_recorded_data_replay_readiness.bat
 
 Runs the recorded-data replay evidence bundle plus acceptance gate and writes a final paper/simulation-only readiness report. This is not a profitability claim.
+
+## Recorded data strategy input contract
+
+Shortcut:
+
+.\hqe_recorded_data_strategy_input_contract.bat
+
+Converts recorded-data replay dry-run events into a future paper-strategy input contract while blocking execution/trading/profit fields. This is not a profitability claim.
