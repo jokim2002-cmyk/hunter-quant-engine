@@ -581,3 +581,11 @@ Shortcut:
 .\hqe_recorded_backtest_output_presence_verification_pack.bat
 
 Verifies expected post-run paper backtest output file presence. This is not a profitability claim.
+
+## Recorded backtest review summary pack
+
+Shortcut:
+
+.\hqe_recorded_backtest_review_summary_pack.bat
+
+Builds an operator-safe review summary from verified recorded-data paper backtest output presence evidence. This is not a profitability claim.
