@@ -177,3 +177,11 @@ Shortcut:
 .\hqe_recorded_data_paper_strategy_adapter_evidence_bundle_acceptance.bat
 
 Gates final adapter evidence bundle structure for future release/readiness modules. This is not a profitability claim.
+
+## Recorded data paper strategy adapter evidence readiness gate
+
+Shortcut:
+
+.\hqe_recorded_data_paper_strategy_adapter_evidence_readiness.bat
+
+Runs adapter evidence bundle plus acceptance gate and writes final adapter evidence readiness. This is not a profitability claim.

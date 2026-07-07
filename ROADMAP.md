@@ -1151,3 +1151,16 @@ Scope:
 - Keep strategy execution, signal generation, trade plans, broker/live execution, live market data, real orders, real money, PnL, and profitability claims out of scope.
 
 Expected full quick-check suite after Module KK: 1798 passed.
+
+## Module LL - Recorded data paper strategy adapter evidence readiness gate
+
+Status: implemented in this module.
+
+Scope:
+- Run recorded-data paper strategy adapter evidence bundle.
+- Run recorded-data paper strategy adapter evidence bundle acceptance gate.
+- Write final adapter evidence readiness report under reports\paper_trading\recorded_data_paper_strategy_adapter_evidence_readiness.
+- Add shortcut .\hqe_recorded_data_paper_strategy_adapter_evidence_readiness.bat.
+- Keep strategy execution, signal generation, trade plans, broker/live execution, live market data, real orders, real money, PnL, and profitability claims out of scope.
+
+Expected full quick-check suite after Module LL: 1809 passed.
