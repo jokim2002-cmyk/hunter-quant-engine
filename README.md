@@ -635,3 +635,13 @@ Shortcut:
 This paper/simulation-only evidence module converts an accepted replay plan into adapter request manifests for a future paper strategy adapter.
 
 It does not execute strategy logic, create signals, create trade plans, connect to brokers, request live market data, place real orders, use real money, calculate PnL, or prove profitability. This is not a profitability claim.
+
+## Module EE - Recorded data paper strategy adapter contract acceptance gate
+
+Shortcut:
+
+.\hqe_recorded_data_paper_strategy_adapter_contract_acceptance.bat
+
+This paper/simulation-only evidence module gates the adapter contract from Module DD before any future adapter dry-run consumer can use it.
+
+It does not execute strategy logic, create signals, create trade plans, connect to brokers, request live market data, place real orders, use real money, calculate PnL, or prove profitability. This is not a profitability claim.

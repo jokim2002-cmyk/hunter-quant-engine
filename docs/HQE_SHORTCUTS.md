@@ -121,3 +121,11 @@ Shortcut:
 .\hqe_recorded_data_paper_strategy_adapter_contract.bat
 
 Builds no-execution adapter request manifests for future paper strategy replay. This is not a profitability claim.
+
+## Recorded data paper strategy adapter contract acceptance gate
+
+Shortcut:
+
+.\hqe_recorded_data_paper_strategy_adapter_contract_acceptance.bat
+
+Gates no-execution adapter request manifests for future paper strategy adapter dry-run. This is not a profitability claim.

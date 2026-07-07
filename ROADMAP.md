@@ -1047,3 +1047,20 @@ Scope:
 - Add shortcut .\hqe_recorded_data_paper_strategy_adapter_contract.bat.
 
 Expected full quick-check suite after Module DD: 1721 passed.
+
+## Module EE - Recorded data paper strategy adapter contract acceptance gate
+
+Status: implemented in this module.
+
+Scope:
+- Read reports\paper_trading\recorded_data_paper_strategy_adapter_contract\paper_strategy_adapter_contract.json.
+- Gate adapter contract status and ready_for_future_adapter flag.
+- Enforce configurable minimum adapter requests.
+- Enforce configurable minimum total planned bars.
+- Verify contract-only adapter mode, no-execution strategy mode, broker-disabled mode, and manifest-only output mode.
+- Block execution/trading/profit fields from the adapter contract.
+- Write paper/evidence-only output under reports\paper_trading\recorded_data_paper_strategy_adapter_contract_acceptance.
+- Add shortcut .\hqe_recorded_data_paper_strategy_adapter_contract_acceptance.bat.
+- Keep strategy execution, signal generation, trade plans, broker/live execution, live market data, real orders, real money, PnL, and profitability claims out of scope.
+
+Expected full quick-check suite after Module EE: 1732 passed.
