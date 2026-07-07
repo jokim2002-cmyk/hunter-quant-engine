@@ -567,3 +567,13 @@ This paper/simulation-only evidence module reads the recorded-data strategy repl
 It checks scenario manifest status, minimum scenario count, minimum bars per scenario, required scenario fields, recorded_replay data mode, and paper_simulation_only execution mode.
 
 This module does not run strategies, create signals, create trade plans, connect to brokers, request live market data, place real orders, use real money, or prove profitability. This is not a profitability claim.
+
+## Module Y - Recorded data strategy replay scenario readiness gate
+
+Shortcut:
+
+.\hqe_recorded_data_strategy_replay_scenario_readiness.bat
+
+This paper/simulation-only evidence module runs the recorded-data strategy replay preflight, scenario manifest, and scenario acceptance gate, then writes a final scenario readiness report for a future paper strategy replay phase.
+
+It checks structural scenario readiness only. It does not run strategies, create signals, create trade plans, connect to brokers, request live market data, place real orders, use real money, or prove profitability. This is not a profitability claim.

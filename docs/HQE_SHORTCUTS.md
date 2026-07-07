@@ -81,3 +81,11 @@ Shortcut:
 .\hqe_recorded_data_strategy_replay_scenario_acceptance.bat
 
 Gates recorded-data strategy replay scenarios for future paper/simulation replay readiness using minimum scenario/bar rules and warning policy. This is not a profitability claim.
+
+## Recorded data strategy replay scenario readiness gate
+
+Shortcut:
+
+.\hqe_recorded_data_strategy_replay_scenario_readiness.bat
+
+Runs future paper strategy replay preflight, scenario manifest, scenario acceptance, and final paper/simulation-only scenario readiness report. This is not a profitability claim.
