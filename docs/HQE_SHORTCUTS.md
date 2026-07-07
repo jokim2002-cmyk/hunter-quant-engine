@@ -637,3 +637,11 @@ Shortcut:
 .\hqe_paper_backtest_evidence_analysis_close_gate_pack.bat
 
 Builds the final paper-only close gate for the evidence analysis sprint. This is not a profitability claim.
+
+## Paper backtest evidence analysis sprint close pack
+
+Shortcut:
+
+.\hqe_paper_backtest_evidence_analysis_sprint_close_pack.bat
+
+Closes the paper-only evidence analysis sprint. This is not a profitability claim.
