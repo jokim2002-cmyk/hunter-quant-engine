@@ -1,4 +1,4 @@
-"""
+﻿"""
 Paper Trading Journal Index CLI Tests
 
 Fake/local replay journal run listing only. No real orders. No broker code.
@@ -113,7 +113,7 @@ def test_paper_replay_journal_runs_shortcut_points_to_safe_cli():
     ).lower()
 
     assert "src.paper_trading.paper_trading_journal_index_cli" in text
-    assert ".venv\scripts\python.exe" in text
+    assert ".venv\\scripts\\python.exe" in text
     assert "no broker" in text
     assert "no live market data" in text
     assert "no real orders" in text
@@ -129,3 +129,4 @@ def test_journal_index_cli_source_has_no_external_order_execution_imports():
     assert "place" + "_order" not in source
     assert "send" + "_order" not in source
     assert "execute" + "_order" not in source
+

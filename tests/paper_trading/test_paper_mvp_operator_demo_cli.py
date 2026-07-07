@@ -1,4 +1,4 @@
-"""
+﻿"""
 Paper MVP Operator Demo CLI Tests
 
 Paper/simulation only. No broker. No live market data. No real orders.
@@ -93,7 +93,7 @@ def test_paper_mvp_operator_demo_shortcut_points_to_safe_cli():
     ).lower()
 
     assert "src.paper_trading.paper_mvp_operator_demo_cli" in text
-    assert ".venv\scripts\python.exe" in text
+    assert ".venv\\scripts\\python.exe" in text
     assert "no broker" in text
     assert "no live market data" in text
     assert "no real orders" in text
@@ -110,3 +110,4 @@ def test_paper_mvp_operator_demo_source_has_no_external_order_execution_imports(
     assert "place" + "_order" not in source
     assert "send" + "_order" not in source
     assert "execute" + "_order" not in source
+

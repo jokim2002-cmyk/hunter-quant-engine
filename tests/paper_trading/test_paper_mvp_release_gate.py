@@ -1,4 +1,4 @@
-"""
+﻿"""
 Paper MVP Release Gate Tests
 
 Release readiness only. No broker. No live market data. No real orders.
@@ -83,7 +83,7 @@ def test_paper_mvp_release_check_shortcut_points_to_safe_cli():
     ).lower()
 
     assert "src.paper_trading.paper_mvp_release_gate" in text
-    assert ".venv\scripts\python.exe" in text
+    assert ".venv\\scripts\\python.exe" in text
     assert "no tag is created" in text
     assert "no broker" in text
     assert "no live market data" in text
@@ -113,3 +113,4 @@ def test_paper_mvp_release_gate_does_not_create_tag():
     assert "git tag" not in source
     assert "git tag" not in shortcut
     assert "tag creation is still manual" in shortcut
+
