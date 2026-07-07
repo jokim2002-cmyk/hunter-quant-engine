@@ -429,3 +429,11 @@ Shortcut:
 .\hqe_first_real_backtest_output_verification_pack.bat
 
 Verifies expected paper backtest outputs after the first real recorded-data backtest run. This is not a profitability claim.
+
+## First real backtest report review pack
+
+Shortcut:
+
+.\hqe_first_real_backtest_report_review_pack.bat
+
+Builds an operator review pack for first real recorded-data paper backtest report, metrics, ledger, readiness, release gate, and handoff evidence. This is not a profitability claim.
