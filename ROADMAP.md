@@ -970,3 +970,19 @@ Scope:
 - Keep strategy execution, signal generation, trade plans, broker/live execution, live market data, real orders, real money, and profitability claims out of scope.
 
 Expected full quick-check suite after Module Y: 1668 passed.
+
+## Module Z - v0.3 recorded-data replay readiness release close
+
+Status: implemented in this module.
+
+Release tag:
+v0.3-recorded-data-replay-readiness
+
+Scope:
+- Add v0.3 recorded-data replay readiness release notes.
+- Document Modules N through Y as a paper/simulation-only evidence release.
+- Confirm the main scenario readiness shortcut: .\hqe_recorded_data_strategy_replay_scenario_readiness.bat.
+- Preserve no broker, no live market data, no real orders, no real money, no strategy execution, no signal generation, no trade plans, and no profitability claim boundaries.
+- Create release tag v0.3-recorded-data-replay-readiness after green checks and commit.
+
+Expected full quick-check suite after Module Z: 1676 passed.

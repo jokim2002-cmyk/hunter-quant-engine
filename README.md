@@ -577,3 +577,19 @@ Shortcut:
 This paper/simulation-only evidence module runs the recorded-data strategy replay preflight, scenario manifest, and scenario acceptance gate, then writes a final scenario readiness report for a future paper strategy replay phase.
 
 It checks structural scenario readiness only. It does not run strategies, create signals, create trade plans, connect to brokers, request live market data, place real orders, use real money, or prove profitability. This is not a profitability claim.
+
+## v0.3 - Recorded data replay readiness release
+
+Tag: v0.3-recorded-data-replay-readiness
+
+This paper/simulation-only release closes the recorded-data replay readiness phase from inventory through scenario readiness.
+
+Main command:
+
+.\hqe_recorded_data_strategy_replay_scenario_readiness.bat
+
+The release does not run strategies, create signals, create trade plans, connect to brokers, request live market data, place real orders, use real money, or prove profitability. This is not a profitability claim.
+
+Release notes:
+
+docs\V0_3_RECORDED_DATA_REPLAY_READINESS_RELEASE.md
