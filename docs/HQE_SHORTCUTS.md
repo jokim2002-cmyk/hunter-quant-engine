@@ -97,3 +97,11 @@ Shortcut:
 .\hqe_recorded_data_paper_strategy_replay_plan.bat
 
 Builds a no-execution paper/simulation-only replay plan from scenario readiness, scenario manifest, and strategy input bars. This is not a profitability claim.
+
+## Recorded data paper strategy replay plan acceptance gate
+
+Shortcut:
+
+.\hqe_recorded_data_paper_strategy_replay_plan_acceptance.bat
+
+Gates the no-execution recorded-data paper strategy replay plan before any future paper/simulation replay consumer can use it. This is not a profitability claim.

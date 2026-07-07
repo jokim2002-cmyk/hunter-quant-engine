@@ -603,3 +603,15 @@ Shortcut:
 This paper/simulation-only evidence module builds a no-execution replay plan from scenario readiness, scenario manifest, and strategy input bars.
 
 It does not run strategies, create signals, create trade plans, connect to brokers, request live market data, place real orders, use real money, calculate PnL, or prove profitability. This is not a profitability claim.
+
+## Module BB - Recorded data paper strategy replay plan acceptance gate
+
+Shortcut:
+
+.\hqe_recorded_data_paper_strategy_replay_plan_acceptance.bat
+
+This paper/simulation-only evidence module gates the no-execution replay plan from Module AA.
+
+It checks replay plan status, readiness, minimum scenario plans, minimum total planned bars, no-execution modes, broker-disabled mode, manifest-only output mode, and blocks execution/trading/profit fields.
+
+It does not run strategies, create signals, create trade plans, connect to brokers, request live market data, place real orders, use real money, calculate PnL, or prove profitability. This is not a profitability claim.
