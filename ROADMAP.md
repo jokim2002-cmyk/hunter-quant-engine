@@ -1927,3 +1927,27 @@ Progress:
 - Full HQE product estimate after Module WWW: 67-72%.
 
 Expected full quick-check suite after Module WWW: 2204 passed.
+
+## Module XXX - Dashboard section registry pack
+
+Status: implemented in this module.
+
+Scope:
+- Read dashboard overview snapshot pack.
+- Validate overview card readiness.
+- Create dashboard section registry.
+- Create card-to-section route map.
+- Add shortcut .\hqe_dashboard_section_registry_pack.bat.
+- Keep dashboard UI startup, actual backtest execution, strategy selection, broker/live execution, live market data, real orders, real money, and profitability claims out of scope.
+
+Progress:
+- v1.0 Testing Edition: 63/63 modules complete.
+- v1.0 pending: 0 modules.
+- Phase 1 pending after Module UUU: 0 modules.
+- Completed total before Module XXX: 75 modules.
+- Completed total after Module XXX: 76 modules.
+- Phase 2 pending before Module XXX: 6 modules.
+- Phase 2 pending after Module XXX: 5 modules.
+- Full HQE product estimate after Module XXX: 68-73%.
+
+Expected full quick-check suite after Module XXX: 2215 passed.

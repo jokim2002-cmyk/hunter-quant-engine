@@ -501,3 +501,11 @@ Shortcut:
 .\hqe_dashboard_overview_snapshot_pack.bat
 
 Builds paper-only static overview cards from dashboard input evidence. This is not a profitability claim.
+
+## Dashboard section registry pack
+
+Shortcut:
+
+.\hqe_dashboard_section_registry_pack.bat
+
+Builds paper-only dashboard sections and card routes for future Streamlit component scaffold work. This is not a profitability claim.
