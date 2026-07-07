@@ -751,3 +751,13 @@ Shortcut:
 This paper/simulation-only evidence module gates audit-only adapter dry-run consumer output before future consumer readiness/evidence modules can use it.
 
 It does not execute strategy logic, create signals, create trade plans, connect to brokers, request live market data, place real orders, use real money, calculate PnL, or prove profitability. This is not a profitability claim.
+
+## Module PP - Recorded data paper strategy adapter dry-run consumer readiness gate
+
+Shortcut:
+
+.\hqe_recorded_data_paper_strategy_adapter_dry_run_consumer_readiness.bat
+
+This paper/simulation-only evidence module runs adapter dry-run consumer plus consumer acceptance, then writes final consumer readiness.
+
+It does not execute strategy logic, create signals, create trade plans, connect to brokers, request live market data, place real orders, use real money, calculate PnL, or prove profitability. This is not a profitability claim.
