@@ -437,3 +437,11 @@ Shortcut:
 .\hqe_first_real_backtest_report_review_pack.bat
 
 Builds an operator review pack for first real recorded-data paper backtest report, metrics, ledger, readiness, release gate, and handoff evidence. This is not a profitability claim.
+
+## Strategy tuning baseline pack
+
+Shortcut:
+
+.\hqe_strategy_tuning_baseline_pack.bat
+
+Builds safe paper-only strategy tuning baseline questions from first real backtest report review evidence. This is not a profitability claim.

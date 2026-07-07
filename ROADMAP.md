@@ -1747,3 +1747,25 @@ Progress:
 - Full HQE product estimate after Module OOO: 59-64%.
 
 Expected full quick-check suite after Module OOO: 2116 passed.
+
+## Module PPP - Strategy tuning baseline pack
+
+Status: implemented in this module.
+
+Scope:
+- Read first real backtest report review pack.
+- Validate tuning review evidence categories.
+- Write strategy tuning candidates and safe next-action CSV.
+- Add shortcut .\hqe_strategy_tuning_baseline_pack.bat.
+- Keep strategy changes, broker/live execution, live market data, real orders, real money, and profitability claims out of scope.
+
+Progress:
+- v1.0 Testing Edition: 63/63 modules complete.
+- v1.0 pending: 0 modules.
+- Completed total before Module PPP: 67 modules.
+- Phase 1 pending before Module PPP: 6 modules.
+- Completed total after Module PPP: 68 modules.
+- Phase 1 pending after Module PPP: 5 modules.
+- Full HQE product estimate after Module PPP: 60-65%.
+
+Expected full quick-check suite after Module PPP: 2127 passed.
