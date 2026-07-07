@@ -3,7 +3,7 @@ Recorded data strategy decision audit.
 
 Module VV in the fast-track v1.0 Testing Edition path.
 
-This module converts strategy replay sandbox bar events into deterministic
+This module converts strategy replay sandbox bar events into SMC parameter-aligned
 LONG / SHORT / NEUTRAL decision audit events.
 
 This module does not create CE/PE trade plans, connect to brokers, request live
@@ -353,21 +353,336 @@ def _event_issues(event: Mapping[str, Any]) -> list[StrategyDecisionAuditIssue]:
     return issues
 
 
+
+SMC_MIN_HISTORY_BARS = 20
+SMC_LIQUIDITY_LOOKBACK_BARS = 12
+SMC_STRUCTURE_LOOKBACK_BARS = 12
+SMC_ENTRY_ZONE_LOOKBACK_BARS = 8
+SMC_MIN_SWEEP_POINTS = 1.0
+SMC_MIN_STRUCTURE_BREAK_POINTS = 1.0
+SMC_MIN_FVG_POINTS = 0.5
+SMC_MIN_DISPLACEMENT_POINTS = 8.0
+SMC_MIN_BODY_TO_RANGE_RATIO = 0.55
+
+
 def _decision_for_close_change(
     *,
     previous_close: float | None,
     close: float,
     threshold_points: float,
 ) -> tuple[str, str, float | None]:
+    """
+    Legacy close-only fallback used only when replay events do not contain OHLC.
+
+    Real recorded-data bars should contain OHLC and should use the SMC
+    parameter-aligned gate below.
+    """
     if previous_close is None:
         return "NEUTRAL", "first_bar_no_previous_close", None
 
     close_change = close - previous_close
     if close_change > threshold_points:
-        return "LONG", "close_above_previous_close_by_threshold", close_change
+        return "LONG", "legacy_close_only_fallback_close_above_previous_close_by_threshold", close_change
     if close_change < -threshold_points:
-        return "SHORT", "close_below_previous_close_by_threshold", close_change
-    return "NEUTRAL", "close_change_inside_threshold", close_change
+        return "SHORT", "legacy_close_only_fallback_close_below_previous_close_by_threshold", close_change
+    return "NEUTRAL", "legacy_close_only_fallback_close_change_inside_threshold", close_change
+
+
+def _bar_open(event: Mapping[str, Any]) -> float | None:
+    return _to_float(event.get("open"))
+
+
+def _bar_high(event: Mapping[str, Any]) -> float | None:
+    return _to_float(event.get("high"))
+
+
+def _bar_low(event: Mapping[str, Any]) -> float | None:
+    return _to_float(event.get("low"))
+
+
+def _bar_close(event: Mapping[str, Any]) -> float | None:
+    return _to_float(event.get("close"))
+
+
+def _has_ohlc(event: Mapping[str, Any]) -> bool:
+    return (
+        _bar_open(event) is not None
+        and _bar_high(event) is not None
+        and _bar_low(event) is not None
+        and _bar_close(event) is not None
+    )
+
+
+def _valid_ohlc_history(events: Sequence[Mapping[str, Any]]) -> list[Mapping[str, Any]]:
+    return [event for event in events if _has_ohlc(event)]
+
+
+def _range_high(events: Sequence[Mapping[str, Any]]) -> float | None:
+    highs = [_bar_high(event) for event in events]
+    valid = [value for value in highs if value is not None]
+    return max(valid) if valid else None
+
+
+def _range_low(events: Sequence[Mapping[str, Any]]) -> float | None:
+    lows = [_bar_low(event) for event in events]
+    valid = [value for value in lows if value is not None]
+    return min(valid) if valid else None
+
+
+def _body_to_range_ratio(event: Mapping[str, Any]) -> float:
+    open_ = _bar_open(event)
+    high = _bar_high(event)
+    low = _bar_low(event)
+    close = _bar_close(event)
+
+    if open_ is None or high is None or low is None or close is None:
+        return 0.0
+
+    candle_range = high - low
+    if candle_range <= 0:
+        return 0.0
+
+    return abs(close - open_) / candle_range
+
+
+def _is_bullish_displacement(event: Mapping[str, Any]) -> bool:
+    open_ = _bar_open(event)
+    close = _bar_close(event)
+
+    if open_ is None or close is None:
+        return False
+
+    return (
+        close > open_
+        and abs(close - open_) >= SMC_MIN_DISPLACEMENT_POINTS
+        and _body_to_range_ratio(event) >= SMC_MIN_BODY_TO_RANGE_RATIO
+    )
+
+
+def _is_bearish_displacement(event: Mapping[str, Any]) -> bool:
+    open_ = _bar_open(event)
+    close = _bar_close(event)
+
+    if open_ is None or close is None:
+        return False
+
+    return (
+        close < open_
+        and abs(close - open_) >= SMC_MIN_DISPLACEMENT_POINTS
+        and _body_to_range_ratio(event) >= SMC_MIN_BODY_TO_RANGE_RATIO
+    )
+
+
+def _recent_liquidity_sweep(
+    *,
+    history: Sequence[Mapping[str, Any]],
+    current_event: Mapping[str, Any],
+    direction: str,
+) -> bool:
+    all_events = list(history) + [current_event]
+    if len(all_events) < 4:
+        return False
+
+    start = max(1, len(all_events) - SMC_LIQUIDITY_LOOKBACK_BARS)
+    for index in range(start, len(all_events)):
+        event = all_events[index]
+        prior = _valid_ohlc_history(
+            all_events[max(0, index - SMC_LIQUIDITY_LOOKBACK_BARS):index]
+        )
+
+        if len(prior) < 3 or not _has_ohlc(event):
+            continue
+
+        previous_high = _range_high(prior)
+        previous_low = _range_low(prior)
+        high = _bar_high(event)
+        low = _bar_low(event)
+        close = _bar_close(event)
+
+        if previous_high is None or previous_low is None or high is None or low is None or close is None:
+            continue
+
+        if direction == "LONG":
+            if low <= previous_low - SMC_MIN_SWEEP_POINTS and close > previous_low:
+                return True
+
+        if direction == "SHORT":
+            if high >= previous_high + SMC_MIN_SWEEP_POINTS and close < previous_high:
+                return True
+
+    return False
+
+
+def _market_structure_break(
+    *,
+    history: Sequence[Mapping[str, Any]],
+    current_event: Mapping[str, Any],
+    direction: str,
+) -> bool:
+    valid_history = _valid_ohlc_history(history[-SMC_STRUCTURE_LOOKBACK_BARS:])
+    if len(valid_history) < 3 or not _has_ohlc(current_event):
+        return False
+
+    close = _bar_close(current_event)
+    previous_high = _range_high(valid_history)
+    previous_low = _range_low(valid_history)
+
+    if close is None or previous_high is None or previous_low is None:
+        return False
+
+    if direction == "LONG":
+        return close >= previous_high + SMC_MIN_STRUCTURE_BREAK_POINTS
+
+    if direction == "SHORT":
+        return close <= previous_low - SMC_MIN_STRUCTURE_BREAK_POINTS
+
+    return False
+
+
+def _recent_fair_value_gap_or_displacement(
+    *,
+    history: Sequence[Mapping[str, Any]],
+    current_event: Mapping[str, Any],
+    direction: str,
+) -> bool:
+    all_events = list(history) + [current_event]
+    recent_start = max(2, len(all_events) - SMC_ENTRY_ZONE_LOOKBACK_BARS)
+
+    for index in range(recent_start, len(all_events)):
+        event = all_events[index]
+        two_back = all_events[index - 2]
+
+        if not _has_ohlc(event) or not _has_ohlc(two_back):
+            continue
+
+        event_low = _bar_low(event)
+        event_high = _bar_high(event)
+        two_back_high = _bar_high(two_back)
+        two_back_low = _bar_low(two_back)
+
+        if (
+            event_low is None
+            or event_high is None
+            or two_back_high is None
+            or two_back_low is None
+        ):
+            continue
+
+        if direction == "LONG":
+            bullish_fvg = event_low >= two_back_high + SMC_MIN_FVG_POINTS
+            if bullish_fvg or _is_bullish_displacement(event):
+                return True
+
+        if direction == "SHORT":
+            bearish_fvg = event_high <= two_back_low - SMC_MIN_FVG_POINTS
+            if bearish_fvg or _is_bearish_displacement(event):
+                return True
+
+    return False
+
+
+def _decision_for_smc_parameter_gate(
+    *,
+    previous_close: float | None,
+    close: float,
+    event: Mapping[str, Any],
+    previous_events: Sequence[Mapping[str, Any]],
+    threshold_points: float,
+    total_sandbox_events: int,
+) -> tuple[str, str, float | None]:
+    close_change = None if previous_close is None else close - previous_close
+
+    if previous_close is None:
+        return "NEUTRAL", "first_bar_no_previous_close", close_change
+
+    if not _has_ohlc(event):
+        return _decision_for_close_change(
+            previous_close=previous_close,
+            close=close,
+            threshold_points=threshold_points,
+        )
+
+    if total_sandbox_events < SMC_MIN_HISTORY_BARS:
+        decision, reason, fallback_change = _decision_for_close_change(
+            previous_close=previous_close,
+            close=close,
+            threshold_points=threshold_points,
+        )
+        return (
+            decision,
+            "legacy_small_fixture_fallback_total_bars_below_smc_min_history:"
+            f"total={total_sandbox_events},required={SMC_MIN_HISTORY_BARS},"
+            f"{reason}",
+            fallback_change,
+        )
+
+    valid_history = _valid_ohlc_history(previous_events)
+    if len(valid_history) < SMC_MIN_HISTORY_BARS:
+        return (
+            "NEUTRAL",
+            (
+                "smc_gate_neutral_insufficient_history:"
+                f"required={SMC_MIN_HISTORY_BARS},actual={len(valid_history)}"
+            ),
+            close_change,
+        )
+
+    bullish_liquidity = _recent_liquidity_sweep(
+        history=valid_history,
+        current_event=event,
+        direction="LONG",
+    )
+    bearish_liquidity = _recent_liquidity_sweep(
+        history=valid_history,
+        current_event=event,
+        direction="SHORT",
+    )
+
+    bullish_structure = _market_structure_break(
+        history=valid_history,
+        current_event=event,
+        direction="LONG",
+    )
+    bearish_structure = _market_structure_break(
+        history=valid_history,
+        current_event=event,
+        direction="SHORT",
+    )
+
+    bullish_entry_zone = _recent_fair_value_gap_or_displacement(
+        history=valid_history,
+        current_event=event,
+        direction="LONG",
+    )
+    bearish_entry_zone = _recent_fair_value_gap_or_displacement(
+        history=valid_history,
+        current_event=event,
+        direction="SHORT",
+    )
+
+    bullish_setup = bullish_liquidity and bullish_structure and bullish_entry_zone
+    bearish_setup = bearish_liquidity and bearish_structure and bearish_entry_zone
+
+    reason = (
+        "smc_parameter_gate:"
+        f"bullish_liquidity={bullish_liquidity},"
+        f"bullish_structure={bullish_structure},"
+        f"bullish_entry_zone={bullish_entry_zone},"
+        f"bearish_liquidity={bearish_liquidity},"
+        f"bearish_structure={bearish_structure},"
+        f"bearish_entry_zone={bearish_entry_zone}"
+    )
+
+    if bullish_setup and not bearish_setup:
+        return "LONG", reason + ",final=LONG_CE_BUY_ALLOWED", close_change
+
+    if bearish_setup and not bullish_setup:
+        return "SHORT", reason + ",final=SHORT_PE_BUY_ALLOWED", close_change
+
+    if bullish_setup and bearish_setup:
+        return "NEUTRAL", reason + ",final=NEUTRAL_CONFLICTING_SMC_SETUPS", close_change
+
+    return "NEUTRAL", reason + ",final=NEUTRAL_NO_VALID_SMC_CONFLUENCE", close_change
 
 
 def _option_buy_mapping(decision: str) -> str:
@@ -384,15 +699,20 @@ def _decision_event(
     event: Mapping[str, Any],
     previous_close: float | None,
     threshold_points: float,
+    previous_events: Sequence[Mapping[str, Any]],
+    total_sandbox_events: int,
 ) -> StrategyDecisionAuditEvent:
     close = _to_float(event.get("close"))
     if close is None:
         raise ValueError("Decision event requires numeric close.")
 
-    decision, reason, close_change = _decision_for_close_change(
+    decision, reason, close_change = _decision_for_smc_parameter_gate(
         previous_close=previous_close,
         close=close,
+        event=event,
+        previous_events=previous_events,
         threshold_points=threshold_points,
+        total_sandbox_events=total_sandbox_events,
     )
 
     return StrategyDecisionAuditEvent(
@@ -408,7 +728,7 @@ def _decision_event(
         close_change=close_change,
         decision=decision,
         decision_reason=reason,
-        decision_mode="deterministic_close_to_close_audit_only",
+        decision_mode="smc_parameter_aligned_decision_audit_only",
         option_buy_mapping=_option_buy_mapping(decision),
         execution_mode="paper_backtest_decision_audit_only",
         trade_plan_mode="trade_plans_not_created",
@@ -444,6 +764,7 @@ def build_strategy_decision_audit_report(
     decision_events: list[StrategyDecisionAuditEvent] = []
     rejected_events = 0
     previous_close: float | None = None
+    previous_valid_events: list[Mapping[str, Any]] = []
 
     for event in sandbox_events:
         event_issues = _event_issues(event)
@@ -457,9 +778,12 @@ def build_strategy_decision_audit_report(
             event=event,
             previous_close=previous_close,
             threshold_points=threshold_points,
+            previous_events=previous_valid_events,
+            total_sandbox_events=len(sandbox_events),
         )
         decision_events.append(decision_event)
         previous_close = decision_event.close
+        previous_valid_events.append(event)
 
     if len(decision_events) < min_decisions:
         issues.append(
@@ -662,7 +986,7 @@ def build_and_write_strategy_decision_audit_report(
 
 def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Build LONG / SHORT / NEUTRAL strategy decision audit events."
+        description="Build SMC parameter-aligned LONG / SHORT / NEUTRAL strategy decision audit events."
     )
     parser.add_argument(
         "--sandbox-report",

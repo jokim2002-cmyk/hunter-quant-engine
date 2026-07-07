@@ -21,7 +21,7 @@ def _decision_event(index, close, decision="NEUTRAL"):
         "close": close,
         "decision": decision,
         "option_buy_mapping": mapping,
-        "decision_mode": "deterministic_close_to_close_audit_only",
+        "decision_mode": "smc_parameter_aligned_decision_audit_only",
         "execution_mode": "paper_backtest_decision_audit_only",
         "trade_plan_mode": "trade_plans_not_created",
         "broker_execution_mode": "broker_disabled",
