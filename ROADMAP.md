@@ -1241,3 +1241,16 @@ Scope:
 - Keep strategy execution, signal generation, trade plans, broker/live execution, live market data, real orders, real money, PnL, and profitability claims out of scope.
 
 Expected full quick-check suite after Module PP: 1850 passed.
+
+## Module QQ - Recorded data paper strategy adapter dry-run consumer evidence bundle
+
+Status: implemented in this module.
+
+Scope:
+- Run adapter evidence readiness.
+- Run adapter dry-run consumer readiness.
+- Write final adapter dry-run consumer evidence bundle under reports\paper_trading\recorded_data_paper_strategy_adapter_dry_run_consumer_evidence_bundle.
+- Add shortcut .\hqe_recorded_data_paper_strategy_adapter_dry_run_consumer_evidence_bundle.bat.
+- Keep strategy execution, signal generation, trade plans, broker/live execution, live market data, real orders, real money, PnL, and profitability claims out of scope.
+
+Expected full quick-check suite after Module QQ: 1861 passed.
