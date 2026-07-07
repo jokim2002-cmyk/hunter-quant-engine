@@ -305,3 +305,11 @@ Shortcut:
 .\hqe_recorded_data_backtest_trade_ledger.bat
 
 Converts paper fill/exit lifecycle records into a paper-only backtest trade ledger. This is not a profitability claim.
+
+## Recorded data backtest metrics engine
+
+Shortcut:
+
+.\hqe_recorded_data_backtest_metrics_engine.bat
+
+Converts paper-only backtest ledger rows into paper-only backtest metrics. This is not a profitability claim.

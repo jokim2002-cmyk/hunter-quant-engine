@@ -1431,3 +1431,22 @@ Progress:
 - v1.0 pending after Module ZZ: 11 modules.
 
 Expected full quick-check suite after Module ZZ: 1957 passed.
+
+## Module AAA - Recorded data backtest metrics engine
+
+Status: implemented in this module.
+
+Scope:
+- Read paper backtest trade ledger.
+- Validate paper ledger safety/mode fields.
+- Calculate paper-only backtest metrics.
+- Build equity reference curve and max drawdown reference.
+- Add shortcut .\hqe_recorded_data_backtest_metrics_engine.bat.
+- Keep broker/live execution, live market data, real orders, real money, and profitability claims out of scope.
+
+Progress:
+- Completed total before Module AAA: 52 modules.
+- v1.0 pending before Module AAA: 11 modules.
+- v1.0 pending after Module AAA: 10 modules.
+
+Expected full quick-check suite after Module AAA: 1968 passed.

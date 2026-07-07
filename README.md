@@ -935,3 +935,20 @@ Progress:
 - v1.0 pending after Module ZZ: 11 modules.
 
 Expected full quick-check suite after Module ZZ: 1957 passed.
+
+## Module AAA - Recorded data backtest metrics engine
+
+Shortcut:
+
+.\hqe_recorded_data_backtest_metrics_engine.bat
+
+This module converts paper-only backtest ledger rows into paper-only backtest metrics, including win rate, simulated result totals, equity reference curve, and max drawdown reference.
+
+It does not connect to brokers, request live market data, place real orders, use real money, or prove profitability. This is not a profitability claim.
+
+Progress:
+- Completed total before Module AAA: 52 modules.
+- v1.0 pending before Module AAA: 11 modules.
+- v1.0 pending after Module AAA: 10 modules.
+
+Expected full quick-check suite after Module AAA: 1968 passed.
