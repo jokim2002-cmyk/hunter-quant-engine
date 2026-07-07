@@ -197,3 +197,11 @@ Release tag:
 v0.4-paper-strategy-adapter-evidence-readiness
 
 This is paper/simulation evidence only and is not a profitability claim.
+
+## Recorded data paper strategy adapter dry-run consumer
+
+Shortcut:
+
+.\hqe_recorded_data_paper_strategy_adapter_dry_run_consumer.bat
+
+Consumes adapter dry-run events in audit-only paper/simulation mode. This is not a profitability claim.

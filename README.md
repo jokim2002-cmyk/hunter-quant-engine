@@ -731,3 +731,13 @@ This release closes the recorded-data paper strategy adapter evidence readiness 
 Safety boundary: paper/simulation evidence only. It does not execute strategy logic, create signals, create trade plans, connect to brokers, request live market data, place real orders, use real money, calculate PnL, or prove profitability. This is not a profitability claim.
 
 Expected full quick-check suite after v0.4: 1817 passed.
+
+## Module NN - Recorded data paper strategy adapter dry-run consumer scaffold
+
+Shortcut:
+
+.\hqe_recorded_data_paper_strategy_adapter_dry_run_consumer.bat
+
+This paper/simulation-only evidence module consumes adapter dry-run events in audit-only mode after adapter evidence readiness.
+
+It does not execute strategy logic, create signals, create trade plans, connect to brokers, request live market data, place real orders, use real money, calculate PnL, or prove profitability. This is not a profitability claim.

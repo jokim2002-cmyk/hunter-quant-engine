@@ -1196,3 +1196,18 @@ This release remains paper/simulation evidence only. It does not execute strateg
 
 Next phase:
 Future work may add a stricter paper strategy adapter dry-run consumer, but only after this v0.4 evidence readiness layer is tagged and stable.
+
+## Module NN - Recorded data paper strategy adapter dry-run consumer scaffold
+
+Status: implemented in this module.
+
+Scope:
+- Read reports\paper_trading\recorded_data_paper_strategy_adapter_evidence_readiness\paper_strategy_adapter_evidence_readiness.json.
+- Read reports\paper_trading\recorded_data_paper_strategy_adapter_dry_run\paper_strategy_adapter_dry_run_events.jsonl.
+- Consume dry-run events in audit-only mode.
+- Enforce no-strategy-execution consumer mode, broker-disabled mode, and manifest-only output mode.
+- Block strategy execution, signal generation, trade plans, broker/live execution, live market data, real orders, real money, PnL, and profitability claims.
+- Write outputs under reports\paper_trading\recorded_data_paper_strategy_adapter_dry_run_consumer.
+- Add shortcut .\hqe_recorded_data_paper_strategy_adapter_dry_run_consumer.bat.
+
+Expected full quick-check suite after Module NN: 1828 passed.
