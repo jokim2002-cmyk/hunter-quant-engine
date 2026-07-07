@@ -1486,3 +1486,21 @@ Progress:
 - v1.0 pending after Module CCC: 8 modules.
 
 Expected full quick-check suite after Module CCC: 1990 passed.
+
+## Module DDD - Recorded data backtest acceptance gate
+
+Status: implemented in this module.
+
+Scope:
+- Read the one-command paper backtest runner report.
+- Validate all expected paper backtest stages are present and ready.
+- Validate final report, metrics, and trade ledger paths.
+- Add shortcut .\hqe_recorded_data_backtest_acceptance_gate.bat.
+- Keep broker/live execution, live market data, real orders, real money, and profitability claims out of scope.
+
+Progress:
+- Completed total before Module DDD: 55 modules.
+- v1.0 pending before Module DDD: 8 modules.
+- v1.0 pending after Module DDD: 7 modules.
+
+Expected full quick-check suite after Module DDD: 2001 passed.

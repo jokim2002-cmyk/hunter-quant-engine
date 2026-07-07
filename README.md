@@ -996,3 +996,29 @@ Progress:
 - v1.0 pending after Module CCC: 8 modules.
 
 Expected full quick-check suite after Module CCC: 1990 passed.
+
+## Module DDD - Recorded data backtest acceptance gate
+
+Shortcut:
+
+.\hqe_recorded_data_backtest_acceptance_gate.bat
+
+This module validates the one-command recorded-data paper backtest runner output as a paper-only backtest acceptance gate for future v1.0 testing release readiness.
+
+Paper-only backtest acceptance gate safety:
+- LONG = CE BUY paper plan only.
+- SHORT = PE BUY paper plan only.
+- NEUTRAL = no trade.
+- No option selling.
+- No broker orders.
+- No live market data.
+- No real money.
+
+It does not connect to brokers, request live market data, place real orders, use real money, or prove profitability. This is not a profitability claim.
+
+Progress:
+- Completed total before Module DDD: 55 modules.
+- v1.0 pending before Module DDD: 8 modules.
+- v1.0 pending after Module DDD: 7 modules.
+
+Expected full quick-check suite after Module DDD: 2001 passed.

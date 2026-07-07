@@ -329,3 +329,11 @@ Shortcut:
 .\hqe_recorded_data_one_command_backtest_runner.bat
 
 Runs the recorded-data one-command paper backtest chain from replay sandbox through final backtest report writer. This is not a profitability claim.
+
+## Recorded data backtest acceptance gate
+
+Shortcut:
+
+.\hqe_recorded_data_backtest_acceptance_gate.bat
+
+Validates the one-command paper backtest runner output as a paper-only backtest acceptance gate. This is not a profitability claim.
