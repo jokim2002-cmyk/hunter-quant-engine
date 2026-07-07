@@ -1131,3 +1131,29 @@ Progress:
 - v1.0 pending after Module HHH: 3 modules.
 
 Expected full quick-check suite after Module HHH: 2042 passed.
+
+## Module III - v1.0 Testing Edition release notes pack
+
+Shortcut:
+
+.\hqe_v1_testing_release_notes.bat
+
+This module converts the v1 testing operator handoff pack into paper-only v1.0 testing release notes evidence for the future release-candidate gate.
+
+Paper-only v1.0 testing release notes safety:
+- LONG = CE BUY paper plan only.
+- SHORT = PE BUY paper plan only.
+- NEUTRAL = no trade.
+- No option selling.
+- No broker orders.
+- No live market data.
+- No real money.
+
+It does not connect to brokers, request live market data, place real orders, use real money, or prove profitability. This is not a profitability claim.
+
+Progress:
+- Completed total before Module III: 60 modules.
+- v1.0 pending before Module III: 3 modules.
+- v1.0 pending after Module III: 2 modules.
+
+Expected full quick-check suite after Module III: 2053 passed.

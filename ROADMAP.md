@@ -1584,3 +1584,21 @@ Progress:
 - v1.0 pending after Module HHH: 3 modules.
 
 Expected full quick-check suite after Module HHH: 2042 passed.
+
+## Module III - v1.0 Testing Edition release notes pack
+
+Status: implemented in this module.
+
+Scope:
+- Read the v1 testing operator handoff pack.
+- Validate handoff readiness and final evidence paths.
+- Write release notes in JSON, Markdown, and text formats.
+- Add shortcut .\hqe_v1_testing_release_notes.bat.
+- Keep broker/live execution, live market data, real orders, real money, and profitability claims out of scope.
+
+Progress:
+- Completed total before Module III: 60 modules.
+- v1.0 pending before Module III: 3 modules.
+- v1.0 pending after Module III: 2 modules.
+
+Expected full quick-check suite after Module III: 2053 passed.

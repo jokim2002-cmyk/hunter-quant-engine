@@ -375,3 +375,11 @@ Shortcut:
 .\hqe_v1_testing_operator_handoff_pack.bat
 
 Builds the final paper-only v1.0 Testing Edition operator handoff pack before release notes. This is not a profitability claim.
+
+## v1.0 Testing Edition release notes pack
+
+Shortcut:
+
+.\hqe_v1_testing_release_notes.bat
+
+Builds paper-only v1.0 Testing Edition release notes evidence before the release-candidate gate. This is not a profitability claim.
