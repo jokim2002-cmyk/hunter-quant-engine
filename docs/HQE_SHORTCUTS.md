@@ -469,3 +469,11 @@ Shortcut:
 .\hqe_strategy_mode_backtest_result_comparison_pack.bat
 
 Verifies strict, balanced, and relaxed paper-only mode result outputs for future comparison. This is not a profitability claim.
+
+## Strategy mode cost-adjusted comparison pack
+
+Shortcut:
+
+.\hqe_strategy_mode_cost_adjusted_comparison_pack.bat
+
+Builds a paper-only cost/slippage review scaffold for strict, balanced, and relaxed mode result comparison. This is not a profitability claim.

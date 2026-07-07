@@ -1836,3 +1836,25 @@ Progress:
 - Full HQE product estimate after Module SSS: 63-68%.
 
 Expected full quick-check suite after Module SSS: 2160 passed.
+
+## Module TTT - Strategy mode cost-adjusted comparison pack
+
+Status: implemented in this module.
+
+Scope:
+- Read strategy mode backtest result comparison pack.
+- Validate strict, balanced, and relaxed mode result categories.
+- Write cost adjustment assumptions and review item CSV.
+- Add shortcut .\hqe_strategy_mode_cost_adjusted_comparison_pack.bat.
+- Keep actual backtest execution, strategy selection, strategy logic changes, broker/live execution, live market data, real orders, real money, and profitability claims out of scope.
+
+Progress:
+- v1.0 Testing Edition: 63/63 modules complete.
+- v1.0 pending: 0 modules.
+- Completed total before Module TTT: 71 modules.
+- Phase 1 pending before Module TTT: 2 modules.
+- Completed total after Module TTT: 72 modules.
+- Phase 1 pending after Module TTT: 1 module.
+- Full HQE product estimate after Module TTT: 64-69%.
+
+Expected full quick-check suite after Module TTT: 2171 passed.
