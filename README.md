@@ -1280,3 +1280,30 @@ Progress:
 - Full HQE product estimate after Module MMM: 57-62%.
 
 Expected full quick-check suite after Module MMM: 2094 passed.
+
+## Module NNN - First real backtest output verification pack
+
+Shortcut:
+
+.\hqe_first_real_backtest_output_verification_pack.bat
+
+This module reads the first real dataset backtest run pack and verifies whether expected paper backtest output files exist after the operator run.
+
+Safety:
+- LONG = CE BUY paper plan only.
+- SHORT = PE BUY paper plan only.
+- NEUTRAL = no trade.
+- No option selling.
+- No broker orders.
+- No live market data.
+- No real money.
+- This is not a profitability claim.
+
+Progress:
+- v1.0 Testing Edition: 63/63 modules complete.
+- v1.0 pending: 0 modules.
+- Completed total after Module NNN: 66 modules.
+- Phase 1 pending after Module NNN: 7 modules.
+- Full HQE product estimate after Module NNN: 58-63%.
+
+Expected full quick-check suite after Module NNN: 2105 passed.

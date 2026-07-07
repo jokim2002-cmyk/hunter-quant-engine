@@ -421,3 +421,11 @@ Shortcut:
 .\hqe_first_real_dataset_backtest_run_pack.bat
 
 Builds an operator-safe first real recorded-data paper backtest run pack from the real dataset input pack. This is not a profitability claim.
+
+## First real backtest output verification pack
+
+Shortcut:
+
+.\hqe_first_real_backtest_output_verification_pack.bat
+
+Verifies expected paper backtest outputs after the first real recorded-data backtest run. This is not a profitability claim.
