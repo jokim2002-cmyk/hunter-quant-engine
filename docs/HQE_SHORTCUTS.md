@@ -677,3 +677,11 @@ Shortcut:
 .\hqe_paper_improvement_rerun_readiness_gate_pack.bat
 
 Builds paper-only rerun readiness gates. This is not a profitability claim.
+
+## Paper improvement acceptance gate pack
+
+Shortcut:
+
+.\hqe_paper_improvement_acceptance_gate_pack.bat
+
+Builds the paper-only acceptance gate for Phase 5 close. This is not a profitability claim.
