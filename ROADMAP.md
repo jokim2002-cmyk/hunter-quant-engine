@@ -1211,3 +1211,20 @@ Scope:
 - Add shortcut .\hqe_recorded_data_paper_strategy_adapter_dry_run_consumer.bat.
 
 Expected full quick-check suite after Module NN: 1828 passed.
+
+## Module OO - Recorded data paper strategy adapter dry-run consumer acceptance gate
+
+Status: implemented in this module.
+
+Scope:
+- Read reports\paper_trading\recorded_data_paper_strategy_adapter_dry_run_consumer\paper_strategy_adapter_dry_run_consumer.json.
+- Gate consumer status and ready_for_future_consumer_evidence flag.
+- Enforce configurable minimum consumed events.
+- Enforce configurable minimum total planned bars.
+- Verify audit-only consumer mode, no-execution strategy mode, broker-disabled mode, and manifest-only output mode.
+- Block execution/trading/profit fields from adapter dry-run consumer output.
+- Write paper/evidence-only output under reports\paper_trading\recorded_data_paper_strategy_adapter_dry_run_consumer_acceptance.
+- Add shortcut .\hqe_recorded_data_paper_strategy_adapter_dry_run_consumer_acceptance.bat.
+- Keep strategy execution, signal generation, trade plans, broker/live execution, live market data, real orders, real money, PnL, and profitability claims out of scope.
+
+Expected full quick-check suite after Module OO: 1839 passed.
