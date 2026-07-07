@@ -661,3 +661,11 @@ Shortcut:
 .\hqe_paper_improvement_candidate_registry_pack.bat
 
 Builds a planning-only paper improvement candidate registry. This is not a profitability claim.
+
+## Paper improvement candidate test plan pack
+
+Shortcut:
+
+.\hqe_paper_improvement_candidate_test_plan_pack.bat
+
+Builds planning-only test plan items for paper improvement candidates. This is not a profitability claim.
