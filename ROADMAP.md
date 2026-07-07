@@ -1998,3 +1998,26 @@ Progress:
 - Full HQE product estimate after Module ZZZ: 70-75%.
 
 Expected full quick-check suite after Module ZZZ: 2237 passed.
+
+## Module AAAA - Dashboard smoke test plan pack
+
+Status: implemented in this module.
+
+Scope:
+- Read dashboard app shell pack.
+- Validate required pages, components, and sections.
+- Create future dashboard smoke-test steps.
+- Add shortcut .\hqe_dashboard_smoke_test_plan_pack.bat.
+- Keep dashboard UI startup, actual Streamlit runtime, actual backtest execution, strategy selection, broker/live execution, live market data, real orders, real money, and profitability claims out of scope.
+
+Progress:
+- v1.0 Testing Edition: 63/63 modules complete.
+- v1.0 pending: 0 modules.
+- Phase 1 pending after Module UUU: 0 modules.
+- Completed total before Module AAAA: 78 modules.
+- Completed total after Module AAAA: 79 modules.
+- Phase 2 pending before Module AAAA: 3 modules.
+- Phase 2 pending after Module AAAA: 2 modules.
+- Full HQE product estimate after Module AAAA: 71-76%.
+
+Expected full quick-check suite after Module AAAA: 2248 passed.

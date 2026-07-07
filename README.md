@@ -1638,3 +1638,31 @@ Progress:
 - Full HQE product estimate after Module ZZZ: 70-75%.
 
 Expected full quick-check suite after Module ZZZ: 2237 passed.
+
+## Module AAAA - Dashboard smoke test plan pack
+
+Shortcut:
+
+.\hqe_dashboard_smoke_test_plan_pack.bat
+
+This module creates a paper-only future dashboard smoke-test plan from the dashboard app shell pack. It does not start a dashboard UI and does not import or require Streamlit at runtime.
+
+Safety:
+- LONG = CE BUY paper plan only.
+- SHORT = PE BUY paper plan only.
+- NEUTRAL = no trade.
+- No option selling.
+- No broker orders.
+- No live market data.
+- No real money.
+- This is not a profitability claim.
+
+Progress:
+- v1.0 Testing Edition: 63/63 modules complete.
+- v1.0 pending: 0 modules.
+- Phase 1 pending after Module UUU: 0 modules.
+- Completed total after Module AAAA: 79 modules.
+- Phase 2 pending after Module AAAA: 2 modules.
+- Full HQE product estimate after Module AAAA: 71-76%.
+
+Expected full quick-check suite after Module AAAA: 2248 passed.

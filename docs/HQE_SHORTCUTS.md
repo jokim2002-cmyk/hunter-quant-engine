@@ -525,3 +525,11 @@ Shortcut:
 .\hqe_dashboard_app_shell_pack.bat
 
 Builds a paper-only future Streamlit app shell template and page registry. This is not a profitability claim.
+
+## Dashboard smoke test plan pack
+
+Shortcut:
+
+.\hqe_dashboard_smoke_test_plan_pack.bat
+
+Builds a paper-only future dashboard smoke-test plan. This is not a profitability claim.
