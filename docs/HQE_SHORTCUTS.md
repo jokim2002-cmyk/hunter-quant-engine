@@ -153,3 +153,11 @@ Shortcut:
 .\hqe_recorded_data_paper_strategy_adapter_dry_run_acceptance.bat
 
 Gates no-execution adapter dry-run events for future paper adapter evidence. This is not a profitability claim.
+
+## Recorded data paper strategy adapter dry-run readiness gate
+
+Shortcut:
+
+.\hqe_recorded_data_paper_strategy_adapter_dry_run_readiness.bat
+
+Runs no-execution adapter dry-run plus acceptance gate and writes final adapter dry-run readiness. This is not a profitability claim.

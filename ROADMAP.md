@@ -1109,3 +1109,16 @@ Scope:
 - Keep strategy execution, signal generation, trade plans, broker/live execution, live market data, real orders, real money, PnL, and profitability claims out of scope.
 
 Expected full quick-check suite after Module HH: 1765 passed.
+
+## Module II - Recorded data paper strategy adapter dry-run readiness gate
+
+Status: implemented in this module.
+
+Scope:
+- Run the recorded-data paper strategy adapter dry-run scaffold.
+- Run the recorded-data paper strategy adapter dry-run acceptance gate.
+- Write final adapter dry-run readiness report under reports\paper_trading\recorded_data_paper_strategy_adapter_dry_run_readiness.
+- Add shortcut .\hqe_recorded_data_paper_strategy_adapter_dry_run_readiness.bat.
+- Keep strategy execution, signal generation, trade plans, broker/live execution, live market data, real orders, real money, PnL, and profitability claims out of scope.
+
+Expected full quick-check suite after Module II: 1776 passed.
