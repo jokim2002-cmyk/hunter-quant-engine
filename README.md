@@ -695,3 +695,13 @@ Shortcut:
 This paper/simulation-only evidence module runs adapter readiness plus adapter dry-run readiness, then writes a final adapter evidence bundle.
 
 It does not execute strategy logic, create signals, create trade plans, connect to brokers, request live market data, place real orders, use real money, calculate PnL, or prove profitability. This is not a profitability claim.
+
+## Module KK - Recorded data paper strategy adapter evidence bundle acceptance gate
+
+Shortcut:
+
+.\hqe_recorded_data_paper_strategy_adapter_evidence_bundle_acceptance.bat
+
+This paper/simulation-only evidence module gates the adapter evidence bundle from Module JJ before future release/readiness modules can consume it.
+
+It does not execute strategy logic, create signals, create trade plans, connect to brokers, request live market data, place real orders, use real money, calculate PnL, or prove profitability. This is not a profitability claim.
