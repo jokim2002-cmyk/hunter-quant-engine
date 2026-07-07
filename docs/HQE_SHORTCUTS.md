@@ -549,3 +549,11 @@ Shortcut:
 .\hqe_dashboard_sprint_readiness_close_pack.bat
 
 Closes the post-v1.0 Dashboard Sprint as a paper-only evidence workflow. This is not a profitability claim.
+
+## Recorded backtest launch gate pack
+
+Shortcut:
+
+.\hqe_recorded_backtest_launch_gate_pack.bat
+
+Builds a paper-only launch gate for the recorded-data paper backtest review workflow. This is not a profitability claim.
