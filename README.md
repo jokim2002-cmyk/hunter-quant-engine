@@ -545,3 +545,13 @@ Shortcut:
 This paper/simulation-only evidence module runs recorded-data replay readiness plus the recorded-data strategy input contract, then writes a final preflight report for a future paper strategy replay phase.
 
 It checks structural readiness only. It does not run strategies, create signals, create trade plans, connect to brokers, request live market data, place real orders, use real money, or prove profitability. This is not a profitability claim.
+
+## Module W - Recorded data strategy replay scenario manifest
+
+Shortcut:
+
+.\hqe_recorded_data_strategy_replay_scenario.bat
+
+This paper/simulation-only evidence module packages recorded-data strategy input bars into deterministic future paper replay scenarios grouped by recorded source file.
+
+It checks the strategy input bars, preflight readiness, paper-only execution mode, and minimum bars per scenario. It does not run strategies, create signals, create trade plans, connect to brokers, request live market data, place real orders, use real money, or prove profitability. This is not a profitability claim.

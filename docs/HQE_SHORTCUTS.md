@@ -65,3 +65,11 @@ Shortcut:
 .\hqe_recorded_data_strategy_replay_preflight.bat
 
 Runs replay readiness plus strategy input contract and writes a final paper/simulation-only preflight report for future paper strategy replay. This is not a profitability claim.
+
+## Recorded data strategy replay scenario manifest
+
+Shortcut:
+
+.\hqe_recorded_data_strategy_replay_scenario.bat
+
+Packages accepted recorded-data strategy input bars into deterministic future paper replay scenarios. This is not a profitability claim.

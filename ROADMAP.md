@@ -924,3 +924,18 @@ Scope:
 - Keep strategy execution, signal generation, trade plans, broker/live execution, live market data, real orders, real money, and profitability claims out of scope.
 
 Expected full quick-check suite after Module V: 1634 passed.
+
+## Module W - Recorded data strategy replay scenario manifest
+
+Status: implemented in this module.
+
+Scope:
+- Read reports\paper_trading\recorded_data_strategy_input_contract\strategy_input_bars.jsonl.
+- Read reports\paper_trading\recorded_data_strategy_replay_preflight\preflight_report.json.
+- Group accepted bars into deterministic replay scenarios by source file.
+- Enforce configurable minimum bars per scenario.
+- Write paper/evidence-only output under reports\paper_trading\recorded_data_strategy_replay_scenario.
+- Add shortcut .\hqe_recorded_data_strategy_replay_scenario.bat.
+- Keep strategy execution, signal generation, trade plans, broker/live execution, live market data, real orders, real money, and profitability claims out of scope.
+
+Expected full quick-check suite after Module W: 1645 passed.
