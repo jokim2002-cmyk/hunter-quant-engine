@@ -625,3 +625,13 @@ Shortcut:
 This paper/simulation-only evidence module runs the no-execution replay plan plus replay-plan acceptance gate, then writes a final plan readiness report.
 
 It does not run strategies, create signals, create trade plans, connect to brokers, request live market data, place real orders, use real money, calculate PnL, or prove profitability. This is not a profitability claim.
+
+## Module DD - Recorded data paper strategy adapter contract
+
+Shortcut:
+
+.\hqe_recorded_data_paper_strategy_adapter_contract.bat
+
+This paper/simulation-only evidence module converts an accepted replay plan into adapter request manifests for a future paper strategy adapter.
+
+It does not execute strategy logic, create signals, create trade plans, connect to brokers, request live market data, place real orders, use real money, calculate PnL, or prove profitability. This is not a profitability claim.

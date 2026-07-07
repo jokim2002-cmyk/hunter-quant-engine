@@ -113,3 +113,11 @@ Shortcut:
 .\hqe_recorded_data_paper_strategy_replay_plan_readiness.bat
 
 Runs the no-execution replay plan plus acceptance gate and writes final paper/simulation-only plan readiness. This is not a profitability claim.
+
+## Recorded data paper strategy adapter contract
+
+Shortcut:
+
+.\hqe_recorded_data_paper_strategy_adapter_contract.bat
+
+Builds no-execution adapter request manifests for future paper strategy replay. This is not a profitability claim.

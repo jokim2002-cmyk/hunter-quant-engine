@@ -1032,3 +1032,18 @@ Scope:
 - Keep strategy execution, signal generation, trade plans, broker/live execution, live market data, real orders, real money, PnL, and profitability claims out of scope.
 
 Expected full quick-check suite after Module CC: 1710 passed.
+
+## Module DD - Recorded data paper strategy adapter contract
+
+Status: implemented in this module.
+
+Scope:
+- Read reports\paper_trading\recorded_data_paper_strategy_replay_plan_readiness\paper_strategy_replay_plan_readiness.json.
+- Read reports\paper_trading\recorded_data_paper_strategy_replay_plan\paper_strategy_replay_plan.json.
+- Create no-execution adapter request manifests.
+- Enforce broker-disabled and contract-only adapter modes.
+- Block strategy execution, signal generation, trade plans, broker/live execution, live market data, real orders, real money, PnL, and profitability claims.
+- Write outputs under reports\paper_trading\recorded_data_paper_strategy_adapter_contract.
+- Add shortcut .\hqe_recorded_data_paper_strategy_adapter_contract.bat.
+
+Expected full quick-check suite after Module DD: 1721 passed.
