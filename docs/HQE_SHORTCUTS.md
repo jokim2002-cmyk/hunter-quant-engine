@@ -597,3 +597,11 @@ Shortcut:
 .\hqe_recorded_backtest_review_workflow_close_pack.bat
 
 Closes the recorded-data paper backtest review workflow as a paper-only evidence chain. This is not a profitability claim.
+
+## Paper backtest evidence analysis launch pack
+
+Shortcut:
+
+.\hqe_paper_backtest_evidence_analysis_launch_pack.bat
+
+Launches paper-only evidence analysis from recorded-data paper backtest review workflow close evidence. This is not a profitability claim.
