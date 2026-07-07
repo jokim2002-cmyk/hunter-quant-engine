@@ -313,3 +313,11 @@ Shortcut:
 .\hqe_recorded_data_backtest_metrics_engine.bat
 
 Converts paper-only backtest ledger rows into paper-only backtest metrics. This is not a profitability claim.
+
+## Recorded data backtest report writer
+
+Shortcut:
+
+.\hqe_recorded_data_backtest_report_writer.bat
+
+Packages paper-only metrics and trade ledger rows into a readable paper-only backtest report bundle. This is not a profitability claim.

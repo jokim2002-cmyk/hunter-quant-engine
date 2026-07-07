@@ -952,3 +952,20 @@ Progress:
 - v1.0 pending after Module AAA: 10 modules.
 
 Expected full quick-check suite after Module AAA: 1968 passed.
+
+## Module BBB - Recorded data backtest report writer
+
+Shortcut:
+
+.\hqe_recorded_data_backtest_report_writer.bat
+
+This module packages paper-only backtest metrics and trade ledger rows into a readable paper-only backtest report bundle.
+
+It does not connect to brokers, request live market data, place real orders, use real money, or prove profitability. This is not a profitability claim.
+
+Progress:
+- Completed total before Module BBB: 53 modules.
+- v1.0 pending before Module BBB: 10 modules.
+- v1.0 pending after Module BBB: 9 modules.
+
+Expected full quick-check suite after Module BBB: 1979 passed.
