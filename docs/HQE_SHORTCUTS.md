@@ -565,3 +565,11 @@ Shortcut:
 .\hqe_recorded_backtest_command_plan_pack.bat
 
 Builds paper-only manual command steps for the recorded-data paper backtest workflow. This is not a profitability claim.
+
+## Recorded backtest run output intake pack
+
+Shortcut:
+
+.\hqe_recorded_backtest_run_output_intake_pack.bat
+
+Builds paper-only post-run output intake expectations for the recorded-data paper backtest workflow. This is not a profitability claim.

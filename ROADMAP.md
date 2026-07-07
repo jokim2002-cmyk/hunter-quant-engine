@@ -2116,3 +2116,27 @@ Progress:
 - Full HQE product estimate after Module EEEE: 75-80%.
 
 Expected full quick-check suite after Module EEEE: 2292 passed.
+
+## Module FFFF - Recorded backtest run output intake pack
+
+Status: implemented in this module.
+
+Scope:
+- Read recorded backtest command plan pack.
+- Validate required command steps.
+- Create paper-only post-run output intake expectations.
+- Add shortcut .\hqe_recorded_backtest_run_output_intake_pack.bat.
+- Keep actual backtest execution, dashboard UI startup, Streamlit runtime, strategy selection, broker/live execution, live market data, real orders, real money, and profitability claims out of scope for this module.
+
+Progress:
+- v1.0 Testing Edition: 63/63 modules complete.
+- v1.0 pending: 0 modules.
+- Phase 1 Real Backtest Usage Sprint complete.
+- Phase 2 Dashboard Sprint complete.
+- Completed total before Module FFFF: 83 modules.
+- Completed total after Module FFFF: 84 modules.
+- Phase 3 pending before Module FFFF: 4 modules.
+- Phase 3 pending after Module FFFF: 3 modules.
+- Full HQE product estimate after Module FFFF: 76-81%.
+
+Expected full quick-check suite after Module FFFF: 2303 passed.
