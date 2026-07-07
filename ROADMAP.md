@@ -2140,3 +2140,27 @@ Progress:
 - Full HQE product estimate after Module FFFF: 76-81%.
 
 Expected full quick-check suite after Module FFFF: 2303 passed.
+
+## Module GGGG - Recorded backtest output presence verification pack
+
+Status: implemented in this module.
+
+Scope:
+- Read recorded backtest run output intake pack.
+- Validate required expected outputs.
+- Verify expected post-run output file presence.
+- Add shortcut .\hqe_recorded_backtest_output_presence_verification_pack.bat.
+- Keep actual backtest execution, dashboard UI startup, Streamlit runtime, strategy selection, broker/live execution, live market data, real orders, real money, and profitability claims out of scope for this module.
+
+Progress:
+- v1.0 Testing Edition: 63/63 modules complete.
+- v1.0 pending: 0 modules.
+- Phase 1 Real Backtest Usage Sprint complete.
+- Phase 2 Dashboard Sprint complete.
+- Completed total before Module GGGG: 84 modules.
+- Completed total after Module GGGG: 85 modules.
+- Phase 3 pending before Module GGGG: 3 modules.
+- Phase 3 pending after Module GGGG: 2 modules.
+- Full HQE product estimate after Module GGGG: 77-82%.
+
+Expected full quick-check suite after Module GGGG: 2314 passed.

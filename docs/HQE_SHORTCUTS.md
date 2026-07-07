@@ -573,3 +573,11 @@ Shortcut:
 .\hqe_recorded_backtest_run_output_intake_pack.bat
 
 Builds paper-only post-run output intake expectations for the recorded-data paper backtest workflow. This is not a profitability claim.
+
+## Recorded backtest output presence verification pack
+
+Shortcut:
+
+.\hqe_recorded_backtest_output_presence_verification_pack.bat
+
+Verifies expected post-run paper backtest output file presence. This is not a profitability claim.

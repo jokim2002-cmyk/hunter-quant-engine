@@ -1809,3 +1809,32 @@ Progress:
 - Full HQE product estimate after Module FFFF: 76-81%.
 
 Expected full quick-check suite after Module FFFF: 2303 passed.
+
+## Module GGGG - Recorded backtest output presence verification pack
+
+Shortcut:
+
+.\hqe_recorded_backtest_output_presence_verification_pack.bat
+
+This module verifies whether expected post-run paper backtest output files are present. It does not run backtests.
+
+Safety:
+- LONG = CE BUY paper plan only.
+- SHORT = PE BUY paper plan only.
+- NEUTRAL = no trade.
+- No option selling.
+- No broker orders.
+- No live market data.
+- No real money.
+- This is not a profitability claim.
+
+Progress:
+- v1.0 Testing Edition: 63/63 modules complete.
+- v1.0 pending: 0 modules.
+- Phase 1 Real Backtest Usage Sprint complete.
+- Phase 2 Dashboard Sprint complete.
+- Completed total after Module GGGG: 85 modules.
+- Phase 3 pending after Module GGGG: 2 modules.
+- Full HQE product estimate after Module GGGG: 77-82%.
+
+Expected full quick-check suite after Module GGGG: 2314 passed.
