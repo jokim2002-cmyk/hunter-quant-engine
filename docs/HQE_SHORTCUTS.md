@@ -245,3 +245,15 @@ Shortcut:
 .\hqe_recorded_data_paper_strategy_adapter_dry_run_consumer_evidence_readiness.bat
 
 Runs consumer evidence bundle plus acceptance and writes final audit-only consumer evidence readiness. This is not a profitability claim.
+
+## v0.5 release command
+
+Main release readiness command:
+
+.\hqe_recorded_data_paper_strategy_adapter_dry_run_consumer_evidence_readiness.bat
+
+Release tag:
+
+v0.5-paper-strategy-adapter-consumer-evidence-readiness
+
+This is paper/simulation evidence only and is not a profitability claim.

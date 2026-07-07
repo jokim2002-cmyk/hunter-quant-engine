@@ -1283,3 +1283,35 @@ Scope:
 - Keep strategy execution, signal generation, trade plans, broker/live execution, live market data, real orders, real money, PnL, and profitability claims out of scope.
 
 Expected full quick-check suite after Module SS: 1883 passed.
+
+## v0.5 - Paper Strategy Adapter Consumer Evidence Readiness Release
+
+Status: release close implemented.
+
+Release tag:
+v0.5-paper-strategy-adapter-consumer-evidence-readiness
+
+Closed scope:
+- Adapter dry-run consumer scaffold.
+- Adapter dry-run consumer acceptance.
+- Adapter dry-run consumer readiness.
+- Adapter dry-run consumer evidence bundle.
+- Adapter dry-run consumer evidence bundle acceptance.
+- Final adapter dry-run consumer evidence readiness.
+
+Main command:
+.\hqe_recorded_data_paper_strategy_adapter_dry_run_consumer_evidence_readiness.bat
+
+Expected full quick-check suite after v0.5: 1891 passed.
+
+Safety boundary:
+This release remains paper/simulation evidence only. It does not execute strategy logic, create signals, create trade plans, connect to brokers, request live market data, place real orders, use real money, calculate PnL, or prove profitability. This is not a profitability claim.
+
+Next phase:
+Fast-track v1.0 Testing Edition backtest engine:
+- Recorded-data strategy replay sandbox.
+- LONG / SHORT / NEUTRAL decision audit.
+- CE/PE paper trade-plan simulator.
+- Paper fill and exit simulator.
+- Backtest ledger and metrics engine.
+- One-command paper backtest runner.

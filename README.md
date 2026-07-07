@@ -791,3 +791,21 @@ Shortcut:
 This paper/simulation-only evidence module runs consumer evidence bundle plus consumer evidence bundle acceptance, then writes final consumer evidence readiness.
 
 It does not execute strategy logic, create signals, create trade plans, connect to brokers, request live market data, place real orders, use real money, calculate PnL, or prove profitability. This is not a profitability claim.
+
+## v0.5 - Paper Strategy Adapter Consumer Evidence Readiness
+
+Release tag:
+
+v0.5-paper-strategy-adapter-consumer-evidence-readiness
+
+Main command:
+
+.\hqe_recorded_data_paper_strategy_adapter_dry_run_consumer_evidence_readiness.bat
+
+This release closes the recorded-data paper strategy adapter dry-run consumer evidence readiness layer. It packages adapter dry-run consumer, consumer acceptance, consumer readiness, consumer evidence bundle, consumer evidence bundle acceptance, and final consumer evidence readiness.
+
+Safety boundary: paper/simulation evidence only. It does not execute strategy logic, create signals, create trade plans, connect to brokers, request live market data, place real orders, use real money, calculate PnL, or prove profitability. This is not a profitability claim.
+
+Expected full quick-check suite after v0.5: 1891 passed.
+
+Next phase: v1.0 Testing Edition fast-track backtest engine.
