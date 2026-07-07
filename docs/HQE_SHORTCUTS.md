@@ -281,3 +281,11 @@ Shortcut:
 .\hqe_recorded_data_strategy_decision_acceptance.bat
 
 Validates LONG / SHORT / NEUTRAL strategy decision audit output before future CE/PE paper trade-plan simulation. This is paper/simulation only and is not a profitability claim.
+
+## Recorded data paper option trade-plan simulator
+
+Shortcut:
+
+.\hqe_recorded_data_paper_option_trade_plan_simulator.bat
+
+Converts accepted LONG / SHORT / NEUTRAL strategy decision audit events into paper-only NIFTY option buy plans. LONG = CE BUY paper plan, SHORT = PE BUY paper plan, NEUTRAL = no trade. This is not a profitability claim.

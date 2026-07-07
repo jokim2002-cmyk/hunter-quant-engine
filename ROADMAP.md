@@ -1374,3 +1374,23 @@ Progress:
 - v1.0 pending after Module WW: 14 modules.
 
 Expected full quick-check suite after Module WW: 1924 passed.
+
+## Module XX - Recorded data paper option trade-plan simulator
+
+Status: implemented in this module.
+
+Scope:
+- Read strategy decision acceptance gate.
+- Read strategy decision audit report.
+- Convert LONG decisions into CE BUY paper plans.
+- Convert SHORT decisions into PE BUY paper plans.
+- Keep NEUTRAL decisions as no trade.
+- Add shortcut .\hqe_recorded_data_paper_option_trade_plan_simulator.bat.
+- Keep fills, broker/live execution, live market data, real orders, real money, PnL, and profitability claims out of scope.
+
+Progress:
+- Completed total before Module XX: 49 modules.
+- v1.0 pending before Module XX: 14 modules.
+- v1.0 pending after Module XX: 13 modules.
+
+Expected full quick-check suite after Module XX: 1935 passed.

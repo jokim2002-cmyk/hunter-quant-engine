@@ -870,3 +870,25 @@ Progress:
 - v1.0 pending after Module WW: 14 modules.
 
 Expected full quick-check suite after Module WW: 1924 passed.
+
+## Module XX - Recorded data paper option trade-plan simulator
+
+Shortcut:
+
+.\hqe_recorded_data_paper_option_trade_plan_simulator.bat
+
+This module converts accepted LONG / SHORT / NEUTRAL strategy decision audit events into paper-only NIFTY option buy trade plans.
+
+Plan mapping:
+- LONG = CE BUY paper plan only.
+- SHORT = PE BUY paper plan only.
+- NEUTRAL = no trade.
+
+It does not simulate fills, connect to brokers, request live market data, place real orders, use real money, calculate PnL, or prove profitability. This is not a profitability claim.
+
+Progress:
+- Completed total before Module XX: 49 modules.
+- v1.0 pending before Module XX: 14 modules.
+- v1.0 pending after Module XX: 13 modules.
+
+Expected full quick-check suite after Module XX: 1935 passed.
