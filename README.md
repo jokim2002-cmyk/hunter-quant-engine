@@ -1867,3 +1867,32 @@ Progress:
 - Full HQE product estimate after Module HHHH: 78-83%.
 
 Expected full quick-check suite after Module HHHH: 2325 passed.
+
+## Module IIII - Recorded backtest review workflow close pack
+
+Shortcut:
+
+.\hqe_recorded_backtest_review_workflow_close_pack.bat
+
+This module closes the recorded-data paper backtest review workflow from operator-safe review summary evidence. It does not run backtests, calculate profitability, or select a winning strategy.
+
+Safety:
+- LONG = CE BUY paper plan only.
+- SHORT = PE BUY paper plan only.
+- NEUTRAL = no trade.
+- No option selling.
+- No broker orders.
+- No live market data.
+- No real money.
+- This is not a profitability claim.
+
+Progress:
+- v1.0 Testing Edition: 63/63 modules complete.
+- v1.0 pending: 0 modules.
+- Phase 1 Real Backtest Usage Sprint complete.
+- Phase 2 Dashboard Sprint complete.
+- Completed total after Module IIII: 87 modules.
+- Phase 3 pending after Module IIII: 0 modules.
+- Full HQE product estimate after Module IIII: 79-84%.
+
+Expected full quick-check suite after Module IIII: 2336 passed.

@@ -589,3 +589,11 @@ Shortcut:
 .\hqe_recorded_backtest_review_summary_pack.bat
 
 Builds an operator-safe review summary from verified recorded-data paper backtest output presence evidence. This is not a profitability claim.
+
+## Recorded backtest review workflow close pack
+
+Shortcut:
+
+.\hqe_recorded_backtest_review_workflow_close_pack.bat
+
+Closes the recorded-data paper backtest review workflow as a paper-only evidence chain. This is not a profitability claim.

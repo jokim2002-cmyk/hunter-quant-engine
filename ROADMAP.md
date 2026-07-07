@@ -2188,3 +2188,28 @@ Progress:
 - Full HQE product estimate after Module HHHH: 78-83%.
 
 Expected full quick-check suite after Module HHHH: 2325 passed.
+
+## Module IIII - Recorded backtest review workflow close pack
+
+Status: implemented in this module.
+
+Scope:
+- Read recorded backtest review summary pack.
+- Validate all required review items are present.
+- Confirm missing required files count is zero.
+- Close Phase 3 recorded-data paper backtest review workflow.
+- Add shortcut .\hqe_recorded_backtest_review_workflow_close_pack.bat.
+- Keep actual backtest execution, dashboard UI startup, Streamlit runtime, strategy selection, broker/live execution, live market data, real orders, real money, and profitability claims out of scope for this module.
+
+Progress:
+- v1.0 Testing Edition: 63/63 modules complete.
+- v1.0 pending: 0 modules.
+- Phase 1 Real Backtest Usage Sprint complete.
+- Phase 2 Dashboard Sprint complete.
+- Completed total before Module IIII: 86 modules.
+- Completed total after Module IIII: 87 modules.
+- Phase 3 pending before Module IIII: 1 module.
+- Phase 3 pending after Module IIII: 0 modules.
+- Full HQE product estimate after Module IIII: 79-84%.
+
+Expected full quick-check suite after Module IIII: 2336 passed.
