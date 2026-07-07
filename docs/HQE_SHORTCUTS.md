@@ -669,3 +669,11 @@ Shortcut:
 .\hqe_paper_improvement_candidate_test_plan_pack.bat
 
 Builds planning-only test plan items for paper improvement candidates. This is not a profitability claim.
+
+## Paper improvement rerun readiness gate pack
+
+Shortcut:
+
+.\hqe_paper_improvement_rerun_readiness_gate_pack.bat
+
+Builds paper-only rerun readiness gates. This is not a profitability claim.
