@@ -1077,3 +1077,18 @@ Scope:
 - Keep strategy execution, signal generation, trade plans, broker/live execution, live market data, real orders, real money, PnL, and profitability claims out of scope.
 
 Expected full quick-check suite after Module FF: 1743 passed.
+
+## Module GG - Recorded data paper strategy adapter dry-run scaffold
+
+Status: implemented in this module.
+
+Scope:
+- Read reports\paper_trading\recorded_data_paper_strategy_adapter_readiness\paper_strategy_adapter_readiness.json.
+- Read reports\paper_trading\recorded_data_paper_strategy_adapter_contract\paper_strategy_adapter_requests.jsonl.
+- Create deterministic adapter dry-run events.
+- Enforce no-execution dry-run mode, broker-disabled mode, and dry-run manifest-only output mode.
+- Block strategy execution, signal generation, trade plans, broker/live execution, live market data, real orders, real money, PnL, and profitability claims.
+- Write outputs under reports\paper_trading\recorded_data_paper_strategy_adapter_dry_run.
+- Add shortcut .\hqe_recorded_data_paper_strategy_adapter_dry_run.bat.
+
+Expected full quick-check suite after Module GG: 1754 passed.
