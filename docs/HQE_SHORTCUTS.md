@@ -613,3 +613,11 @@ Shortcut:
 .\hqe_paper_backtest_ledger_evidence_snapshot_pack.bat
 
 Builds ledger-focused paper evidence snapshot items. This is not a profitability claim.
+
+## Paper backtest metrics context snapshot pack
+
+Shortcut:
+
+.\hqe_paper_backtest_metrics_context_snapshot_pack.bat
+
+Builds metrics-focused paper evidence context items. This is not a profitability claim.
