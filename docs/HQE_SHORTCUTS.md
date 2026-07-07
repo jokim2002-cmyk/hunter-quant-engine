@@ -321,3 +321,11 @@ Shortcut:
 .\hqe_recorded_data_backtest_report_writer.bat
 
 Packages paper-only metrics and trade ledger rows into a readable paper-only backtest report bundle. This is not a profitability claim.
+
+## Recorded data one-command backtest runner
+
+Shortcut:
+
+.\hqe_recorded_data_one_command_backtest_runner.bat
+
+Runs the recorded-data one-command paper backtest chain from replay sandbox through final backtest report writer. This is not a profitability claim.

@@ -1469,3 +1469,20 @@ Progress:
 - v1.0 pending after Module BBB: 9 modules.
 
 Expected full quick-check suite after Module BBB: 1979 passed.
+
+## Module CCC - Recorded data one-command backtest runner
+
+Status: implemented in this module.
+
+Scope:
+- Run the paper-only chain from recorded strategy input bars to final backtest report.
+- Package runner-level summary and stage results.
+- Add shortcut .\hqe_recorded_data_one_command_backtest_runner.bat.
+- Keep broker/live execution, live market data, real orders, real money, and profitability claims out of scope.
+
+Progress:
+- Completed total before Module CCC: 54 modules.
+- v1.0 pending before Module CCC: 9 modules.
+- v1.0 pending after Module CCC: 8 modules.
+
+Expected full quick-check suite after Module CCC: 1990 passed.

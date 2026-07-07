@@ -969,3 +969,30 @@ Progress:
 - v1.0 pending after Module BBB: 9 modules.
 
 Expected full quick-check suite after Module BBB: 1979 passed.
+
+## Module CCC - Recorded data one-command backtest runner
+
+Shortcut:
+
+.\hqe_recorded_data_one_command_backtest_runner.bat
+
+This module runs the recorded-data one-command paper backtest chain:
+strategy replay sandbox, decision audit, decision acceptance, CE/PE paper plans, fill/exit simulator, trade ledger, metrics engine, and report writer.
+
+One-command paper backtest safety:
+- LONG = CE BUY paper plan only.
+- SHORT = PE BUY paper plan only.
+- NEUTRAL = no trade.
+- No option selling.
+- No broker orders.
+- No live market data.
+- No real money.
+
+It does not connect to brokers, request live market data, place real orders, use real money, or prove profitability. This is not a profitability claim.
+
+Progress:
+- Completed total before Module CCC: 54 modules.
+- v1.0 pending before Module CCC: 9 modules.
+- v1.0 pending after Module CCC: 8 modules.
+
+Expected full quick-check suite after Module CCC: 1990 passed.
