@@ -445,3 +445,11 @@ Shortcut:
 .\hqe_strategy_tuning_baseline_pack.bat
 
 Builds safe paper-only strategy tuning baseline questions from first real backtest report review evidence. This is not a profitability claim.
+
+## Strategy mode comparison pack
+
+Shortcut:
+
+.\hqe_strategy_mode_comparison_pack.bat
+
+Builds strict, balanced, and relaxed paper-only mode definitions from strategy tuning baseline evidence. This is not a profitability claim.

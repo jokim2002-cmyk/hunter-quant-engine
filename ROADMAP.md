@@ -1769,3 +1769,25 @@ Progress:
 - Full HQE product estimate after Module PPP: 60-65%.
 
 Expected full quick-check suite after Module PPP: 2127 passed.
+
+## Module QQQ - Strategy mode comparison pack
+
+Status: implemented in this module.
+
+Scope:
+- Read strategy tuning baseline pack.
+- Validate required tuning candidate categories.
+- Write strict, balanced, and relaxed paper-only mode definitions.
+- Add shortcut .\hqe_strategy_mode_comparison_pack.bat.
+- Keep strategy logic changes, broker/live execution, live market data, real orders, real money, and profitability claims out of scope.
+
+Progress:
+- v1.0 Testing Edition: 63/63 modules complete.
+- v1.0 pending: 0 modules.
+- Completed total before Module QQQ: 68 modules.
+- Phase 1 pending before Module QQQ: 5 modules.
+- Completed total after Module QQQ: 69 modules.
+- Phase 1 pending after Module QQQ: 4 modules.
+- Full HQE product estimate after Module QQQ: 61-66%.
+
+Expected full quick-check suite after Module QQQ: 2138 passed.
