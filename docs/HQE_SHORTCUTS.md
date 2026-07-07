@@ -541,3 +541,11 @@ Shortcut:
 .\hqe_dashboard_dry_run_validation_pack.bat
 
 Builds paper-only future dashboard dry-run validation items. This is not a profitability claim.
+
+## Dashboard sprint readiness close pack
+
+Shortcut:
+
+.\hqe_dashboard_sprint_readiness_close_pack.bat
+
+Closes the post-v1.0 Dashboard Sprint as a paper-only evidence workflow. This is not a profitability claim.
