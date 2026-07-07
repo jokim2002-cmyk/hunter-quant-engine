@@ -715,3 +715,19 @@ Shortcut:
 This paper/simulation-only evidence module runs adapter evidence bundle plus adapter evidence bundle acceptance, then writes final adapter evidence readiness for future release/readiness work.
 
 It does not execute strategy logic, create signals, create trade plans, connect to brokers, request live market data, place real orders, use real money, calculate PnL, or prove profitability. This is not a profitability claim.
+
+## v0.4 - Paper Strategy Adapter Evidence Readiness
+
+Release tag:
+
+v0.4-paper-strategy-adapter-evidence-readiness
+
+Main command:
+
+.\hqe_recorded_data_paper_strategy_adapter_evidence_readiness.bat
+
+This release closes the recorded-data paper strategy adapter evidence readiness layer. It packages replay-plan readiness, adapter contract readiness, adapter dry-run readiness, adapter evidence bundle acceptance, and final adapter evidence readiness.
+
+Safety boundary: paper/simulation evidence only. It does not execute strategy logic, create signals, create trade plans, connect to brokers, request live market data, place real orders, use real money, calculate PnL, or prove profitability. This is not a profitability claim.
+
+Expected full quick-check suite after v0.4: 1817 passed.

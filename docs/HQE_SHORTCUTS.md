@@ -185,3 +185,15 @@ Shortcut:
 .\hqe_recorded_data_paper_strategy_adapter_evidence_readiness.bat
 
 Runs adapter evidence bundle plus acceptance gate and writes final adapter evidence readiness. This is not a profitability claim.
+
+## v0.4 release command
+
+Main release readiness command:
+
+.\hqe_recorded_data_paper_strategy_adapter_evidence_readiness.bat
+
+Release tag:
+
+v0.4-paper-strategy-adapter-evidence-readiness
+
+This is paper/simulation evidence only and is not a profitability claim.

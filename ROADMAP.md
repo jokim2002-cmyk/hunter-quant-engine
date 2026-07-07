@@ -1164,3 +1164,35 @@ Scope:
 - Keep strategy execution, signal generation, trade plans, broker/live execution, live market data, real orders, real money, PnL, and profitability claims out of scope.
 
 Expected full quick-check suite after Module LL: 1809 passed.
+
+## v0.4 - Paper Strategy Adapter Evidence Readiness Release
+
+Status: release close implemented.
+
+Release tag:
+v0.4-paper-strategy-adapter-evidence-readiness
+
+Closed scope:
+- Recorded data paper strategy replay plan scaffold.
+- Replay plan acceptance.
+- Replay plan readiness.
+- Paper strategy adapter contract.
+- Adapter contract acceptance.
+- Adapter readiness.
+- Adapter dry-run scaffold.
+- Adapter dry-run acceptance.
+- Adapter dry-run readiness.
+- Adapter evidence bundle.
+- Adapter evidence bundle acceptance.
+- Final adapter evidence readiness.
+
+Main command:
+.\hqe_recorded_data_paper_strategy_adapter_evidence_readiness.bat
+
+Expected full quick-check suite after v0.4: 1817 passed.
+
+Safety boundary:
+This release remains paper/simulation evidence only. It does not execute strategy logic, create signals, create trade plans, connect to brokers, request live market data, place real orders, use real money, calculate PnL, or prove profitability. This is not a profitability claim.
+
+Next phase:
+Future work may add a stricter paper strategy adapter dry-run consumer, but only after this v0.4 evidence readiness layer is tagged and stable.
