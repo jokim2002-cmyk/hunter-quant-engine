@@ -685,3 +685,11 @@ Shortcut:
 .\hqe_paper_improvement_acceptance_gate_pack.bat
 
 Builds the paper-only acceptance gate for Phase 5 close. This is not a profitability claim.
+
+## Paper improvement readiness sprint close pack
+
+Shortcut:
+
+.\hqe_paper_improvement_readiness_sprint_close_pack.bat
+
+Closes the paper-only improvement readiness sprint. This is not a profitability claim.
