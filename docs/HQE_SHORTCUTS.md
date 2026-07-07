@@ -391,3 +391,17 @@ Shortcut:
 .\hqe_v1_testing_release_candidate_gate.bat
 
 Validates paper-only v1.0 Testing Edition release notes evidence before final release close. This is not a profitability claim.
+
+## v1.0 Testing Edition release
+
+Release tag:
+v1.0-testing-edition
+
+Release note:
+docs/V1_0_TESTING_EDITION_RELEASE.md
+
+Final release-candidate shortcut:
+
+.\hqe_v1_testing_release_candidate_gate.bat
+
+This closes the paper-only v1.0 Testing Edition path. This is not a profitability claim.

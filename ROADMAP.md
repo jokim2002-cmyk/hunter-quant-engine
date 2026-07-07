@@ -1621,3 +1621,40 @@ Progress:
 - v1.0 pending after Module JJJ: 1 module.
 
 Expected full quick-check suite after Module JJJ: 2064 passed.
+
+## v1.0 Testing Edition release close
+
+Status: implemented in Module KKK.
+
+Release tag:
+v1.0-testing-edition
+
+Release note:
+docs/V1_0_TESTING_EDITION_RELEASE.md
+
+Scope closed:
+- recorded-data replay evidence
+- strategy input and replay scenario gates
+- paper strategy adapter chain
+- paper strategy adapter consumer chain
+- LONG / SHORT / NEUTRAL decision audit
+- CE/PE paper option-buy trade plans
+- paper fill/exit simulation
+- paper backtest ledger
+- paper backtest metrics
+- paper backtest report
+- one-command backtest runner
+- backtest acceptance and readiness gates
+- v1 testing release gate
+- operator handoff pack
+- release notes pack
+- release candidate gate
+
+Safety boundary:
+No broker execution, no live market data dependency, no real orders, no real money, no option selling, and no profitability claim.
+
+Progress:
+- Completed total after Module KKK: 63 modules.
+- v1.0 pending after Module KKK: 0 modules.
+
+Expected full quick-check suite after Module KKK: 2072 passed.

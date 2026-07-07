@@ -1183,3 +1183,36 @@ Progress:
 - v1.0 pending after Module JJJ: 1 module.
 
 Expected full quick-check suite after Module JJJ: 2064 passed.
+
+## v1.0 Testing Edition release
+
+Release tag:
+v1.0-testing-edition
+
+Release note:
+docs/V1_0_TESTING_EDITION_RELEASE.md
+
+This release closes the HQE v1.0 Testing Edition as a paper/simulation-only recorded-data testing release.
+
+Final operator shortcuts:
+- .\hqe_recorded_data_backtest_readiness_gate.bat
+- .\hqe_v1_testing_release_gate.bat
+- .\hqe_v1_testing_operator_handoff_pack.bat
+- .\hqe_v1_testing_release_notes.bat
+- .\hqe_v1_testing_release_candidate_gate.bat
+
+Safety:
+- LONG = CE BUY paper plan only.
+- SHORT = PE BUY paper plan only.
+- NEUTRAL = no trade.
+- No option selling.
+- No broker orders.
+- No live market data.
+- No real money.
+- This is not a profitability claim.
+
+Progress:
+- Completed total after Module KKK: 63 modules.
+- v1.0 pending after Module KKK: 0 modules.
+
+Expected full quick-check suite after Module KKK: 2072 passed.
