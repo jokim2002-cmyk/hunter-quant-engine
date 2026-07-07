@@ -1354,3 +1354,23 @@ Progress:
 - v1.0 pending after Module VV: 15 modules.
 
 Expected full quick-check suite after Module VV: 1913 passed.
+
+## Module WW - Recorded data strategy decision acceptance gate
+
+Status: implemented in this module.
+
+Scope:
+- Read strategy decision audit report.
+- Validate LONG / SHORT / NEUTRAL decisions.
+- Validate LONG = future CE buy paper plan only, SHORT = future PE buy paper plan only, NEUTRAL = no trade.
+- Validate decision safety/mode fields.
+- Gate decision output before future paper trade-plan simulator.
+- Add shortcut .\hqe_recorded_data_strategy_decision_acceptance.bat.
+- Keep CE/PE trade plans, broker/live execution, live market data, real orders, real money, PnL, and profitability claims out of scope.
+
+Progress:
+- Completed total before Module WW: 48 modules.
+- v1.0 pending before Module WW: 15 modules.
+- v1.0 pending after Module WW: 14 modules.
+
+Expected full quick-check suite after Module WW: 1924 passed.

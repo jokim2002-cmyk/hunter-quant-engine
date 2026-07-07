@@ -273,3 +273,11 @@ Shortcut:
 .\hqe_recorded_data_strategy_decision_audit.bat
 
 Converts strategy replay sandbox events into deterministic LONG / SHORT / NEUTRAL decision audit events. This is paper/simulation only and is not a profitability claim.
+
+## Recorded data strategy decision acceptance gate
+
+Shortcut:
+
+.\hqe_recorded_data_strategy_decision_acceptance.bat
+
+Validates LONG / SHORT / NEUTRAL strategy decision audit output before future CE/PE paper trade-plan simulation. This is paper/simulation only and is not a profitability claim.
