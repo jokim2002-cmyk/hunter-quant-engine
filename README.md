@@ -1079,3 +1079,29 @@ Progress:
 - v1.0 pending after Module FFF: 5 modules.
 
 Expected full quick-check suite after Module FFF: 2020 passed.
+
+## Module GGG - v1.0 Testing Edition release gate
+
+Shortcut:
+
+.\hqe_v1_testing_release_gate.bat
+
+This module validates recorded-data backtest readiness evidence and the v0.6 release document before the final v1.0 Testing Edition release close.
+
+Paper-only v1.0 testing release gate safety:
+- LONG = CE BUY paper plan only.
+- SHORT = PE BUY paper plan only.
+- NEUTRAL = no trade.
+- No option selling.
+- No broker orders.
+- No live market data.
+- No real money.
+
+It does not connect to brokers, request live market data, place real orders, use real money, or prove profitability. This is not a profitability claim.
+
+Progress:
+- Completed total before Module GGG: 58 modules.
+- v1.0 pending before Module GGG: 5 modules.
+- v1.0 pending after Module GGG: 4 modules.
+
+Expected full quick-check suite after Module GGG: 2031 passed.

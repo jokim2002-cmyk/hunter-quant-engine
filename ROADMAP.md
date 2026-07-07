@@ -1547,3 +1547,22 @@ Progress:
 - v1.0 pending after Module FFF: 5 modules.
 
 Expected full quick-check suite after Module FFF: 2020 passed.
+
+## Module GGG - v1.0 Testing Edition release gate
+
+Status: implemented in this module.
+
+Scope:
+- Read recorded-data backtest readiness report.
+- Validate readiness stage summary.
+- Validate final report, metrics, and ledger paths.
+- Validate v0.6 release document safety phrases.
+- Add shortcut .\hqe_v1_testing_release_gate.bat.
+- Keep broker/live execution, live market data, real orders, real money, and profitability claims out of scope.
+
+Progress:
+- Completed total before Module GGG: 58 modules.
+- v1.0 pending before Module GGG: 5 modules.
+- v1.0 pending after Module GGG: 4 modules.
+
+Expected full quick-check suite after Module GGG: 2031 passed.

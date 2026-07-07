@@ -359,3 +359,11 @@ Primary readiness shortcut:
 .\hqe_recorded_data_backtest_readiness_gate.bat
 
 This closes the one-command paper backtest readiness chain. This is not a profitability claim.
+
+## v1.0 Testing Edition release gate
+
+Shortcut:
+
+.\hqe_v1_testing_release_gate.bat
+
+Validates recorded-data backtest readiness evidence before the final paper-only v1.0 Testing Edition release close. This is not a profitability claim.
