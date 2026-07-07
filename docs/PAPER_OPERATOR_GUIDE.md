@@ -92,6 +92,15 @@ Run:
 
 This checks Paper MVP release readiness. It does not create a git tag.
 
+## Recorded Data Evidence Inventory
+
+Before building stronger evidence modules, scan available recorded data:
+
+    .\hqe_recorded_data_inventory.bat
+
+A pass means supported recorded data files exist and none are empty.
+It does not prove profitability.
+
 ## Live Execution Firewall
 
 Before any future live order-intent engineering, run:

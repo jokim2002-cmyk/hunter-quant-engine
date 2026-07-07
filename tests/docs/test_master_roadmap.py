@@ -13,7 +13,7 @@ def test_master_roadmap_has_current_status_override_before_historical_notes():
     historical_index = text.index("648 tests passing")
 
     assert current_index < historical_index
-    assert "1518 tests passing after v0.2 live-readiness scaffold release notes." in text
+    assert "1530 tests passing after Recorded-data evidence inventory." in text
     assert "Paper trading demo/report workflow completed." in text
     assert "Paper journal persistence skeleton completed." in text
     assert "Replay journal persistence bridge completed." in text
