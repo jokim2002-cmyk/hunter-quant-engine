@@ -836,3 +836,19 @@ Scope:
 - Keep broker/live execution, live market data, real orders, real money, and profitability claims out of scope.
 
 Expected full quick-check suite after Module P: 1560 passed.
+
+## Module Q - Recorded data replay dry-run player
+
+Status: implemented in this module.
+
+Scope:
+- Read the normalized replay dataset from reports\paper_trading\recorded_data_replay_dataset\dataset.json.
+- Read the replay quality gate from reports\paper_trading\recorded_data_replay_quality_gate\quality_gate.json.
+- Block dry-run event generation if the replay quality gate status is fail.
+- Convert playable replay records into deterministic paper/simulation event JSONL.
+- Skip unplayable records missing timestamp or close and report them.
+- Write paper/evidence-only output under reports\paper_trading\recorded_data_replay_dry_run.
+- Add shortcut .\hqe_recorded_data_replay_dry_run.bat.
+- Keep strategy execution, trade plans, broker/live execution, live market data, real orders, real money, and profitability claims out of scope.
+
+Expected full quick-check suite after Module Q: 1574 passed.

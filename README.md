@@ -477,3 +477,15 @@ This paper/simulation-only evidence module audits the normalized replay dataset 
 It checks dataset shape, required timestamp/open/high/low/close fields, OHLC sanity, negative volume, duplicate replay rows, timestamp ordering, source parse errors, and skipped rows.
 
 This module does not connect to brokers, request live market data, place real orders, use real money, or prove profitability. This is not a profitability claim.
+
+## Module Q - Recorded data replay dry-run player
+
+Shortcut:
+
+.\hqe_recorded_data_replay_dry_run.bat
+
+This paper/simulation-only evidence module converts the normalized recorded-data replay dataset into a deterministic dry-run event stream under reports\paper_trading\recorded_data_replay_dry_run.
+
+It reads the replay dataset and the replay quality gate output, blocks event generation when the quality gate has failed, and writes dry-run report, event JSONL, and manifest files.
+
+This module does not run strategies, create trade plans, connect to brokers, request live market data, place real orders, use real money, or prove profitability. This is not a profitability claim.

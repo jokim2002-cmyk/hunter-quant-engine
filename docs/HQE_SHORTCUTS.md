@@ -17,3 +17,11 @@ Shortcut:
 .\hqe_recorded_data_replay_quality_gate.bat
 
 Audits the normalized replay dataset created by Module O and writes paper/simulation-only quality-gate reports under reports\paper_trading\recorded_data_replay_quality_gate. This is not a profitability claim.
+
+## Recorded data replay dry-run
+
+Shortcut:
+
+.\hqe_recorded_data_replay_dry_run.bat
+
+Converts normalized recorded-data replay records into a deterministic paper/simulation-only dry-run event stream under reports\paper_trading\recorded_data_replay_dry_run. This is not a profitability claim.
