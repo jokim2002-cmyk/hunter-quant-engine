@@ -73,3 +73,11 @@ Shortcut:
 .\hqe_recorded_data_strategy_replay_scenario.bat
 
 Packages accepted recorded-data strategy input bars into deterministic future paper replay scenarios. This is not a profitability claim.
+
+## Recorded data strategy replay scenario acceptance gate
+
+Shortcut:
+
+.\hqe_recorded_data_strategy_replay_scenario_acceptance.bat
+
+Gates recorded-data strategy replay scenarios for future paper/simulation replay readiness using minimum scenario/bar rules and warning policy. This is not a profitability claim.

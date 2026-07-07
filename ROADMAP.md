@@ -939,3 +939,20 @@ Scope:
 - Keep strategy execution, signal generation, trade plans, broker/live execution, live market data, real orders, real money, and profitability claims out of scope.
 
 Expected full quick-check suite after Module W: 1645 passed.
+
+## Module X - Recorded data strategy replay scenario acceptance gate
+
+Status: implemented in this module.
+
+Scope:
+- Read reports\paper_trading\recorded_data_strategy_replay_scenario\scenario_manifest.json.
+- Gate scenario manifest status and warning policy.
+- Enforce configurable minimum scenario count.
+- Enforce configurable minimum bars per scenario.
+- Verify scenario identity/source/timestamp fields.
+- Verify recorded_replay and paper_simulation_only modes.
+- Write paper/evidence-only output under reports\paper_trading\recorded_data_strategy_replay_scenario_acceptance.
+- Add shortcut .\hqe_recorded_data_strategy_replay_scenario_acceptance.bat.
+- Keep strategy execution, signal generation, trade plans, broker/live execution, live market data, real orders, real money, and profitability claims out of scope.
+
+Expected full quick-check suite after Module X: 1657 passed.
