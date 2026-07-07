@@ -337,3 +337,11 @@ Shortcut:
 .\hqe_recorded_data_backtest_acceptance_gate.bat
 
 Validates the one-command paper backtest runner output as a paper-only backtest acceptance gate. This is not a profitability claim.
+
+## Recorded data backtest readiness gate
+
+Shortcut:
+
+.\hqe_recorded_data_backtest_readiness_gate.bat
+
+Runs the one-command paper backtest runner and backtest acceptance gate into a paper-only backtest readiness report. This is not a profitability claim.

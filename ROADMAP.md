@@ -1504,3 +1504,21 @@ Progress:
 - v1.0 pending after Module DDD: 7 modules.
 
 Expected full quick-check suite after Module DDD: 2001 passed.
+
+## Module EEE - Recorded data backtest readiness gate
+
+Status: implemented in this module.
+
+Scope:
+- Run the one-command recorded-data paper backtest runner.
+- Run the paper-only backtest acceptance gate.
+- Write final backtest readiness report.
+- Add shortcut .\hqe_recorded_data_backtest_readiness_gate.bat.
+- Keep broker/live execution, live market data, real orders, real money, and profitability claims out of scope.
+
+Progress:
+- Completed total before Module EEE: 56 modules.
+- v1.0 pending before Module EEE: 7 modules.
+- v1.0 pending after Module EEE: 6 modules.
+
+Expected full quick-check suite after Module EEE: 2012 passed.
