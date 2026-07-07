@@ -2313,3 +2313,28 @@ Progress:
 - Full HQE product estimate after Module MMMM: 83-88%.
 
 Expected full quick-check suite after Module MMMM: 2380 passed.
+
+## Module NNNN - Paper backtest evidence analysis close gate pack
+
+Status: implemented in this module.
+
+Scope:
+- Read paper backtest report safety language snapshot pack.
+- Validate required report safety language items.
+- Create paper-only evidence analysis close gate items.
+- Add shortcut .\hqe_paper_backtest_evidence_analysis_close_gate_pack.bat.
+- Keep actual backtest execution, dashboard UI startup, Streamlit runtime, strategy selection, broker/live execution, live market data, real orders, real money, and profitability claims out of scope for this module.
+
+Progress:
+- v1.0 Testing Edition: 63/63 modules complete.
+- v1.0 pending: 0 modules.
+- Phase 1 Real Backtest Usage Sprint complete.
+- Phase 2 Dashboard Sprint complete.
+- Phase 3 Recorded Backtest Review Workflow complete.
+- Completed total before Module NNNN: 91 modules.
+- Completed total after Module NNNN: 92 modules.
+- Phase 4 pending before Module NNNN: 2 modules.
+- Phase 4 pending after Module NNNN: 1 module.
+- Full HQE product estimate after Module NNNN: 84-89%.
+
+Expected full quick-check suite after Module NNNN: 2391 passed.

@@ -629,3 +629,11 @@ Shortcut:
 .\hqe_paper_backtest_report_safety_language_snapshot_pack.bat
 
 Builds paper-only report wording and safety language snapshot items. This is not a profitability claim.
+
+## Paper backtest evidence analysis close gate pack
+
+Shortcut:
+
+.\hqe_paper_backtest_evidence_analysis_close_gate_pack.bat
+
+Builds the final paper-only close gate for the evidence analysis sprint. This is not a profitability claim.
