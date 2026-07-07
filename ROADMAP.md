@@ -1522,3 +1522,28 @@ Progress:
 - v1.0 pending after Module EEE: 6 modules.
 
 Expected full quick-check suite after Module EEE: 2012 passed.
+
+## v0.6 - Recorded-data backtest readiness release close
+
+Status: implemented in Module FFF.
+
+Release tag:
+v0.6-recorded-data-backtest-readiness
+
+Release note:
+docs/V0_6_RECORDED_DATA_BACKTEST_READINESS_RELEASE.md
+
+Scope closed:
+- one-command paper backtest runner
+- paper-only backtest acceptance gate
+- paper-only backtest readiness gate
+- report, metrics, ledger, fill/exit, and CE/PE paper option-buy chain
+
+Safety boundary:
+No broker execution, no live market data dependency, no real orders, no real money, no option selling, and no profitability claim.
+
+Progress:
+- Completed total after Module FFF: 58 modules.
+- v1.0 pending after Module FFF: 5 modules.
+
+Expected full quick-check suite after Module FFF: 2020 passed.

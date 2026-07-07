@@ -345,3 +345,17 @@ Shortcut:
 .\hqe_recorded_data_backtest_readiness_gate.bat
 
 Runs the one-command paper backtest runner and backtest acceptance gate into a paper-only backtest readiness report. This is not a profitability claim.
+
+## v0.6 recorded-data backtest readiness release
+
+Release tag:
+v0.6-recorded-data-backtest-readiness
+
+Release note:
+docs/V0_6_RECORDED_DATA_BACKTEST_READINESS_RELEASE.md
+
+Primary readiness shortcut:
+
+.\hqe_recorded_data_backtest_readiness_gate.bat
+
+This closes the one-command paper backtest readiness chain. This is not a profitability claim.

@@ -1048,3 +1048,34 @@ Progress:
 - v1.0 pending after Module EEE: 6 modules.
 
 Expected full quick-check suite after Module EEE: 2012 passed.
+
+## v0.6 - Recorded-data backtest readiness release
+
+Release tag:
+v0.6-recorded-data-backtest-readiness
+
+Release note:
+docs/V0_6_RECORDED_DATA_BACKTEST_READINESS_RELEASE.md
+
+This release closes the recorded-data paper backtest readiness chain:
+strategy replay sandbox, LONG/SHORT/NEUTRAL decision audit, CE/PE paper option trade plans, paper fill/exit simulator, paper backtest trade ledger, paper backtest metrics engine, paper backtest report writer, one-command paper backtest runner, backtest acceptance gate, and backtest readiness gate.
+
+Primary readiness shortcut:
+
+.\hqe_recorded_data_backtest_readiness_gate.bat
+
+Safety:
+- LONG = CE BUY paper plan only.
+- SHORT = PE BUY paper plan only.
+- NEUTRAL = no trade.
+- No option selling.
+- No broker orders.
+- No live market data.
+- No real money.
+- This is not a profitability claim.
+
+Progress:
+- Completed total after Module FFF: 58 modules.
+- v1.0 pending after Module FFF: 5 modules.
+
+Expected full quick-check suite after Module FFF: 2020 passed.
