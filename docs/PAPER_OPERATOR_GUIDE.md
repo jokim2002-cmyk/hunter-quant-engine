@@ -92,6 +92,15 @@ Run:
 
 This checks Paper MVP release readiness. It does not create a git tag.
 
+## Live Readiness Gate
+
+After aggregating paper evidence, run:
+
+    .\hqe_live_readiness_check.bat
+
+A pass means only that live-readiness engineering may start.
+It does not approve real-money trading.
+
 ## Before Live Readiness
 
 Do not move to live-readiness unless:
@@ -101,6 +110,7 @@ Do not move to live-readiness unless:
 - Full quick check passes.
 - Evidence report is generated.
 - Release checklist is reviewed.
+- Live trading remains deferred.
 - Live trading remains disabled by default.
 
 ## Operator Rule

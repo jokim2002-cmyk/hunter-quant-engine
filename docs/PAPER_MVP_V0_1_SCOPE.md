@@ -105,6 +105,8 @@ Paper MVP v0.1 is done when a user can run one documented workflow that:
 
 ## Live Trading Boundary
 
+Live trading remains deferred.
+
 Live trading starts only after Paper MVP v0.1 and evidence gates are complete.
 
 The project can reach live-readiness engineering, but profitable live trading is

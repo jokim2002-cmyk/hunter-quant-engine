@@ -31,6 +31,7 @@ Module D added the Paper MVP operator demo and operator guide.
 Module E added the Paper MVP release gate.
 Module F added Paper MVP v0.1 release notes and release-close prep.
 Module G added the Paper evidence aggregate runner.
+Module H added the Live-readiness gate scaffold.
 
 Key scope documents:
 
@@ -38,6 +39,7 @@ Key scope documents:
 - `docs/PAPER_MVP_RELEASE_CHECKLIST.md`
 - `docs/PAPER_OPERATOR_GUIDE.md`
 - `docs/PAPER_MVP_V0_1_RELEASE_NOTES.md`
+- `docs/LIVE_READINESS_GATE.md`
 - `hqe_paper_mvp_release_check.bat`
 - `docs/DEFERRED_POLISH_BACKLOG.md`
 
@@ -89,7 +91,7 @@ Engineer it right once. Improve it forever.
 HQE currently supports:
 
 - Clean Python architecture
-- 1460 tests passing
+- 1472 tests passing
 - Smart Money Concepts detection
 - SMC strategy signal generation
 - Strategy config presets
