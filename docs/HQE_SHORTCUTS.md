@@ -645,3 +645,11 @@ Shortcut:
 .\hqe_paper_backtest_evidence_analysis_sprint_close_pack.bat
 
 Closes the paper-only evidence analysis sprint. This is not a profitability claim.
+
+## Paper improvement readiness launch pack
+
+Shortcut:
+
+.\hqe_paper_improvement_readiness_launch_pack.bat
+
+Starts the paper-only improvement readiness sprint from closed paper evidence. This is not a profitability claim.
