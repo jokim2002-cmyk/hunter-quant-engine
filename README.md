@@ -809,3 +809,20 @@ Safety boundary: paper/simulation evidence only. It does not execute strategy lo
 Expected full quick-check suite after v0.5: 1891 passed.
 
 Next phase: v1.0 Testing Edition fast-track backtest engine.
+
+## Module UU - Recorded data strategy replay sandbox
+
+Shortcut:
+
+.\hqe_recorded_data_strategy_replay_sandbox.bat
+
+This module starts the v1.0 Testing Edition backtest path by converting validated recorded-data strategy input bars into deterministic strategy replay sandbox events.
+
+It does not generate LONG/SHORT/NEUTRAL signals, create trade plans, connect to brokers, request live market data, place real orders, use real money, calculate PnL, or prove profitability. This is not a profitability claim.
+
+Progress:
+- Completed total before Module UU: 46 modules.
+- v1.0 pending before Module UU: 17 modules.
+- v1.0 pending after Module UU: 16 modules.
+
+Expected full quick-check suite after Module UU: 1902 passed.

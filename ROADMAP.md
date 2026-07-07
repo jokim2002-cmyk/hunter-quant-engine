@@ -1315,3 +1315,23 @@ Fast-track v1.0 Testing Edition backtest engine:
 - Paper fill and exit simulator.
 - Backtest ledger and metrics engine.
 - One-command paper backtest runner.
+
+## Module UU - Recorded data strategy replay sandbox
+
+Status: implemented in this module.
+
+Scope:
+- Read consumer evidence readiness.
+- Read recorded-data strategy input bars.
+- Validate recorded_replay and paper_simulation_only modes.
+- Convert valid bars into strategy replay sandbox events.
+- Prepare safe input for future LONG / SHORT / NEUTRAL strategy decision audit.
+- Add shortcut .\hqe_recorded_data_strategy_replay_sandbox.bat.
+- Keep strategy execution, signal generation, trade plans, broker/live execution, live market data, real orders, real money, PnL, and profitability claims out of scope.
+
+Progress:
+- Completed total before Module UU: 46 modules.
+- v1.0 pending before Module UU: 17 modules.
+- v1.0 pending after Module UU: 16 modules.
+
+Expected full quick-check suite after Module UU: 1902 passed.
