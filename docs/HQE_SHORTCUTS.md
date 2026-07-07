@@ -605,3 +605,11 @@ Shortcut:
 .\hqe_paper_backtest_evidence_analysis_launch_pack.bat
 
 Launches paper-only evidence analysis from recorded-data paper backtest review workflow close evidence. This is not a profitability claim.
+
+## Paper backtest ledger evidence snapshot pack
+
+Shortcut:
+
+.\hqe_paper_backtest_ledger_evidence_snapshot_pack.bat
+
+Builds ledger-focused paper evidence snapshot items. This is not a profitability claim.
