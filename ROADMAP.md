@@ -2905,3 +2905,28 @@ Progress:
 - Full HQE product estimate after Module JJJJJ: 98-99%.
 
 Expected full quick-check suite after Module JJJJJ: verify with `.\\.venv\\Scripts\\python.exe -m pytest`.
+
+## Module KKKKK - Safe improved recorded-data paper runner contract pack
+
+Status: implemented in this module.
+
+Scope:
+- Read the Module JJJJJ execution plan when available.
+- Create the future guarded paper runner contract.
+- Lock the recorded-dataset boundary.
+- Lock the paper-only execution boundary.
+- Lock LONG = CE BUY paper plan, SHORT = PE BUY paper plan, and NEUTRAL = no trade.
+- Lock no-live, no-broker, no-real-order, no-real-money, and no-profitability-claim rules.
+- Keep runner execution disabled in this module.
+- Write JSON, text, CSV, and manifest evidence outputs.
+
+Command:
+`.\hqe_safe_improved_recorded_data_paper_runner_contract_pack.bat`
+
+Progress:
+- Completed total before Module KKKKK: 114 modules.
+- Completed total after Module KKKKK: 115 modules.
+- Phase 9 Safe Improved Recorded-Data Paper Runner Execution pending after Module KKKKK: 1 module.
+- Full HQE product estimate after Module KKKKK: 99%.
+
+Expected full quick-check suite after Module KKKKK: verify with `.\\.venv\\Scripts\\python.exe -m pytest`.
