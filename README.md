@@ -2383,3 +2383,25 @@ Safety: this is paper/simulation only. It does not run backtests, change strateg
 - Full HQE product estimate after Module AAAAA: 96-99%.
 
 Next recommended step: plan an improved recorded-data paper rerun that compares baseline, pricing reality, slippage/cost, exit-rule, cooldown/duplicate, and session/frequency assumptions without claiming profitability.
+
+### Module BBBBB - Improved recorded-data paper rerun planning pack
+
+This module starts Phase 7 by creating a safe plan for a future improved recorded-data paper rerun using the completed paper improvement execution evidence. It does not execute the rerun.
+
+Command:
+`.\hqe_improved_recorded_data_paper_rerun_planning_pack.bat`
+
+Safety: this is paper/simulation planning only. It does not run backtests, change strategy logic, select a winning strategy, connect to brokers, request live data, place real orders, use real money, approve live trading, or prove profitability.
+
+- v1.0 Testing Edition: 63/63 modules complete.
+- Post-v1.0 Phase 1 Real Backtest Usage Sprint complete.
+- Post-v1.0 Phase 2 Dashboard Sprint complete.
+- Post-v1.0 Phase 3 Recorded Backtest Review Workflow complete.
+- Post-v1.0 Phase 4 Paper Backtest Evidence Analysis Sprint complete.
+- Post-v1.0 Phase 5 Paper Improvement Readiness Sprint complete.
+- Post-v1.0 Phase 6 Paper Improvement Execution Sprint complete.
+- Post-v1.0 Phase 7 Improved Recorded-Data Paper Rerun Sprint started.
+- Completed total before Module BBBBB: 105 modules.
+- Completed total after Module BBBBB: 106 modules.
+- Phase 7 pending after Module BBBBB: 3 modules.
+- Full HQE product estimate after Module BBBBB: 96-99%.
