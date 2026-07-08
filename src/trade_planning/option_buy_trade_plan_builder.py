@@ -1,4 +1,4 @@
-﻿"""
+"""
 Option Buy Trade Plan Builder
 
 Builds approved broker-agnostic NIFTY option-buy trade plans.
@@ -42,6 +42,7 @@ class OptionBuyTradePlanBuilder:
         self,
         lots: int,
         cost_calculator: TransactionCostCalculator | None = None,
+        min_estimated_net_reward: float = 0.0,
     ):
         """
         Initialize builder.
@@ -49,8 +50,12 @@ class OptionBuyTradePlanBuilder:
         if lots <= 0:
             raise ValueError("lots must be greater than 0")
 
+        if min_estimated_net_reward < 0:
+            raise ValueError("min_estimated_net_reward cannot be negative")
+
         self.lots = lots
         self.cost_calculator = cost_calculator or TransactionCostCalculator()
+        self.min_estimated_net_reward = min_estimated_net_reward
 
     def build(
         self,
@@ -102,6 +107,17 @@ class OptionBuyTradePlanBuilder:
             pnl=premium_levels.reward_per_unit * quantity,
         )
         cost_breakdown = self.cost_calculator.calculate(estimated_trade)
+        estimated_net_reward = premium_levels.reward_per_unit * quantity
+        estimated_net_reward -= cost_breakdown.total_charges
+
+        if estimated_net_reward < self.min_estimated_net_reward:
+            return OptionBuyTradePlanBuildResult(
+                plan=None,
+                rejection_reasons=(
+                    "estimated net reward below minimum "
+                    f"{self.min_estimated_net_reward}",
+                ),
+            )
 
         plan = OptionBuyTradePlan(
             signal=selection_result.signal,

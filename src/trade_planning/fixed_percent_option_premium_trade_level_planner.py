@@ -1,4 +1,4 @@
-﻿"""
+"""
 Fixed Percent Option Premium Trade Level Planner
 
 Plans option premium stop-loss and target levels using fixed percentages.
@@ -14,6 +14,9 @@ from src.trade_planning.option_premium_trade_levels import OptionPremiumTradeLev
 class FixedPercentOptionPremiumTradeLevelPlanner:
     """
     Builds option premium levels from ask price or last traded price.
+
+    Buyer-side entry slippage can be configured through
+    OptionPremiumTradeLevelConfig. Defaults keep legacy behavior unchanged.
     """
 
     def __init__(
@@ -32,7 +35,14 @@ class FixedPercentOptionPremiumTradeLevelPlanner:
         """
         Return premium trade levels for an option chain entry.
         """
-        entry_premium, premium_source = self._entry_premium(entry)
+        base_entry_premium, premium_source = self._entry_premium(entry)
+        entry_premium = self._apply_entry_slippage(base_entry_premium)
+
+        if self.config.entry_slippage_percent > 0:
+            premium_source = (
+                f"{premium_source}+entry_slippage_"
+                f"{self.config.entry_slippage_percent}"
+            )
 
         return OptionPremiumTradeLevels(
             entry=entry,
@@ -53,3 +63,12 @@ class FixedPercentOptionPremiumTradeLevelPlanner:
             return entry.ask_price, "ask_price"
 
         return entry.last_traded_price, "last_traded_price"
+
+    def _apply_entry_slippage(
+        self,
+        entry_premium: float,
+    ) -> float:
+        """
+        Apply buyer-adverse entry slippage to the planned premium.
+        """
+        return entry_premium * (1 + self.config.entry_slippage_percent)

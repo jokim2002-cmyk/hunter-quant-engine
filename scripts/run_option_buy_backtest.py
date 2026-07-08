@@ -34,6 +34,24 @@ from src.backtesting.option_premium_candle_csv_loader import (
     OptionPremiumCandleCsvLoader,
 )
 from src.backtesting.trade_signal_csv_loader import TradeSignalCsvLoader
+from src.costs.transaction_cost_calculator import TransactionCostCalculator
+from src.costs.transaction_cost_profile_preset import (
+    COST_PROFILE_CUSTOM,
+    build_transaction_cost_profile_from_name,
+    supported_transaction_cost_profile_names,
+)
+from src.trade_planning.dynamic_option_strike_selector import (
+    DynamicOptionStrikeSelector,
+    OptionLiquidityFilterConfig,
+)
+from src.trade_planning.fixed_percent_option_premium_trade_level_planner import (
+    FixedPercentOptionPremiumTradeLevelPlanner,
+)
+from src.trade_planning.option_buy_planner import OptionBuyPlanner
+from src.trade_planning.option_buy_trade_plan_builder import OptionBuyTradePlanBuilder
+from src.trade_planning.option_premium_trade_level_config import (
+    OptionPremiumTradeLevelConfig,
+)
 
 
 def load_scenarios_from_inputs(
@@ -59,11 +77,65 @@ def load_scenarios_from_inputs(
     return OptionBuyBacktestScenarioBuilder().build_scenarios(signals, snapshots)
 
 
+def build_option_buy_backtest_runner(
+    *,
+    min_volume: int = 0,
+    min_open_interest: int = 0,
+    require_bid_ask_quote: bool = False,
+    max_spread: float | None = None,
+    stop_loss_percent: float = 0.30,
+    target_percent: float = 0.60,
+    entry_slippage_percent: float = 0.0,
+    lots: int = 1,
+    cost_profile: str = COST_PROFILE_CUSTOM,
+    min_estimated_net_reward: float = 0.0,
+) -> OptionBuyBacktestRunner:
+    """
+    Build an option-buy backtest runner with explicit robustness controls.
+    """
+    transaction_cost_profile = build_transaction_cost_profile_from_name(cost_profile)
+    cost_calculator = TransactionCostCalculator(transaction_cost_profile)
+
+    planner = OptionBuyPlanner(
+        strike_selector=DynamicOptionStrikeSelector(
+            liquidity_config=OptionLiquidityFilterConfig(
+                min_volume=min_volume,
+                min_open_interest=min_open_interest,
+                require_bid_ask_quote=require_bid_ask_quote,
+                max_spread=max_spread,
+            )
+        ),
+        premium_level_planner=FixedPercentOptionPremiumTradeLevelPlanner(
+            config=OptionPremiumTradeLevelConfig(
+                stop_loss_percent=stop_loss_percent,
+                target_percent=target_percent,
+                entry_slippage_percent=entry_slippage_percent,
+            )
+        ),
+        trade_plan_builder=OptionBuyTradePlanBuilder(
+            lots=lots,
+            cost_calculator=cost_calculator,
+            min_estimated_net_reward=min_estimated_net_reward,
+        ),
+    )
+    return OptionBuyBacktestRunner(planner=planner)
+
+
 def run_backtest(
     scenario_csv: str | Path | None = None,
     premium_csv: str | Path | None = None,
     signal_csv: str | Path | None = None,
     snapshot_csv: str | Path | None = None,
+    min_volume: int = 0,
+    min_open_interest: int = 0,
+    require_bid_ask_quote: bool = False,
+    max_spread: float | None = None,
+    stop_loss_percent: float = 0.30,
+    target_percent: float = 0.60,
+    entry_slippage_percent: float = 0.0,
+    lots: int = 1,
+    cost_profile: str = COST_PROFILE_CUSTOM,
+    min_estimated_net_reward: float = 0.0,
 ) -> OptionBuyBacktestSummary:
     """
     Run an offline option-buy backtest from scenario and premium CSV files.
@@ -78,12 +150,22 @@ def run_backtest(
     signals = tuple(scenario.signal for scenario in scenarios)
     snapshots = tuple(scenario.snapshot for scenario in scenarios)
 
-    return OptionBuyBacktestRunner().run(
+    return build_option_buy_backtest_runner(
+        min_volume=min_volume,
+        min_open_interest=min_open_interest,
+        require_bid_ask_quote=require_bid_ask_quote,
+        max_spread=max_spread,
+        stop_loss_percent=stop_loss_percent,
+        target_percent=target_percent,
+        entry_slippage_percent=entry_slippage_percent,
+        lots=lots,
+        cost_profile=cost_profile,
+        min_estimated_net_reward=min_estimated_net_reward,
+    ).run(
         signals=signals,
         snapshots=snapshots,
         premium_candle_provider=premium_provider,
     )
-
 
 def summary_to_dict(summary: OptionBuyBacktestSummary) -> dict[str, object]:
     """
@@ -328,6 +410,66 @@ def build_argument_parser() -> argparse.ArgumentParser:
         default=None,
         help="Optional path to write per-trade results as CSV.",
     )
+
+    parser.add_argument(
+        "--min-volume",
+        type=int,
+        default=0,
+        help="Minimum option chain entry volume required for strike selection.",
+    )
+    parser.add_argument(
+        "--min-open-interest",
+        type=int,
+        default=0,
+        help="Minimum option chain entry open interest required for strike selection.",
+    )
+    parser.add_argument(
+        "--require-bid-ask-quote",
+        action="store_true",
+        help="Reject option entries without both bid and ask quote.",
+    )
+    parser.add_argument(
+        "--max-spread",
+        type=float,
+        default=None,
+        help="Maximum absolute bid/ask spread allowed for strike selection.",
+    )
+    parser.add_argument(
+        "--stop-loss-percent",
+        type=float,
+        default=0.30,
+        help="Option premium stop-loss percent. Default: 0.30.",
+    )
+    parser.add_argument(
+        "--target-percent",
+        type=float,
+        default=0.60,
+        help="Option premium target percent. Default: 0.60.",
+    )
+    parser.add_argument(
+        "--entry-slippage-percent",
+        type=float,
+        default=0.0,
+        help="Buyer-adverse entry slippage percent applied before planning levels.",
+    )
+    parser.add_argument(
+        "--lots",
+        type=int,
+        default=1,
+        help="Number of option lots per plan.",
+    )
+    parser.add_argument(
+        "--cost-profile",
+        default=COST_PROFILE_CUSTOM,
+        choices=supported_transaction_cost_profile_names(),
+        help="Transaction cost profile used for planned target-exit charge estimate.",
+    )
+    parser.add_argument(
+        "--min-estimated-net-reward",
+        type=float,
+        default=0.0,
+        help="Reject plans whose estimated net target reward is below this value.",
+    )
     return parser
 
 
@@ -354,6 +496,16 @@ def main(
         premium_csv=args.premium_csv,
         signal_csv=args.signal_csv,
         snapshot_csv=args.snapshot_csv,
+        min_volume=args.min_volume,
+        min_open_interest=args.min_open_interest,
+        require_bid_ask_quote=args.require_bid_ask_quote,
+        max_spread=args.max_spread,
+        stop_loss_percent=args.stop_loss_percent,
+        target_percent=args.target_percent,
+        entry_slippage_percent=args.entry_slippage_percent,
+        lots=args.lots,
+        cost_profile=args.cost_profile,
+        min_estimated_net_reward=args.min_estimated_net_reward,
     )
 
     if args.summary_json:
