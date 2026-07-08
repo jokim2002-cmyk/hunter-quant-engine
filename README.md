@@ -2297,3 +2297,26 @@ Safety: this is paper/simulation only. It does not run backtests, change strateg
 - Completed total after Module WWWW: 101 modules.
 - Phase 6 Paper Improvement Execution Sprint pending after Module WWWW: 3 modules.
 - Full HQE product estimate after Module WWWW: 93-98%.
+
+### Module XXXX - Paper exit rule sensitivity review pack
+
+This module continues the post-v1.0 Paper Improvement Execution Sprint by
+auditing stop, target, timeout, and exit-distribution assumptions after option
+pricing reality and slippage/cost sensitivity evidence.
+
+Command:
+`.\hqe_paper_exit_rule_sensitivity_review_pack.bat`
+
+Safety: this is paper/simulation only. It does not run backtests, change strategy
+logic, select a winning strategy, connect to brokers, request live data, place
+real orders, use real money, approve live trading, or prove profitability.
+
+- v1.0 Testing Edition: 63/63 modules complete.
+- Post-v1.0 Phase 1 Real Backtest Usage Sprint complete.
+- Post-v1.0 Phase 2 Dashboard Sprint complete.
+- Post-v1.0 Phase 3 Recorded Backtest Review Workflow complete.
+- Post-v1.0 Phase 4 Paper Backtest Evidence Analysis Sprint complete.
+- Post-v1.0 Phase 5 Paper Improvement Readiness Sprint complete.
+- Completed total after Module XXXX: 102 modules.
+- Phase 6 Paper Improvement Execution Sprint pending after Module XXXX: 3 modules.
+- Full HQE product estimate after Module XXXX: 93-98%.
