@@ -2473,3 +2473,26 @@ Safety: this is paper/simulation sprint-close evidence only. It does not run bac
 - Full HQE product estimate after Module EEEEE: 98-99%.
 
 Next recommended phase: build a safe improved recorded-data paper rerun runner using the locked controls. The runner must remain recorded-data-only, broker-disabled, real-order-disabled, and no-profitability-claim.
+
+### Module FFFFF - Safe improved recorded-data paper rerun runner scaffold pack
+
+This module starts Phase 8 by building the safe runner scaffold contract for a future improved recorded-data paper rerun. It does not execute a backtest and keeps runner execution disabled.
+
+Command:
+`.\hqe_safe_improved_recorded_data_paper_rerun_runner_scaffold_pack.bat`
+
+Safety: this is paper/simulation runner-scaffold evidence only. It does not run backtests, change strategy logic, select a winning strategy, connect to brokers, request live data, place real orders, use real money, approve live trading, or prove profitability.
+
+- v1.0 Testing Edition: 63/63 modules complete.
+- Post-v1.0 Phase 1 Real Backtest Usage Sprint complete.
+- Post-v1.0 Phase 2 Dashboard Sprint complete.
+- Post-v1.0 Phase 3 Recorded Backtest Review Workflow complete.
+- Post-v1.0 Phase 4 Paper Backtest Evidence Analysis Sprint complete.
+- Post-v1.0 Phase 5 Paper Improvement Readiness Sprint complete.
+- Post-v1.0 Phase 6 Paper Improvement Execution Sprint complete.
+- Post-v1.0 Phase 7 Improved Recorded-Data Paper Rerun Sprint complete.
+- Post-v1.0 Phase 8 Safe Improved Recorded-Data Paper Rerun Runner Build started.
+- Completed total before Module FFFFF: 109 modules.
+- Completed total after Module FFFFF: 110 modules.
+- Phase 8 pending after Module FFFFF: 2 modules.
+- Full HQE product estimate after Module FFFFF: 98-99%.

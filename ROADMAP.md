@@ -2775,3 +2775,32 @@ Progress:
 - Full HQE product estimate after Module EEEEE: 98-99%.
 
 Expected full quick-check suite after Module EEEEE: verify with `.\.venv\Scripts\python.exe -m pytest`.
+
+## Module FFFFF - Safe improved recorded-data paper rerun runner scaffold pack
+
+Status: implemented in this module.
+
+Scope:
+- Read the Phase 7 close pack.
+- Build the future runner scaffold contract.
+- Lock local-file input loading, recorded-data-only mode, paper option-buy trade mapping, improvement layer pipeline, skipped-reason output contract, broker/live/real-order disablement, and no-profit-claim reporting.
+- Keep runner execution disabled in this module.
+- Write JSON, text, CSV, and manifest evidence outputs.
+- Keep backtest execution, optimization, strategy logic changes, broker/live execution, live market data, real orders, real money, and profitability claims out of scope.
+
+Progress:
+- v1.0 Testing Edition: 63/63 modules complete.
+- Phase 1 Real Backtest Usage Sprint complete.
+- Phase 2 Dashboard Sprint complete.
+- Phase 3 Recorded Backtest Review Workflow complete.
+- Phase 4 Paper Backtest Evidence Analysis Sprint complete.
+- Phase 5 Paper Improvement Readiness Sprint complete.
+- Phase 6 Paper Improvement Execution Sprint complete.
+- Phase 7 Improved Recorded-Data Paper Rerun Sprint complete.
+- Phase 8 Safe Improved Recorded-Data Paper Rerun Runner Build started.
+- Completed total before Module FFFFF: 109 modules.
+- Completed total after Module FFFFF: 110 modules.
+- Phase 8 Safe Improved Recorded-Data Paper Rerun Runner Build pending after Module FFFFF: 2 modules.
+- Full HQE product estimate after Module FFFFF: 98-99%.
+
+Expected full quick-check suite after Module FFFFF: verify with `.\.venv\Scripts\python.exe -m pytest`.
