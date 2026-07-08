@@ -2615,3 +2615,29 @@ Progress:
 - Full HQE product estimate after Module YYYY: 94-99%.
 
 Expected full quick-check suite after Module YYYY: verify with `.\.venv\Scripts\python.exe -m pytest`.
+
+## Module ZZZZ - Paper session and trade frequency filter review pack
+
+Status: implemented in this module.
+
+Scope:
+- Read the paper tuning candidate readiness pack.
+- Read the paper signal cooldown duplicate filter review pack.
+- Read the paper trade frequency guard evidence.
+- Review session-window, daily concentration, and trade-frequency assumptions.
+- Write JSON, text, CSV, and manifest evidence outputs.
+- Keep backtest execution, optimization, strategy logic changes, broker/live execution, live market data, real orders, real money, and profitability claims out of scope.
+
+Progress:
+- v1.0 Testing Edition: 63/63 modules complete.
+- Phase 1 Real Backtest Usage Sprint complete.
+- Phase 2 Dashboard Sprint complete.
+- Phase 3 Recorded Backtest Review Workflow complete.
+- Phase 4 Paper Backtest Evidence Analysis Sprint complete.
+- Phase 5 Paper Improvement Readiness Sprint complete.
+- Completed total before Module ZZZZ: 103 modules.
+- Completed total after Module ZZZZ: 104 modules.
+- Phase 6 Paper Improvement Execution Sprint pending after Module ZZZZ: 1 module.
+- Full HQE product estimate after Module ZZZZ: 95-99%.
+
+Expected full quick-check suite after Module ZZZZ: verify with `.\.venv\Scripts\python.exe -m pytest`.
