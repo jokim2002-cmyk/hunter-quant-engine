@@ -5,7 +5,7 @@ Module VVVV starts the paper-only improvement execution sprint after Module UUUU
 Command:
 
 ```bat
-.\hqe_paper_option_reference_pricing_reality_check_pack.bat
+.\scripts\paper_trading\hqe_paper_option_reference_pricing_reality_check_pack.bat
 ```
 
 Purpose:

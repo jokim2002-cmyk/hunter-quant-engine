@@ -6,7 +6,7 @@ Purpose:
 The first real backtest report review pack reads the output verification pack and creates an operator review checklist for report, metrics, ledger, readiness, release gate, and handoff evidence.
 
 Command:
-.\hqe_first_real_backtest_report_review_pack.bat
+.\scripts\paper_trading\hqe_first_real_backtest_report_review_pack.bat
 
 Default input:
 reports\paper_trading\first_real_backtest_output_verification_pack\first_real_backtest_output_verification_pack.json

@@ -6,7 +6,7 @@ Purpose:
 The dashboard smoke test plan pack reads the dashboard app shell pack and creates future dashboard smoke-test steps.
 
 Command:
-.\hqe_dashboard_smoke_test_plan_pack.bat
+.\scripts\paper_trading\hqe_dashboard_smoke_test_plan_pack.bat
 
 Default input:
 reports\paper_trading\dashboard_app_shell_pack\dashboard_app_shell_pack.json

@@ -35,7 +35,7 @@ git pull --ff-only
 
 Preferred shortcut:
 
-.\hqe_benchmark_modes.bat
+.\scripts\paper_trading\hqe_benchmark_modes.bat
 
 Direct command:
 
@@ -53,7 +53,7 @@ data\processed\fyers_nifty_5m_mode_benchmark_summary.csv
 
 Preferred shortcut:
 
-.\hqe_run_experiments.bat
+.\scripts\paper_trading\hqe_run_experiments.bat
 
 Direct command:
 

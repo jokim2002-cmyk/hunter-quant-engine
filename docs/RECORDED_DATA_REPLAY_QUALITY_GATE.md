@@ -27,10 +27,10 @@ Checks:
 - source parse errors and skipped rows are surfaced
 
 Command:
-.\hqe_recorded_data_replay_quality_gate.bat
+.\scripts\paper_trading\hqe_recorded_data_replay_quality_gate.bat
 
 Optional custom path example:
-.\hqe_recorded_data_replay_quality_gate.bat --dataset reports\paper_trading\recorded_data_replay_dataset\dataset.json --output-dir reports\paper_trading\recorded_data_replay_quality_gate
+.\scripts\paper_trading\hqe_recorded_data_replay_quality_gate.bat --dataset reports\paper_trading\recorded_data_replay_dataset\dataset.json --output-dir reports\paper_trading\recorded_data_replay_quality_gate
 
 Safety boundary:
 This module is paper/evidence only. It does not connect to a broker, request live market data, place real orders, use real money, or prove profitability.

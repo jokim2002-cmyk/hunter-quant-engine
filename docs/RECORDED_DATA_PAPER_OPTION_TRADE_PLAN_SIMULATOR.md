@@ -6,7 +6,7 @@ Purpose:
 The simulator reads the strategy decision acceptance gate and strategy decision audit report, then creates safe paper option buy plans.
 
 Command:
-.\hqe_recorded_data_paper_option_trade_plan_simulator.bat
+.\scripts\paper_trading\hqe_recorded_data_paper_option_trade_plan_simulator.bat
 
 Default inputs:
 reports\paper_trading\recorded_data_strategy_decision_acceptance\strategy_decision_acceptance.json

@@ -43,10 +43,10 @@ Normalized replay fields:
 Common aliases like time, datetime, o, h, l, c, price, and vol are handled.
 
 Command:
-.\hqe_recorded_data_replay_dataset.bat
+.\scripts\paper_trading\hqe_recorded_data_replay_dataset.bat
 
 Optional custom path example:
-.\hqe_recorded_data_replay_dataset.bat --recorded-root data\recorded --output-dir reports\paper_trading\recorded_data_replay_dataset
+.\scripts\paper_trading\hqe_recorded_data_replay_dataset.bat --recorded-root data\recorded --output-dir reports\paper_trading\recorded_data_replay_dataset
 
 Default output folder:
 reports\paper_trading\recorded_data_replay_dataset

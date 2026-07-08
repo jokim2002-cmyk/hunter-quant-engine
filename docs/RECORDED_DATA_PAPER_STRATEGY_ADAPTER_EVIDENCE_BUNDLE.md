@@ -9,7 +9,7 @@ The bundle runs:
 3. Final adapter evidence bundle report.
 
 Command:
-.\hqe_recorded_data_paper_strategy_adapter_evidence_bundle.bat
+.\scripts\paper_trading\hqe_recorded_data_paper_strategy_adapter_evidence_bundle.bat
 
 Default inputs:
 reports\paper_trading\recorded_data_paper_strategy_replay_plan_readiness\paper_strategy_replay_plan_readiness.json

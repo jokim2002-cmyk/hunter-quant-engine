@@ -6,7 +6,7 @@ Purpose:
 The paper backtest ledger evidence snapshot pack reads the paper backtest evidence analysis launch pack and creates ledger-focused paper evidence snapshot items.
 
 Command:
-.\hqe_paper_backtest_ledger_evidence_snapshot_pack.bat
+.\scripts\paper_trading\hqe_paper_backtest_ledger_evidence_snapshot_pack.bat
 
 Default input:
 reports\paper_trading\paper_backtest_evidence_analysis_launch_pack\paper_backtest_evidence_analysis_launch_pack.json

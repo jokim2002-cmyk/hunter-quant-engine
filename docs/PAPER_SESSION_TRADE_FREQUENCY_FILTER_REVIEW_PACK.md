@@ -5,7 +5,7 @@ Module ZZZZ continues the post-v1.0 Paper Improvement Execution Sprint.
 Command:
 
 ```bat
-.\hqe_paper_session_trade_frequency_filter_review_pack.bat
+.\scripts\paper_trading\hqe_paper_session_trade_frequency_filter_review_pack.bat
 ```
 
 Purpose:

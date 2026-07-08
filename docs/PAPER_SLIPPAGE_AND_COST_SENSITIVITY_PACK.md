@@ -5,7 +5,7 @@ Module WWWW continues the post-v1.0 Paper Improvement Execution Sprint after the
 Command:
 
 ```bat
-.\hqe_paper_slippage_and_cost_sensitivity_pack.bat
+.\scripts\paper_trading\hqe_paper_slippage_and_cost_sensitivity_pack.bat
 ```
 
 Purpose:

@@ -815,7 +815,7 @@ Scope:
 - Fall back to discovery under data\recorded and data\live_recording.
 - Normalize simple CSV/JSON/JSONL rows into replay records with timestamp/open/high/low/close/volume when available.
 - Write paper/evidence-only output under reports\paper_trading\recorded_data_replay_dataset.
-- Add shortcut .\hqe_recorded_data_replay_dataset.bat.
+- Add shortcut .\scripts\paper_trading\hqe_recorded_data_replay_dataset.bat.
 - Keep broker/live execution, live market data, real orders, real money, and profitability claims out of scope.
 
 Expected full quick-check suite after Module O: 1546 passed.
@@ -832,7 +832,7 @@ Scope:
 - Warn on duplicate replay rows and out-of-order parseable timestamps.
 - Surface source parse errors, skipped rows, and skipped sources.
 - Write paper/evidence-only output under reports\paper_trading\recorded_data_replay_quality_gate.
-- Add shortcut .\hqe_recorded_data_replay_quality_gate.bat.
+- Add shortcut .\scripts\paper_trading\hqe_recorded_data_replay_quality_gate.bat.
 - Keep broker/live execution, live market data, real orders, real money, and profitability claims out of scope.
 
 Expected full quick-check suite after Module P: 1560 passed.
@@ -848,7 +848,7 @@ Scope:
 - Convert playable replay records into deterministic paper/simulation event JSONL.
 - Skip unplayable records missing timestamp or close and report them.
 - Write paper/evidence-only output under reports\paper_trading\recorded_data_replay_dry_run.
-- Add shortcut .\hqe_recorded_data_replay_dry_run.bat.
+- Add shortcut .\scripts\paper_trading\hqe_recorded_data_replay_dry_run.bat.
 - Keep strategy execution, trade plans, broker/live execution, live market data, real orders, real money, and profitability claims out of scope.
 
 Expected full quick-check suite after Module Q: 1574 passed.
@@ -862,7 +862,7 @@ Scope:
 - Run the recorded-data replay quality gate.
 - Run the recorded-data replay dry-run player.
 - Write a combined evidence summary and manifest.
-- Add shortcut .\hqe_recorded_data_replay_evidence.bat.
+- Add shortcut .\scripts\paper_trading\hqe_recorded_data_replay_evidence.bat.
 - Keep strategy execution, trade plans, broker/live execution, live market data, real orders, real money, and profitability claims out of scope.
 
 Expected full quick-check suite after Module R: 1587 passed.
@@ -878,7 +878,7 @@ Scope:
 - Enforce configurable minimum replay dry-run event count.
 - Add optional warning acceptance via --allow-warnings.
 - Write paper/evidence-only output under reports\paper_trading\recorded_data_replay_acceptance.
-- Add shortcut .\hqe_recorded_data_replay_acceptance.bat.
+- Add shortcut .\scripts\paper_trading\hqe_recorded_data_replay_acceptance.bat.
 - Keep strategy execution, trade plans, broker/live execution, live market data, real orders, real money, and profitability claims out of scope.
 
 Expected full quick-check suite after Module S: 1599 passed.
@@ -891,7 +891,7 @@ Scope:
 - Run the recorded-data replay evidence bundle.
 - Run the recorded-data replay acceptance gate.
 - Write final readiness report under reports\paper_trading\recorded_data_replay_readiness.
-- Add shortcut .\hqe_recorded_data_replay_readiness.bat.
+- Add shortcut .\scripts\paper_trading\hqe_recorded_data_replay_readiness.bat.
 - Keep strategy execution, trade plans, broker/live execution, live market data, real orders, real money, and profitability claims out of scope.
 
 Expected full quick-check suite after Module T: 1611 passed.
@@ -907,7 +907,7 @@ Scope:
 - Reject execution/trading/profit fields from the input contract.
 - Enforce configurable minimum accepted bar count.
 - Write paper/evidence-only output under reports\paper_trading\recorded_data_strategy_input_contract.
-- Add shortcut .\hqe_recorded_data_strategy_input_contract.bat.
+- Add shortcut .\scripts\paper_trading\hqe_recorded_data_strategy_input_contract.bat.
 - Keep strategy execution, signal generation, trade plans, broker/live execution, live market data, real orders, real money, and profitability claims out of scope.
 
 Expected full quick-check suite after Module U: 1623 passed.
@@ -920,7 +920,7 @@ Scope:
 - Run the recorded-data replay readiness gate.
 - Run the recorded-data strategy input contract.
 - Write final preflight report under reports\paper_trading\recorded_data_strategy_replay_preflight.
-- Add shortcut .\hqe_recorded_data_strategy_replay_preflight.bat.
+- Add shortcut .\scripts\paper_trading\hqe_recorded_data_strategy_replay_preflight.bat.
 - Keep strategy execution, signal generation, trade plans, broker/live execution, live market data, real orders, real money, and profitability claims out of scope.
 
 Expected full quick-check suite after Module V: 1634 passed.
@@ -935,7 +935,7 @@ Scope:
 - Group accepted bars into deterministic replay scenarios by source file.
 - Enforce configurable minimum bars per scenario.
 - Write paper/evidence-only output under reports\paper_trading\recorded_data_strategy_replay_scenario.
-- Add shortcut .\hqe_recorded_data_strategy_replay_scenario.bat.
+- Add shortcut .\scripts\paper_trading\hqe_recorded_data_strategy_replay_scenario.bat.
 - Keep strategy execution, signal generation, trade plans, broker/live execution, live market data, real orders, real money, and profitability claims out of scope.
 
 Expected full quick-check suite after Module W: 1645 passed.
@@ -952,7 +952,7 @@ Scope:
 - Verify scenario identity/source/timestamp fields.
 - Verify recorded_replay and paper_simulation_only modes.
 - Write paper/evidence-only output under reports\paper_trading\recorded_data_strategy_replay_scenario_acceptance.
-- Add shortcut .\hqe_recorded_data_strategy_replay_scenario_acceptance.bat.
+- Add shortcut .\scripts\paper_trading\hqe_recorded_data_strategy_replay_scenario_acceptance.bat.
 - Keep strategy execution, signal generation, trade plans, broker/live execution, live market data, real orders, real money, and profitability claims out of scope.
 
 Expected full quick-check suite after Module X: 1657 passed.
@@ -966,7 +966,7 @@ Scope:
 - Run the recorded-data strategy replay scenario manifest.
 - Run the recorded-data strategy replay scenario acceptance gate.
 - Write final scenario readiness report under reports\paper_trading\recorded_data_strategy_replay_scenario_readiness.
-- Add shortcut .\hqe_recorded_data_strategy_replay_scenario_readiness.bat.
+- Add shortcut .\scripts\paper_trading\hqe_recorded_data_strategy_replay_scenario_readiness.bat.
 - Keep strategy execution, signal generation, trade plans, broker/live execution, live market data, real orders, real money, and profitability claims out of scope.
 
 Expected full quick-check suite after Module Y: 1668 passed.
@@ -981,7 +981,7 @@ v0.3-recorded-data-replay-readiness
 Scope:
 - Add v0.3 recorded-data replay readiness release notes.
 - Document Modules N through Y as a paper/simulation-only evidence release.
-- Confirm the main scenario readiness shortcut: .\hqe_recorded_data_strategy_replay_scenario_readiness.bat.
+- Confirm the main scenario readiness shortcut: .\scripts\paper_trading\hqe_recorded_data_strategy_replay_scenario_readiness.bat.
 - Preserve no broker, no live market data, no real orders, no real money, no strategy execution, no signal generation, no trade plans, and no profitability claim boundaries.
 - Create release tag v0.3-recorded-data-replay-readiness after green checks and commit.
 
@@ -998,7 +998,7 @@ Scope:
 - Build deterministic no-execution replay scenario plans.
 - Block execution/profit fields from the plan.
 - Write paper/evidence-only output under reports\paper_trading\recorded_data_paper_strategy_replay_plan.
-- Add shortcut .\hqe_recorded_data_paper_strategy_replay_plan.bat.
+- Add shortcut .\scripts\paper_trading\hqe_recorded_data_paper_strategy_replay_plan.bat.
 - Keep strategy execution, signal generation, trade plans, broker/live execution, live market data, real orders, real money, PnL, and profitability claims out of scope.
 
 Expected full quick-check suite after Module AA: 1687 passed.
@@ -1015,7 +1015,7 @@ Scope:
 - Verify no-execution strategy mode, broker-disabled mode, and manifest-only output mode.
 - Block execution/trading/profit fields from the plan.
 - Write paper/evidence-only output under reports\paper_trading\recorded_data_paper_strategy_replay_plan_acceptance.
-- Add shortcut .\hqe_recorded_data_paper_strategy_replay_plan_acceptance.bat.
+- Add shortcut .\scripts\paper_trading\hqe_recorded_data_paper_strategy_replay_plan_acceptance.bat.
 - Keep strategy execution, signal generation, trade plans, broker/live execution, live market data, real orders, real money, PnL, and profitability claims out of scope.
 
 Expected full quick-check suite after Module BB: 1699 passed.
@@ -1028,7 +1028,7 @@ Scope:
 - Run the recorded-data paper strategy replay plan scaffold.
 - Run the recorded-data paper strategy replay plan acceptance gate.
 - Write final plan readiness report under reports\paper_trading\recorded_data_paper_strategy_replay_plan_readiness.
-- Add shortcut .\hqe_recorded_data_paper_strategy_replay_plan_readiness.bat.
+- Add shortcut .\scripts\paper_trading\hqe_recorded_data_paper_strategy_replay_plan_readiness.bat.
 - Keep strategy execution, signal generation, trade plans, broker/live execution, live market data, real orders, real money, PnL, and profitability claims out of scope.
 
 Expected full quick-check suite after Module CC: 1710 passed.
@@ -1044,7 +1044,7 @@ Scope:
 - Enforce broker-disabled and contract-only adapter modes.
 - Block strategy execution, signal generation, trade plans, broker/live execution, live market data, real orders, real money, PnL, and profitability claims.
 - Write outputs under reports\paper_trading\recorded_data_paper_strategy_adapter_contract.
-- Add shortcut .\hqe_recorded_data_paper_strategy_adapter_contract.bat.
+- Add shortcut .\scripts\paper_trading\hqe_recorded_data_paper_strategy_adapter_contract.bat.
 
 Expected full quick-check suite after Module DD: 1721 passed.
 
@@ -1060,7 +1060,7 @@ Scope:
 - Verify contract-only adapter mode, no-execution strategy mode, broker-disabled mode, and manifest-only output mode.
 - Block execution/trading/profit fields from the adapter contract.
 - Write paper/evidence-only output under reports\paper_trading\recorded_data_paper_strategy_adapter_contract_acceptance.
-- Add shortcut .\hqe_recorded_data_paper_strategy_adapter_contract_acceptance.bat.
+- Add shortcut .\scripts\paper_trading\hqe_recorded_data_paper_strategy_adapter_contract_acceptance.bat.
 - Keep strategy execution, signal generation, trade plans, broker/live execution, live market data, real orders, real money, PnL, and profitability claims out of scope.
 
 Expected full quick-check suite after Module EE: 1732 passed.
@@ -1073,7 +1073,7 @@ Scope:
 - Run the recorded-data paper strategy adapter contract.
 - Run the recorded-data paper strategy adapter contract acceptance gate.
 - Write final adapter readiness report under reports\paper_trading\recorded_data_paper_strategy_adapter_readiness.
-- Add shortcut .\hqe_recorded_data_paper_strategy_adapter_readiness.bat.
+- Add shortcut .\scripts\paper_trading\hqe_recorded_data_paper_strategy_adapter_readiness.bat.
 - Keep strategy execution, signal generation, trade plans, broker/live execution, live market data, real orders, real money, PnL, and profitability claims out of scope.
 
 Expected full quick-check suite after Module FF: 1743 passed.
@@ -1089,7 +1089,7 @@ Scope:
 - Enforce no-execution dry-run mode, broker-disabled mode, and dry-run manifest-only output mode.
 - Block strategy execution, signal generation, trade plans, broker/live execution, live market data, real orders, real money, PnL, and profitability claims.
 - Write outputs under reports\paper_trading\recorded_data_paper_strategy_adapter_dry_run.
-- Add shortcut .\hqe_recorded_data_paper_strategy_adapter_dry_run.bat.
+- Add shortcut .\scripts\paper_trading\hqe_recorded_data_paper_strategy_adapter_dry_run.bat.
 
 Expected full quick-check suite after Module GG: 1754 passed.
 
@@ -1105,7 +1105,7 @@ Scope:
 - Verify dry-run-only mode, no-execution strategy mode, broker-disabled mode, and manifest-only output mode.
 - Block execution/trading/profit fields from adapter dry-run output.
 - Write paper/evidence-only output under reports\paper_trading\recorded_data_paper_strategy_adapter_dry_run_acceptance.
-- Add shortcut .\hqe_recorded_data_paper_strategy_adapter_dry_run_acceptance.bat.
+- Add shortcut .\scripts\paper_trading\hqe_recorded_data_paper_strategy_adapter_dry_run_acceptance.bat.
 - Keep strategy execution, signal generation, trade plans, broker/live execution, live market data, real orders, real money, PnL, and profitability claims out of scope.
 
 Expected full quick-check suite after Module HH: 1765 passed.
@@ -1118,7 +1118,7 @@ Scope:
 - Run the recorded-data paper strategy adapter dry-run scaffold.
 - Run the recorded-data paper strategy adapter dry-run acceptance gate.
 - Write final adapter dry-run readiness report under reports\paper_trading\recorded_data_paper_strategy_adapter_dry_run_readiness.
-- Add shortcut .\hqe_recorded_data_paper_strategy_adapter_dry_run_readiness.bat.
+- Add shortcut .\scripts\paper_trading\hqe_recorded_data_paper_strategy_adapter_dry_run_readiness.bat.
 - Keep strategy execution, signal generation, trade plans, broker/live execution, live market data, real orders, real money, PnL, and profitability claims out of scope.
 
 Expected full quick-check suite after Module II: 1776 passed.
@@ -1131,7 +1131,7 @@ Scope:
 - Run recorded-data paper strategy adapter readiness.
 - Run recorded-data paper strategy adapter dry-run readiness.
 - Write final adapter evidence bundle under reports\paper_trading\recorded_data_paper_strategy_adapter_evidence_bundle.
-- Add shortcut .\hqe_recorded_data_paper_strategy_adapter_evidence_bundle.bat.
+- Add shortcut .\scripts\paper_trading\hqe_recorded_data_paper_strategy_adapter_evidence_bundle.bat.
 - Keep strategy execution, signal generation, trade plans, broker/live execution, live market data, real orders, real money, PnL, and profitability claims out of scope.
 
 Expected full quick-check suite after Module JJ: 1787 passed.
@@ -1147,7 +1147,7 @@ Scope:
 - Verify stage accepted flags and pass/warn status policy.
 - Block execution/trading/profit fields from the adapter evidence bundle.
 - Write paper/evidence-only output under reports\paper_trading\recorded_data_paper_strategy_adapter_evidence_bundle_acceptance.
-- Add shortcut .\hqe_recorded_data_paper_strategy_adapter_evidence_bundle_acceptance.bat.
+- Add shortcut .\scripts\paper_trading\hqe_recorded_data_paper_strategy_adapter_evidence_bundle_acceptance.bat.
 - Keep strategy execution, signal generation, trade plans, broker/live execution, live market data, real orders, real money, PnL, and profitability claims out of scope.
 
 Expected full quick-check suite after Module KK: 1798 passed.
@@ -1160,7 +1160,7 @@ Scope:
 - Run recorded-data paper strategy adapter evidence bundle.
 - Run recorded-data paper strategy adapter evidence bundle acceptance gate.
 - Write final adapter evidence readiness report under reports\paper_trading\recorded_data_paper_strategy_adapter_evidence_readiness.
-- Add shortcut .\hqe_recorded_data_paper_strategy_adapter_evidence_readiness.bat.
+- Add shortcut .\scripts\paper_trading\hqe_recorded_data_paper_strategy_adapter_evidence_readiness.bat.
 - Keep strategy execution, signal generation, trade plans, broker/live execution, live market data, real orders, real money, PnL, and profitability claims out of scope.
 
 Expected full quick-check suite after Module LL: 1809 passed.
@@ -1187,7 +1187,7 @@ Closed scope:
 - Final adapter evidence readiness.
 
 Main command:
-.\hqe_recorded_data_paper_strategy_adapter_evidence_readiness.bat
+.\scripts\paper_trading\hqe_recorded_data_paper_strategy_adapter_evidence_readiness.bat
 
 Expected full quick-check suite after v0.4: 1817 passed.
 
@@ -1208,7 +1208,7 @@ Scope:
 - Enforce no-strategy-execution consumer mode, broker-disabled mode, and manifest-only output mode.
 - Block strategy execution, signal generation, trade plans, broker/live execution, live market data, real orders, real money, PnL, and profitability claims.
 - Write outputs under reports\paper_trading\recorded_data_paper_strategy_adapter_dry_run_consumer.
-- Add shortcut .\hqe_recorded_data_paper_strategy_adapter_dry_run_consumer.bat.
+- Add shortcut .\scripts\paper_trading\hqe_recorded_data_paper_strategy_adapter_dry_run_consumer.bat.
 
 Expected full quick-check suite after Module NN: 1828 passed.
 
@@ -1224,7 +1224,7 @@ Scope:
 - Verify audit-only consumer mode, no-execution strategy mode, broker-disabled mode, and manifest-only output mode.
 - Block execution/trading/profit fields from adapter dry-run consumer output.
 - Write paper/evidence-only output under reports\paper_trading\recorded_data_paper_strategy_adapter_dry_run_consumer_acceptance.
-- Add shortcut .\hqe_recorded_data_paper_strategy_adapter_dry_run_consumer_acceptance.bat.
+- Add shortcut .\scripts\paper_trading\hqe_recorded_data_paper_strategy_adapter_dry_run_consumer_acceptance.bat.
 - Keep strategy execution, signal generation, trade plans, broker/live execution, live market data, real orders, real money, PnL, and profitability claims out of scope.
 
 Expected full quick-check suite after Module OO: 1839 passed.
@@ -1237,7 +1237,7 @@ Scope:
 - Run adapter dry-run consumer.
 - Run adapter dry-run consumer acceptance gate.
 - Write final adapter dry-run consumer readiness report under reports\paper_trading\recorded_data_paper_strategy_adapter_dry_run_consumer_readiness.
-- Add shortcut .\hqe_recorded_data_paper_strategy_adapter_dry_run_consumer_readiness.bat.
+- Add shortcut .\scripts\paper_trading\hqe_recorded_data_paper_strategy_adapter_dry_run_consumer_readiness.bat.
 - Keep strategy execution, signal generation, trade plans, broker/live execution, live market data, real orders, real money, PnL, and profitability claims out of scope.
 
 Expected full quick-check suite after Module PP: 1850 passed.
@@ -1250,7 +1250,7 @@ Scope:
 - Run adapter evidence readiness.
 - Run adapter dry-run consumer readiness.
 - Write final adapter dry-run consumer evidence bundle under reports\paper_trading\recorded_data_paper_strategy_adapter_dry_run_consumer_evidence_bundle.
-- Add shortcut .\hqe_recorded_data_paper_strategy_adapter_dry_run_consumer_evidence_bundle.bat.
+- Add shortcut .\scripts\paper_trading\hqe_recorded_data_paper_strategy_adapter_dry_run_consumer_evidence_bundle.bat.
 - Keep strategy execution, signal generation, trade plans, broker/live execution, live market data, real orders, real money, PnL, and profitability claims out of scope.
 
 Expected full quick-check suite after Module QQ: 1861 passed.
@@ -1266,7 +1266,7 @@ Scope:
 - Verify stage accepted flags and pass/warn status policy.
 - Block execution/trading/profit fields from the consumer evidence bundle.
 - Write paper/evidence-only output under reports\paper_trading\recorded_data_paper_strategy_adapter_dry_run_consumer_evidence_bundle_acceptance.
-- Add shortcut .\hqe_recorded_data_paper_strategy_adapter_dry_run_consumer_evidence_bundle_acceptance.bat.
+- Add shortcut .\scripts\paper_trading\hqe_recorded_data_paper_strategy_adapter_dry_run_consumer_evidence_bundle_acceptance.bat.
 - Keep strategy execution, signal generation, trade plans, broker/live execution, live market data, real orders, real money, PnL, and profitability claims out of scope.
 
 Expected full quick-check suite after Module RR: 1872 passed.
@@ -1279,7 +1279,7 @@ Scope:
 - Run adapter dry-run consumer evidence bundle.
 - Run adapter dry-run consumer evidence bundle acceptance.
 - Write final consumer evidence readiness report under reports\paper_trading\recorded_data_paper_strategy_adapter_dry_run_consumer_evidence_readiness.
-- Add shortcut .\hqe_recorded_data_paper_strategy_adapter_dry_run_consumer_evidence_readiness.bat.
+- Add shortcut .\scripts\paper_trading\hqe_recorded_data_paper_strategy_adapter_dry_run_consumer_evidence_readiness.bat.
 - Keep strategy execution, signal generation, trade plans, broker/live execution, live market data, real orders, real money, PnL, and profitability claims out of scope.
 
 Expected full quick-check suite after Module SS: 1883 passed.
@@ -1300,7 +1300,7 @@ Closed scope:
 - Final adapter dry-run consumer evidence readiness.
 
 Main command:
-.\hqe_recorded_data_paper_strategy_adapter_dry_run_consumer_evidence_readiness.bat
+.\scripts\paper_trading\hqe_recorded_data_paper_strategy_adapter_dry_run_consumer_evidence_readiness.bat
 
 Expected full quick-check suite after v0.5: 1891 passed.
 
@@ -1326,7 +1326,7 @@ Scope:
 - Validate recorded_replay and paper_simulation_only modes.
 - Convert valid bars into strategy replay sandbox events.
 - Prepare safe input for future LONG / SHORT / NEUTRAL strategy decision audit.
-- Add shortcut .\hqe_recorded_data_strategy_replay_sandbox.bat.
+- Add shortcut .\scripts\paper_trading\hqe_recorded_data_strategy_replay_sandbox.bat.
 - Keep strategy execution, signal generation, trade plans, broker/live execution, live market data, real orders, real money, PnL, and profitability claims out of scope.
 
 Progress:
@@ -1345,7 +1345,7 @@ Scope:
 - Validate sandbox event safety/mode fields.
 - Convert valid sandbox events into deterministic LONG / SHORT / NEUTRAL decision audit events.
 - Preserve decision mapping: LONG = future CE buy paper plan only, SHORT = future PE buy paper plan only, NEUTRAL = no trade.
-- Add shortcut .\hqe_recorded_data_strategy_decision_audit.bat.
+- Add shortcut .\scripts\paper_trading\hqe_recorded_data_strategy_decision_audit.bat.
 - Keep CE/PE trade plans, broker/live execution, live market data, real orders, real money, PnL, and profitability claims out of scope.
 
 Progress:
@@ -1365,7 +1365,7 @@ Scope:
 - Validate LONG = future CE buy paper plan only, SHORT = future PE buy paper plan only, NEUTRAL = no trade.
 - Validate decision safety/mode fields.
 - Gate decision output before future paper trade-plan simulator.
-- Add shortcut .\hqe_recorded_data_strategy_decision_acceptance.bat.
+- Add shortcut .\scripts\paper_trading\hqe_recorded_data_strategy_decision_acceptance.bat.
 - Keep CE/PE trade plans, broker/live execution, live market data, real orders, real money, PnL, and profitability claims out of scope.
 
 Progress:
@@ -1385,7 +1385,7 @@ Scope:
 - Convert LONG decisions into CE BUY paper plans.
 - Convert SHORT decisions into PE BUY paper plans.
 - Keep NEUTRAL decisions as no trade.
-- Add shortcut .\hqe_recorded_data_paper_option_trade_plan_simulator.bat.
+- Add shortcut .\scripts\paper_trading\hqe_recorded_data_paper_option_trade_plan_simulator.bat.
 - Keep fills, broker/live execution, live market data, real orders, real money, PnL, and profitability claims out of scope.
 
 Progress:
@@ -1404,7 +1404,7 @@ Scope:
 - Read strategy decision audit report for recorded close references.
 - Convert CE/PE paper plans into paper entry/exit lifecycle records.
 - Keep broker/live execution, live market data, real orders, real money, account PnL, and profitability claims out of scope.
-- Add shortcut .\hqe_recorded_data_paper_fill_exit_simulator.bat.
+- Add shortcut .\scripts\paper_trading\hqe_recorded_data_paper_fill_exit_simulator.bat.
 
 Progress:
 - Completed total before Module YY: 50 modules.
@@ -1422,7 +1422,7 @@ Scope:
 - Validate CE/PE paper lifecycle safety/mode fields.
 - Convert valid lifecycle records into paper-only backtest ledger rows.
 - Calculate simulated paper reference result using option_points_result * quantity_lots * lot_size.
-- Add shortcut .\hqe_recorded_data_backtest_trade_ledger.bat.
+- Add shortcut .\scripts\paper_trading\hqe_recorded_data_backtest_trade_ledger.bat.
 - Keep broker/live execution, live market data, real orders, real money, and profitability claims out of scope.
 
 Progress:
@@ -1441,7 +1441,7 @@ Scope:
 - Validate paper ledger safety/mode fields.
 - Calculate paper-only backtest metrics.
 - Build equity reference curve and max drawdown reference.
-- Add shortcut .\hqe_recorded_data_backtest_metrics_engine.bat.
+- Add shortcut .\scripts\paper_trading\hqe_recorded_data_backtest_metrics_engine.bat.
 - Keep broker/live execution, live market data, real orders, real money, and profitability claims out of scope.
 
 Progress:
@@ -1460,7 +1460,7 @@ Scope:
 - Read backtest trade ledger output.
 - Validate paper-only report readiness.
 - Package a readable backtest report bundle.
-- Add shortcut .\hqe_recorded_data_backtest_report_writer.bat.
+- Add shortcut .\scripts\paper_trading\hqe_recorded_data_backtest_report_writer.bat.
 - Keep broker/live execution, live market data, real orders, real money, and profitability claims out of scope.
 
 Progress:
@@ -1477,7 +1477,7 @@ Status: implemented in this module.
 Scope:
 - Run the paper-only chain from recorded strategy input bars to final backtest report.
 - Package runner-level summary and stage results.
-- Add shortcut .\hqe_recorded_data_one_command_backtest_runner.bat.
+- Add shortcut .\scripts\paper_trading\hqe_recorded_data_one_command_backtest_runner.bat.
 - Keep broker/live execution, live market data, real orders, real money, and profitability claims out of scope.
 
 Progress:
@@ -1495,7 +1495,7 @@ Scope:
 - Read the one-command paper backtest runner report.
 - Validate all expected paper backtest stages are present and ready.
 - Validate final report, metrics, and trade ledger paths.
-- Add shortcut .\hqe_recorded_data_backtest_acceptance_gate.bat.
+- Add shortcut .\scripts\paper_trading\hqe_recorded_data_backtest_acceptance_gate.bat.
 - Keep broker/live execution, live market data, real orders, real money, and profitability claims out of scope.
 
 Progress:
@@ -1513,7 +1513,7 @@ Scope:
 - Run the one-command recorded-data paper backtest runner.
 - Run the paper-only backtest acceptance gate.
 - Write final backtest readiness report.
-- Add shortcut .\hqe_recorded_data_backtest_readiness_gate.bat.
+- Add shortcut .\scripts\paper_trading\hqe_recorded_data_backtest_readiness_gate.bat.
 - Keep broker/live execution, live market data, real orders, real money, and profitability claims out of scope.
 
 Progress:
@@ -1557,7 +1557,7 @@ Scope:
 - Validate readiness stage summary.
 - Validate final report, metrics, and ledger paths.
 - Validate v0.6 release document safety phrases.
-- Add shortcut .\hqe_v1_testing_release_gate.bat.
+- Add shortcut .\scripts\paper_trading\hqe_v1_testing_release_gate.bat.
 - Keep broker/live execution, live market data, real orders, real money, and profitability claims out of scope.
 
 Progress:
@@ -1575,7 +1575,7 @@ Scope:
 - Read the v1 testing release gate report.
 - Validate accepted release-gate evidence.
 - Write operator checklist and handoff pack.
-- Add shortcut .\hqe_v1_testing_operator_handoff_pack.bat.
+- Add shortcut .\scripts\paper_trading\hqe_v1_testing_operator_handoff_pack.bat.
 - Keep broker/live execution, live market data, real orders, real money, and profitability claims out of scope.
 
 Progress:
@@ -1593,7 +1593,7 @@ Scope:
 - Read the v1 testing operator handoff pack.
 - Validate handoff readiness and final evidence paths.
 - Write release notes in JSON, Markdown, and text formats.
-- Add shortcut .\hqe_v1_testing_release_notes.bat.
+- Add shortcut .\scripts\paper_trading\hqe_v1_testing_release_notes.bat.
 - Keep broker/live execution, live market data, real orders, real money, and profitability claims out of scope.
 
 Progress:
@@ -1612,7 +1612,7 @@ Scope:
 - Validate release-note readiness and final evidence paths.
 - Validate release-note sections and paper-only safety phrases.
 - Write release candidate gate evidence.
-- Add shortcut .\hqe_v1_testing_release_candidate_gate.bat.
+- Add shortcut .\scripts\paper_trading\hqe_v1_testing_release_candidate_gate.bat.
 - Keep broker/live execution, live market data, real orders, real money, and profitability claims out of scope.
 
 Progress:
@@ -1667,7 +1667,7 @@ Scope:
 - Discover saved recorded-data files.
 - Support .csv, .json, .jsonl, and .parquet file discovery.
 - Write operator input pack and suggested real backtest command sequence.
-- Add shortcut .\hqe_real_dataset_backtest_input_pack.bat.
+- Add shortcut .\scripts\paper_trading\hqe_real_dataset_backtest_input_pack.bat.
 - Keep broker/live execution, live market data, real orders, real money, and profitability claims out of scope.
 
 Progress:
@@ -1690,7 +1690,7 @@ Scope:
 - Validate selected dataset path and discovered file count.
 - Write safe operator run order for first real recorded-data paper backtest.
 - Write expected output checks for report, metrics, ledger, readiness, and handoff evidence.
-- Add shortcut .\hqe_first_real_dataset_backtest_run_pack.bat.
+- Add shortcut .\scripts\paper_trading\hqe_first_real_dataset_backtest_run_pack.bat.
 - Keep broker/live execution, live market data, real orders, real money, and profitability claims out of scope.
 
 Progress:
@@ -1712,7 +1712,7 @@ Scope:
 - Read the first real dataset backtest run pack.
 - Verify expected output paths after the first paper backtest run.
 - Write output checks CSV and verification report.
-- Add shortcut .\hqe_first_real_backtest_output_verification_pack.bat.
+- Add shortcut .\scripts\paper_trading\hqe_first_real_backtest_output_verification_pack.bat.
 - Keep broker/live execution, live market data, real orders, real money, and profitability claims out of scope.
 
 Progress:
@@ -1734,7 +1734,7 @@ Scope:
 - Read first real backtest output verification pack.
 - Gather report, metrics, ledger, readiness, release gate, and handoff evidence paths.
 - Write operator review checklist and evidence path CSV.
-- Add shortcut .\hqe_first_real_backtest_report_review_pack.bat.
+- Add shortcut .\scripts\paper_trading\hqe_first_real_backtest_report_review_pack.bat.
 - Keep broker/live execution, live market data, real orders, real money, and profitability claims out of scope.
 
 Progress:
@@ -1756,7 +1756,7 @@ Scope:
 - Read first real backtest report review pack.
 - Validate tuning review evidence categories.
 - Write strategy tuning candidates and safe next-action CSV.
-- Add shortcut .\hqe_strategy_tuning_baseline_pack.bat.
+- Add shortcut .\scripts\paper_trading\hqe_strategy_tuning_baseline_pack.bat.
 - Keep strategy changes, broker/live execution, live market data, real orders, real money, and profitability claims out of scope.
 
 Progress:
@@ -1778,7 +1778,7 @@ Scope:
 - Read strategy tuning baseline pack.
 - Validate required tuning candidate categories.
 - Write strict, balanced, and relaxed paper-only mode definitions.
-- Add shortcut .\hqe_strategy_mode_comparison_pack.bat.
+- Add shortcut .\scripts\paper_trading\hqe_strategy_mode_comparison_pack.bat.
 - Keep strategy logic changes, broker/live execution, live market data, real orders, real money, and profitability claims out of scope.
 
 Progress:
@@ -1800,7 +1800,7 @@ Scope:
 - Read strategy mode comparison pack.
 - Validate strict, balanced, and relaxed modes.
 - Write future paper-only run matrix and command preview.
-- Add shortcut .\hqe_strategy_mode_backtest_run_matrix_pack.bat.
+- Add shortcut .\scripts\paper_trading\hqe_strategy_mode_backtest_run_matrix_pack.bat.
 - Keep actual backtest execution, strategy logic changes, broker/live execution, live market data, real orders, real money, and profitability claims out of scope.
 
 Progress:
@@ -1823,7 +1823,7 @@ Scope:
 - Validate strict, balanced, and relaxed mode result paths.
 - Verify ledger, metrics, report, and readiness result files per mode.
 - Write result path CSV and mode summary CSV.
-- Add shortcut .\hqe_strategy_mode_backtest_result_comparison_pack.bat.
+- Add shortcut .\scripts\paper_trading\hqe_strategy_mode_backtest_result_comparison_pack.bat.
 - Keep actual backtest execution, strategy logic changes, broker/live execution, live market data, real orders, real money, and profitability claims out of scope.
 
 Progress:
@@ -1845,7 +1845,7 @@ Scope:
 - Read strategy mode backtest result comparison pack.
 - Validate strict, balanced, and relaxed mode result categories.
 - Write cost adjustment assumptions and review item CSV.
-- Add shortcut .\hqe_strategy_mode_cost_adjusted_comparison_pack.bat.
+- Add shortcut .\scripts\paper_trading\hqe_strategy_mode_cost_adjusted_comparison_pack.bat.
 - Keep actual backtest execution, strategy selection, strategy logic changes, broker/live execution, live market data, real orders, real money, and profitability claims out of scope.
 
 Progress:
@@ -1868,7 +1868,7 @@ Scope:
 - Validate strict, balanced, and relaxed modes.
 - Validate cost adjustment assumptions.
 - Close the post-v1.0 Real Backtest Usage Sprint.
-- Add shortcut .\hqe_real_backtest_usage_sprint_readiness_close.bat.
+- Add shortcut .\scripts\paper_trading\hqe_real_backtest_usage_sprint_readiness_close.bat.
 - Keep actual backtest execution, strategy selection, strategy logic changes, broker/live execution, live market data, real orders, real money, and profitability claims out of scope.
 
 Progress:
@@ -1890,7 +1890,7 @@ Scope:
 - Read Real Backtest Usage Sprint readiness close report.
 - Validate Phase 1 is closed and ready for future dashboard sprint.
 - Create paper-only dashboard input index.
-- Add shortcut .\hqe_dashboard_input_index_pack.bat.
+- Add shortcut .\scripts\paper_trading\hqe_dashboard_input_index_pack.bat.
 - Keep dashboard UI startup, actual backtest execution, strategy selection, broker/live execution, live market data, real orders, real money, and profitability claims out of scope.
 
 Progress:
@@ -1913,7 +1913,7 @@ Scope:
 - Read dashboard input index pack.
 - Validate dashboard input index readiness.
 - Create static overview cards for project progress, Phase 1 close, Phase 2 progress, input counts, selected dataset, and safety boundary.
-- Add shortcut .\hqe_dashboard_overview_snapshot_pack.bat.
+- Add shortcut .\scripts\paper_trading\hqe_dashboard_overview_snapshot_pack.bat.
 - Keep dashboard UI startup, actual backtest execution, strategy selection, broker/live execution, live market data, real orders, real money, and profitability claims out of scope.
 
 Progress:
@@ -1937,7 +1937,7 @@ Scope:
 - Validate overview card readiness.
 - Create dashboard section registry.
 - Create card-to-section route map.
-- Add shortcut .\hqe_dashboard_section_registry_pack.bat.
+- Add shortcut .\scripts\paper_trading\hqe_dashboard_section_registry_pack.bat.
 - Keep dashboard UI startup, actual backtest execution, strategy selection, broker/live execution, live market data, real orders, real money, and profitability claims out of scope.
 
 Progress:
@@ -1960,7 +1960,7 @@ Scope:
 - Read dashboard section registry pack.
 - Validate required sections and card routes.
 - Create paper-only future Streamlit component definitions.
-- Add shortcut .\hqe_dashboard_component_scaffold_pack.bat.
+- Add shortcut .\scripts\paper_trading\hqe_dashboard_component_scaffold_pack.bat.
 - Keep dashboard UI startup, actual backtest execution, strategy selection, broker/live execution, live market data, real orders, real money, and profitability claims out of scope.
 
 Progress:
@@ -1984,7 +1984,7 @@ Scope:
 - Validate required app shell components and sections.
 - Create future Streamlit page registry.
 - Create dashboard app shell template.
-- Add shortcut .\hqe_dashboard_app_shell_pack.bat.
+- Add shortcut .\scripts\paper_trading\hqe_dashboard_app_shell_pack.bat.
 - Keep dashboard UI startup, actual backtest execution, strategy selection, broker/live execution, live market data, real orders, real money, and profitability claims out of scope.
 
 Progress:
@@ -2007,7 +2007,7 @@ Scope:
 - Read dashboard app shell pack.
 - Validate required pages, components, and sections.
 - Create future dashboard smoke-test steps.
-- Add shortcut .\hqe_dashboard_smoke_test_plan_pack.bat.
+- Add shortcut .\scripts\paper_trading\hqe_dashboard_smoke_test_plan_pack.bat.
 - Keep dashboard UI startup, actual Streamlit runtime, actual backtest execution, strategy selection, broker/live execution, live market data, real orders, real money, and profitability claims out of scope.
 
 Progress:
@@ -2030,7 +2030,7 @@ Scope:
 - Read dashboard smoke test plan pack.
 - Validate required smoke steps, pages, components, and sections.
 - Create future dashboard dry-run validation items.
-- Add shortcut .\hqe_dashboard_dry_run_validation_pack.bat.
+- Add shortcut .\scripts\paper_trading\hqe_dashboard_dry_run_validation_pack.bat.
 - Keep dashboard UI startup, actual Streamlit runtime, actual backtest execution, strategy selection, broker/live execution, live market data, real orders, real money, and profitability claims out of scope.
 
 Progress:
@@ -2053,7 +2053,7 @@ Scope:
 - Read dashboard dry run validation pack.
 - Validate required validation items, smoke steps, pages, components, and sections.
 - Close the post-v1.0 Dashboard Sprint.
-- Add shortcut .\hqe_dashboard_sprint_readiness_close_pack.bat.
+- Add shortcut .\scripts\paper_trading\hqe_dashboard_sprint_readiness_close_pack.bat.
 - Keep dashboard UI startup, actual Streamlit runtime, actual backtest execution, strategy selection, broker/live execution, live market data, real orders, real money, and profitability claims out of scope.
 
 Progress:
@@ -2076,7 +2076,7 @@ Scope:
 - Read Dashboard Sprint readiness close pack.
 - Validate Dashboard Sprint closed and ready for recorded-data backtest review.
 - Create paper-only launch gate and operator steps.
-- Add shortcut .\hqe_recorded_backtest_launch_gate_pack.bat.
+- Add shortcut .\scripts\paper_trading\hqe_recorded_backtest_launch_gate_pack.bat.
 - Keep actual backtest execution, dashboard UI startup, actual Streamlit runtime, strategy selection, broker/live execution, live market data, real orders, real money, and profitability claims out of scope for this module.
 
 Progress:
@@ -2101,7 +2101,7 @@ Scope:
 - Validate required launch steps.
 - Create paper-only manual command plan.
 - Create recorded_backtest_manual_commands.ps1 as a generated report output, not a committed source file.
-- Add shortcut .\hqe_recorded_backtest_command_plan_pack.bat.
+- Add shortcut .\scripts\paper_trading\hqe_recorded_backtest_command_plan_pack.bat.
 - Keep actual backtest execution, dashboard UI startup, Streamlit runtime, strategy selection, broker/live execution, live market data, real orders, real money, and profitability claims out of scope for this module.
 
 Progress:
@@ -2125,7 +2125,7 @@ Scope:
 - Read recorded backtest command plan pack.
 - Validate required command steps.
 - Create paper-only post-run output intake expectations.
-- Add shortcut .\hqe_recorded_backtest_run_output_intake_pack.bat.
+- Add shortcut .\scripts\paper_trading\hqe_recorded_backtest_run_output_intake_pack.bat.
 - Keep actual backtest execution, dashboard UI startup, Streamlit runtime, strategy selection, broker/live execution, live market data, real orders, real money, and profitability claims out of scope for this module.
 
 Progress:
@@ -2149,7 +2149,7 @@ Scope:
 - Read recorded backtest run output intake pack.
 - Validate required expected outputs.
 - Verify expected post-run output file presence.
-- Add shortcut .\hqe_recorded_backtest_output_presence_verification_pack.bat.
+- Add shortcut .\scripts\paper_trading\hqe_recorded_backtest_output_presence_verification_pack.bat.
 - Keep actual backtest execution, dashboard UI startup, Streamlit runtime, strategy selection, broker/live execution, live market data, real orders, real money, and profitability claims out of scope for this module.
 
 Progress:
@@ -2173,7 +2173,7 @@ Scope:
 - Read recorded backtest output presence verification pack.
 - Validate all required verified outputs are present.
 - Create paper-only recorded backtest review summary items.
-- Add shortcut .\hqe_recorded_backtest_review_summary_pack.bat.
+- Add shortcut .\scripts\paper_trading\hqe_recorded_backtest_review_summary_pack.bat.
 - Keep actual backtest execution, dashboard UI startup, Streamlit runtime, strategy selection, broker/live execution, live market data, real orders, real money, and profitability claims out of scope for this module.
 
 Progress:
@@ -2198,7 +2198,7 @@ Scope:
 - Validate all required review items are present.
 - Confirm missing required files count is zero.
 - Close Phase 3 recorded-data paper backtest review workflow.
-- Add shortcut .\hqe_recorded_backtest_review_workflow_close_pack.bat.
+- Add shortcut .\scripts\paper_trading\hqe_recorded_backtest_review_workflow_close_pack.bat.
 - Keep actual backtest execution, dashboard UI startup, Streamlit runtime, strategy selection, broker/live execution, live market data, real orders, real money, and profitability claims out of scope for this module.
 
 Progress:
@@ -2222,7 +2222,7 @@ Scope:
 - Read recorded backtest review workflow close pack.
 - Validate required close checklist items.
 - Launch Phase 4 paper backtest evidence analysis sprint.
-- Add shortcut .\hqe_paper_backtest_evidence_analysis_launch_pack.bat.
+- Add shortcut .\scripts\paper_trading\hqe_paper_backtest_evidence_analysis_launch_pack.bat.
 - Keep actual backtest execution, dashboard UI startup, Streamlit runtime, strategy selection, broker/live execution, live market data, real orders, real money, and profitability claims out of scope for this module.
 
 Progress:
@@ -2247,7 +2247,7 @@ Scope:
 - Read paper backtest evidence analysis launch pack.
 - Validate required evidence analysis items.
 - Create paper-only ledger evidence snapshot items.
-- Add shortcut .\hqe_paper_backtest_ledger_evidence_snapshot_pack.bat.
+- Add shortcut .\scripts\paper_trading\hqe_paper_backtest_ledger_evidence_snapshot_pack.bat.
 - Keep actual backtest execution, dashboard UI startup, Streamlit runtime, strategy selection, broker/live execution, live market data, real orders, real money, and profitability claims out of scope for this module.
 
 Progress:
@@ -2272,7 +2272,7 @@ Scope:
 - Read paper backtest ledger evidence snapshot pack.
 - Validate required ledger snapshot items.
 - Create paper-only metrics context snapshot items.
-- Add shortcut .\hqe_paper_backtest_metrics_context_snapshot_pack.bat.
+- Add shortcut .\scripts\paper_trading\hqe_paper_backtest_metrics_context_snapshot_pack.bat.
 - Keep actual backtest execution, dashboard UI startup, Streamlit runtime, strategy selection, broker/live execution, live market data, real orders, real money, and profitability claims out of scope for this module.
 
 Progress:
@@ -2297,7 +2297,7 @@ Scope:
 - Read paper backtest metrics context snapshot pack.
 - Validate required metrics context items.
 - Create paper-only report safety language snapshot items.
-- Add shortcut .\hqe_paper_backtest_report_safety_language_snapshot_pack.bat.
+- Add shortcut .\scripts\paper_trading\hqe_paper_backtest_report_safety_language_snapshot_pack.bat.
 - Keep actual backtest execution, dashboard UI startup, Streamlit runtime, strategy selection, broker/live execution, live market data, real orders, real money, and profitability claims out of scope for this module.
 
 Progress:
@@ -2322,7 +2322,7 @@ Scope:
 - Read paper backtest report safety language snapshot pack.
 - Validate required report safety language items.
 - Create paper-only evidence analysis close gate items.
-- Add shortcut .\hqe_paper_backtest_evidence_analysis_close_gate_pack.bat.
+- Add shortcut .\scripts\paper_trading\hqe_paper_backtest_evidence_analysis_close_gate_pack.bat.
 - Keep actual backtest execution, dashboard UI startup, Streamlit runtime, strategy selection, broker/live execution, live market data, real orders, real money, and profitability claims out of scope for this module.
 
 Progress:
@@ -2347,7 +2347,7 @@ Scope:
 - Read paper backtest evidence analysis close gate pack.
 - Validate required close gates.
 - Close Phase 4 Paper Backtest Evidence Analysis Sprint.
-- Add shortcut .\hqe_paper_backtest_evidence_analysis_sprint_close_pack.bat.
+- Add shortcut .\scripts\paper_trading\hqe_paper_backtest_evidence_analysis_sprint_close_pack.bat.
 - Keep actual backtest execution, dashboard UI startup, Streamlit runtime, strategy selection, broker/live execution, live market data, real orders, real money, and profitability claims out of scope for this module.
 
 Progress:
@@ -2373,7 +2373,7 @@ Scope:
 - Read paper backtest evidence analysis sprint close pack.
 - Validate required Phase 4 close checklist items.
 - Launch Phase 5 Paper Improvement Readiness Sprint.
-- Add shortcut .\hqe_paper_improvement_readiness_launch_pack.bat.
+- Add shortcut .\scripts\paper_trading\hqe_paper_improvement_readiness_launch_pack.bat.
 - Keep actual backtest execution, dashboard UI startup, Streamlit runtime, strategy selection, strategy logic changes, broker/live execution, live market data, real orders, real money, and profitability claims out of scope for this module.
 
 Progress:
@@ -2399,7 +2399,7 @@ Scope:
 - Read paper improvement readiness launch pack.
 - Validate required improvement readiness items.
 - Create planning-only paper improvement candidate registry items.
-- Add shortcut .\hqe_paper_improvement_candidate_registry_pack.bat.
+- Add shortcut .\scripts\paper_trading\hqe_paper_improvement_candidate_registry_pack.bat.
 - Keep actual backtest execution, dashboard UI startup, Streamlit runtime, strategy selection, strategy logic changes, broker/live execution, live market data, real orders, real money, and profitability claims out of scope for this module.
 
 Progress:
@@ -2425,7 +2425,7 @@ Scope:
 - Read paper improvement candidate registry pack.
 - Validate required candidate registry items.
 - Create planning-only candidate test plan items.
-- Add shortcut .\hqe_paper_improvement_candidate_test_plan_pack.bat.
+- Add shortcut .\scripts\paper_trading\hqe_paper_improvement_candidate_test_plan_pack.bat.
 - Keep actual backtest execution, dashboard UI startup, Streamlit runtime, strategy selection, strategy logic changes, broker/live execution, live market data, real orders, real money, and profitability claims out of scope for this module.
 
 Progress:
@@ -2451,7 +2451,7 @@ Scope:
 - Read paper improvement candidate test plan pack.
 - Validate required candidate test plan items.
 - Create paper-only rerun readiness gate items.
-- Add shortcut .\hqe_paper_improvement_rerun_readiness_gate_pack.bat.
+- Add shortcut .\scripts\paper_trading\hqe_paper_improvement_rerun_readiness_gate_pack.bat.
 - Keep actual backtest execution, dashboard UI startup, Streamlit runtime, strategy selection, strategy logic changes, broker/live execution, live market data, real orders, real money, and profitability claims out of scope for this module.
 
 Progress:
@@ -2477,7 +2477,7 @@ Scope:
 - Read paper improvement rerun readiness gate pack.
 - Validate required rerun readiness gates.
 - Create paper-only acceptance gate items.
-- Add shortcut .\hqe_paper_improvement_acceptance_gate_pack.bat.
+- Add shortcut .\scripts\paper_trading\hqe_paper_improvement_acceptance_gate_pack.bat.
 - Keep actual backtest execution, dashboard UI startup, Streamlit runtime, strategy selection, strategy logic changes, broker/live execution, live market data, real orders, real money, and profitability claims out of scope for this module.
 
 Progress:
@@ -2503,7 +2503,7 @@ Scope:
 - Read paper improvement acceptance gate pack.
 - Validate required acceptance gates.
 - Close Phase 5 Paper Improvement Readiness Sprint.
-- Add shortcut .\hqe_paper_improvement_readiness_sprint_close_pack.bat.
+- Add shortcut .\scripts\paper_trading\hqe_paper_improvement_readiness_sprint_close_pack.bat.
 - Keep actual backtest execution, dashboard UI startup, Streamlit runtime, strategy selection, strategy logic changes, broker/live execution, live market data, real orders, real money, and profitability claims out of scope for this module.
 
 Progress:
@@ -2861,3 +2861,23 @@ Progress:
 - Full HQE product estimate after Module HHHHH: 98-99%.
 
 Expected full quick-check suite after Module HHHHH: verify with `.\.venv\Scripts\python.exe -m pytest`.
+
+## Module IIIII - HQE project artifact organization pack
+
+Status: implemented in this module.
+
+Scope:
+- Move root-level `hqe_*.bat` runner shortcuts into `scripts\paper_trading`.
+- Update README, ROADMAP, and docs command references for organized runner paths.
+- Create project-hygiene report output under `reports\project_hygiene`.
+- Verify root runner clutter is cleared and organized runner inventory exists.
+- Keep backtest execution, optimization, strategy logic changes, broker/live execution, live market data, real orders, real money, and profitability claims out of scope.
+
+Progress:
+- Completed total before Module IIIII: 112 modules.
+- Completed total after Module IIIII: 113 modules.
+- Phase 8 pending after Module IIIII: 0 modules.
+- Phase 9 pending after Module IIIII: 3 modules.
+- Full HQE product estimate after Module IIIII: 98-99%.
+
+Expected full quick-check suite after Module IIIII: verify with `.\.venv\Scripts\python.exe -m pytest`.

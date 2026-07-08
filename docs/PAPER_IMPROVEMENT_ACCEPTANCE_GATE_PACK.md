@@ -6,7 +6,7 @@ Purpose:
 The paper improvement acceptance gate pack reads the paper improvement rerun readiness gate pack and creates the final paper-only acceptance gate before Phase 5 close.
 
 Command:
-.\hqe_paper_improvement_acceptance_gate_pack.bat
+.\scripts\paper_trading\hqe_paper_improvement_acceptance_gate_pack.bat
 
 Default input:
 reports\paper_trading\paper_improvement_rerun_readiness_gate_pack\paper_improvement_rerun_readiness_gate_pack.json

@@ -6,7 +6,7 @@ Purpose:
 The recorded backtest output presence verification pack reads the recorded backtest run output intake pack and verifies whether expected post-run paper backtest output files are present.
 
 Command:
-.\hqe_recorded_backtest_output_presence_verification_pack.bat
+.\scripts\paper_trading\hqe_recorded_backtest_output_presence_verification_pack.bat
 
 Default input:
 reports\paper_trading\recorded_backtest_run_output_intake_pack\recorded_backtest_run_output_intake_pack.json

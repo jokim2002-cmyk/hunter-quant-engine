@@ -9,19 +9,19 @@ The preflight runs:
 3. Final strategy replay preflight report.
 
 Command:
-.\hqe_recorded_data_strategy_replay_preflight.bat
+.\scripts\paper_trading\hqe_recorded_data_strategy_replay_preflight.bat
 
 Optional recorded root:
-.\hqe_recorded_data_strategy_replay_preflight.bat --recorded-root data\recorded
+.\scripts\paper_trading\hqe_recorded_data_strategy_replay_preflight.bat --recorded-root data\recorded
 
 Optional event and bar rules:
-.\hqe_recorded_data_strategy_replay_preflight.bat --min-events 100 --min-bars 100
+.\scripts\paper_trading\hqe_recorded_data_strategy_replay_preflight.bat --min-events 100 --min-bars 100
 
 Optional warning policy:
-.\hqe_recorded_data_strategy_replay_preflight.bat --allow-warnings
+.\scripts\paper_trading\hqe_recorded_data_strategy_replay_preflight.bat --allow-warnings
 
 Optional dry-run limits:
-.\hqe_recorded_data_strategy_replay_preflight.bat --max-records 100 --max-events 100
+.\scripts\paper_trading\hqe_recorded_data_strategy_replay_preflight.bat --max-records 100 --max-events 100
 
 Default outputs:
 - reports\paper_trading\recorded_data_replay_dataset

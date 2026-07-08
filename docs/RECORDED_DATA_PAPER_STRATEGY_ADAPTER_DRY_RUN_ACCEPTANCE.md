@@ -6,7 +6,7 @@ Purpose:
 The gate reads adapter dry-run output and decides whether dry-run events are structurally acceptable for future paper/simulation adapter evidence modules.
 
 Command:
-.\hqe_recorded_data_paper_strategy_adapter_dry_run_acceptance.bat
+.\scripts\paper_trading\hqe_recorded_data_paper_strategy_adapter_dry_run_acceptance.bat
 
 Default input:
 reports\paper_trading\recorded_data_paper_strategy_adapter_dry_run\paper_strategy_adapter_dry_run.json

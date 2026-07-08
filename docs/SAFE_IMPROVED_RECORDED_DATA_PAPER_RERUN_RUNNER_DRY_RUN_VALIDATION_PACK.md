@@ -5,7 +5,7 @@ Module GGGGG continues Phase 8.
 Command:
 
 ```bat
-.\hqe_safe_improved_recorded_data_paper_rerun_runner_dry_run_validation_pack.bat
+.\scripts\paper_trading\hqe_safe_improved_recorded_data_paper_rerun_runner_dry_run_validation_pack.bat
 ```
 
 Purpose:

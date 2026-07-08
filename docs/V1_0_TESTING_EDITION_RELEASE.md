@@ -54,14 +54,14 @@ Completed release chain:
 - v1.0 Testing Edition release candidate gate
 
 Main v1.0 operator shortcuts:
-- .\hqe_recorded_data_backtest_readiness_gate.bat
-- .\hqe_v1_testing_release_gate.bat
-- .\hqe_v1_testing_operator_handoff_pack.bat
-- .\hqe_v1_testing_release_notes.bat
-- .\hqe_v1_testing_release_candidate_gate.bat
+- .\scripts\paper_trading\hqe_recorded_data_backtest_readiness_gate.bat
+- .\scripts\paper_trading\hqe_v1_testing_release_gate.bat
+- .\scripts\paper_trading\hqe_v1_testing_operator_handoff_pack.bat
+- .\scripts\paper_trading\hqe_v1_testing_release_notes.bat
+- .\scripts\paper_trading\hqe_v1_testing_release_candidate_gate.bat
 
 Final release-candidate shortcut:
-.\hqe_v1_testing_release_candidate_gate.bat
+.\scripts\paper_trading\hqe_v1_testing_release_candidate_gate.bat
 
 Trading safety contract:
 - LONG = CE BUY paper plan only.

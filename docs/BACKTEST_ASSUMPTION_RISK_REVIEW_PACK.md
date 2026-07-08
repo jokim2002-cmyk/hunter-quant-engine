@@ -27,4 +27,4 @@ Safety scope:
 
 Shortcut:
 
-.\hqe_backtest_assumption_risk_review_pack.bat
+.\scripts\paper_trading\hqe_backtest_assumption_risk_review_pack.bat

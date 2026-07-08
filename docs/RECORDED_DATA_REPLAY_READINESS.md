@@ -9,19 +9,19 @@ The readiness gate runs:
 3. Final readiness report.
 
 Command:
-.\hqe_recorded_data_replay_readiness.bat
+.\scripts\paper_trading\hqe_recorded_data_replay_readiness.bat
 
 Optional recorded root:
-.\hqe_recorded_data_replay_readiness.bat --recorded-root data\recorded
+.\scripts\paper_trading\hqe_recorded_data_replay_readiness.bat --recorded-root data\recorded
 
 Optional minimum event rule:
-.\hqe_recorded_data_replay_readiness.bat --min-events 100
+.\scripts\paper_trading\hqe_recorded_data_replay_readiness.bat --min-events 100
 
 Optional warning policy:
-.\hqe_recorded_data_replay_readiness.bat --allow-warnings
+.\scripts\paper_trading\hqe_recorded_data_replay_readiness.bat --allow-warnings
 
 Optional dry-run limit:
-.\hqe_recorded_data_replay_readiness.bat --max-records 100
+.\scripts\paper_trading\hqe_recorded_data_replay_readiness.bat --max-records 100
 
 Default outputs:
 - reports\paper_trading\recorded_data_replay_dataset

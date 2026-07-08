@@ -6,7 +6,7 @@ Purpose:
 The strategy mode backtest run matrix pack reads the strategy mode comparison pack and creates a future paper-only run matrix for strict, balanced, and relaxed recorded-data backtests.
 
 Command:
-.\hqe_strategy_mode_backtest_run_matrix_pack.bat
+.\scripts\paper_trading\hqe_strategy_mode_backtest_run_matrix_pack.bat
 
 Default input:
 reports\paper_trading\strategy_mode_comparison_pack\strategy_mode_comparison_pack.json

@@ -6,7 +6,7 @@ Purpose:
 The paper backtest report safety language snapshot pack reads the paper backtest metrics context snapshot pack and creates report wording and safety language snapshot items.
 
 Command:
-.\hqe_paper_backtest_report_safety_language_snapshot_pack.bat
+.\scripts\paper_trading\hqe_paper_backtest_report_safety_language_snapshot_pack.bat
 
 Default input:
 reports\paper_trading\paper_backtest_metrics_context_snapshot_pack\paper_backtest_metrics_context_snapshot_pack.json

@@ -6,7 +6,7 @@ Purpose:
 The recorded backtest run output intake pack reads the recorded backtest command plan pack and creates post-run output intake expectations for the recorded-data paper backtest workflow.
 
 Command:
-.\hqe_recorded_backtest_run_output_intake_pack.bat
+.\scripts\paper_trading\hqe_recorded_backtest_run_output_intake_pack.bat
 
 Default input:
 reports\paper_trading\recorded_backtest_command_plan_pack\recorded_backtest_command_plan_pack.json

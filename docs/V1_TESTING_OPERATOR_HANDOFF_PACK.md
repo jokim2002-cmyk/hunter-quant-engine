@@ -6,7 +6,7 @@ Purpose:
 The handoff pack gives the operator a final paper-only checklist before v1.0 Testing Edition release notes.
 
 Command:
-.\hqe_v1_testing_operator_handoff_pack.bat
+.\scripts\paper_trading\hqe_v1_testing_operator_handoff_pack.bat
 
 Default input:
 reports\paper_trading\v1_testing_release_gate\v1_testing_release_gate.json

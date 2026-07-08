@@ -6,7 +6,7 @@ Purpose:
 The paper backtest evidence analysis sprint close pack reads the paper backtest evidence analysis close gate pack and closes Phase 4 as a paper-only evidence analysis workflow.
 
 Command:
-.\hqe_paper_backtest_evidence_analysis_sprint_close_pack.bat
+.\scripts\paper_trading\hqe_paper_backtest_evidence_analysis_sprint_close_pack.bat
 
 Default input:
 reports\paper_trading\paper_backtest_evidence_analysis_close_gate_pack\paper_backtest_evidence_analysis_close_gate_pack.json

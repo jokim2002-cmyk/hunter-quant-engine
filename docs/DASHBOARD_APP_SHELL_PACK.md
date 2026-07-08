@@ -6,7 +6,7 @@ Purpose:
 The dashboard app shell pack reads the dashboard component scaffold pack and creates a future Streamlit app shell template plus page registry.
 
 Command:
-.\hqe_dashboard_app_shell_pack.bat
+.\scripts\paper_trading\hqe_dashboard_app_shell_pack.bat
 
 Default input:
 reports\paper_trading\dashboard_component_scaffold_pack\dashboard_component_scaffold_pack.json

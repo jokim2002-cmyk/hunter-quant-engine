@@ -15,4 +15,4 @@ Safety scope:
 
 Primary shortcut:
 
-.\hqe_recorded_data_backtest_dependency_bridge.bat
+.\scripts\paper_trading\hqe_recorded_data_backtest_dependency_bridge.bat

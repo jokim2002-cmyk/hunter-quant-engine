@@ -13,7 +13,7 @@ It does not claim profitability.
 
 Run:
 
-    .\hqe_quick_check.bat
+    .\scripts\paper_trading\hqe_quick_check.bat
 
 Expected result:
 
@@ -25,7 +25,7 @@ Expected result:
 
 Run:
 
-    .\hqe_paper_mvp_operator_demo.bat
+    .\scripts\paper_trading\hqe_paper_mvp_operator_demo.bat
 
 This demo runs the Paper MVP flow:
 
@@ -52,7 +52,7 @@ Important outputs:
 
 Run:
 
-    .\hqe_paper_replay_journal_all.bat
+    .\scripts\paper_trading\hqe_paper_replay_journal_all.bat
 
 This workflow:
 
@@ -65,7 +65,7 @@ This workflow:
 
 After running the Paper MVP operator demo, aggregate paper evidence:
 
-    .\hqe_paper_evidence_aggregate.bat
+    .\scripts\paper_trading\hqe_paper_evidence_aggregate.bat
 
 This writes aggregate evidence under:
 
@@ -88,7 +88,7 @@ Passing evidence gates is not a profitability claim.
 
 Run:
 
-    .\hqe_paper_mvp_release_check.bat
+    .\scripts\paper_trading\hqe_paper_mvp_release_check.bat
 
 This checks Paper MVP release readiness. It does not create a git tag.
 
@@ -96,7 +96,7 @@ This checks Paper MVP release readiness. It does not create a git tag.
 
 Before building stronger evidence modules, scan available recorded data:
 
-    .\hqe_recorded_data_inventory.bat
+    .\scripts\paper_trading\hqe_recorded_data_inventory.bat
 
 A pass means supported recorded data files exist and none are empty.
 It does not prove profitability.
@@ -105,7 +105,7 @@ It does not prove profitability.
 
 Before any future live order-intent engineering, run:
 
-    .\hqe_live_execution_firewall_check.bat
+    .\scripts\paper_trading\hqe_live_execution_firewall_check.bat
 
 A pass means the firewall stayed safely closed and the intent remains denied.
 It does not approve live trading or real money.
@@ -114,7 +114,7 @@ It does not approve live trading or real money.
 
 Run the full safe local preflight chain:
 
-    .\hqe_live_readiness_preflight.bat
+    .\scripts\paper_trading\hqe_live_readiness_preflight.bat
 
 A pass does not approve live trading, real money, broker execution, or real orders.
 The preflight includes the deny-only live execution firewall.
@@ -123,7 +123,7 @@ The preflight includes the deny-only live execution firewall.
 
 Before any future live-readiness engineering work, run:
 
-    .\hqe_live_safety_lock_check.bat
+    .\scripts\paper_trading\hqe_live_safety_lock_check.bat
 
 A pass means the live safety lock is closed and dangerous live features are disabled.
 It does not approve live trading or real money.
@@ -132,7 +132,7 @@ It does not approve live trading or real money.
 
 After aggregating paper evidence, run:
 
-    .\hqe_live_readiness_check.bat
+    .\scripts\paper_trading\hqe_live_readiness_check.bat
 
 A pass means only that live-readiness engineering may start.
 It does not approve real-money trading.

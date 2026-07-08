@@ -6,7 +6,7 @@ Purpose:
 The gate reads the backtest readiness report and v0.6 release document, then validates that the paper-only backtest readiness chain is acceptable for future v1.0 release close.
 
 Command:
-.\hqe_v1_testing_release_gate.bat
+.\scripts\paper_trading\hqe_v1_testing_release_gate.bat
 
 Default inputs:
 reports\paper_trading\recorded_data_backtest_readiness_gate\backtest_readiness_gate.json

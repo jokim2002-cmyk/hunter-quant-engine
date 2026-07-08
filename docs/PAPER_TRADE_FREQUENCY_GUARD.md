@@ -28,4 +28,4 @@ Safety scope:
 
 Shortcut:
 
-.\hqe_paper_trade_frequency_guard.bat
+.\scripts\paper_trading\hqe_paper_trade_frequency_guard.bat

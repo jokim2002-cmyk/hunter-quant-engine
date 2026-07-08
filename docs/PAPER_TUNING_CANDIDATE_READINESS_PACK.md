@@ -28,4 +28,4 @@ Safety scope:
 
 Shortcut:
 
-.\hqe_paper_tuning_candidate_readiness_pack.bat
+.\scripts\paper_trading\hqe_paper_tuning_candidate_readiness_pack.bat

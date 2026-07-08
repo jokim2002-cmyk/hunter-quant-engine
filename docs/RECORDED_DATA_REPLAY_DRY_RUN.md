@@ -21,13 +21,13 @@ Generated files:
 - manifest.json
 
 Command:
-.\hqe_recorded_data_replay_dry_run.bat
+.\scripts\paper_trading\hqe_recorded_data_replay_dry_run.bat
 
 Optional custom path example:
-.\hqe_recorded_data_replay_dry_run.bat --dataset reports\paper_trading\recorded_data_replay_dataset\dataset.json --quality-gate reports\paper_trading\recorded_data_replay_quality_gate\quality_gate.json --output-dir reports\paper_trading\recorded_data_replay_dry_run
+.\scripts\paper_trading\hqe_recorded_data_replay_dry_run.bat --dataset reports\paper_trading\recorded_data_replay_dataset\dataset.json --quality-gate reports\paper_trading\recorded_data_replay_quality_gate\quality_gate.json --output-dir reports\paper_trading\recorded_data_replay_dry_run
 
 Optional record limit:
-.\hqe_recorded_data_replay_dry_run.bat --max-records 100
+.\scripts\paper_trading\hqe_recorded_data_replay_dry_run.bat --max-records 100
 
 Safety boundary:
 This module is paper/evidence only. It does not run strategies, create trade plans, connect to a broker, request live market data, place real orders, use real money, or prove profitability.

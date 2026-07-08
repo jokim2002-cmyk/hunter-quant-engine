@@ -6,7 +6,7 @@ Purpose:
 The first real dataset backtest run pack reads the real dataset backtest input pack and writes a safe operator run order for the first recorded-data paper backtest run.
 
 Command:
-.\hqe_first_real_dataset_backtest_run_pack.bat
+.\scripts\paper_trading\hqe_first_real_dataset_backtest_run_pack.bat
 
 Default input:
 reports\paper_trading\real_dataset_backtest_input_pack\real_dataset_backtest_input_pack.json
@@ -22,13 +22,13 @@ Generated files:
 - manifest.json
 
 Operator run order:
-- .\hqe_real_dataset_backtest_input_pack.bat
-- .\hqe_recorded_data_inventory.bat
-- .\hqe_recorded_data_replay_dataset.bat
-- .\hqe_recorded_data_replay_quality_gate.bat
-- .\hqe_recorded_data_backtest_readiness_gate.bat
-- .\hqe_v1_testing_release_gate.bat
-- .\hqe_v1_testing_operator_handoff_pack.bat
+- .\scripts\paper_trading\hqe_real_dataset_backtest_input_pack.bat
+- .\scripts\paper_trading\hqe_recorded_data_inventory.bat
+- .\scripts\paper_trading\hqe_recorded_data_replay_dataset.bat
+- .\scripts\paper_trading\hqe_recorded_data_replay_quality_gate.bat
+- .\scripts\paper_trading\hqe_recorded_data_backtest_readiness_gate.bat
+- .\scripts\paper_trading\hqe_v1_testing_release_gate.bat
+- .\scripts\paper_trading\hqe_v1_testing_operator_handoff_pack.bat
 
 Expected output checks:
 - inventory.json

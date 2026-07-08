@@ -5,7 +5,7 @@ Module EEEEE closes Phase 7.
 Command:
 
 ```bat
-.\hqe_improved_recorded_data_paper_rerun_sprint_close_pack.bat
+.\scripts\paper_trading\hqe_improved_recorded_data_paper_rerun_sprint_close_pack.bat
 ```
 
 Purpose:

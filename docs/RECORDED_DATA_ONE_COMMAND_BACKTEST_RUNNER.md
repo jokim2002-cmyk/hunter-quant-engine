@@ -6,7 +6,7 @@ Purpose:
 The runner orchestrates the v1.0 Testing Edition paper backtest path.
 
 Command:
-.\hqe_recorded_data_one_command_backtest_runner.bat
+.\scripts\paper_trading\hqe_recorded_data_one_command_backtest_runner.bat
 
 Default inputs:
 reports\paper_trading\recorded_data_paper_strategy_adapter_dry_run_consumer_evidence_readiness\paper_strategy_adapter_dry_run_consumer_evidence_readiness.json

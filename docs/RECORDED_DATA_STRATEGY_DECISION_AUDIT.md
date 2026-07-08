@@ -6,7 +6,7 @@ Purpose:
 The decision audit reads strategy replay sandbox events and creates deterministic strategy decision audit events.
 
 Command:
-.\hqe_recorded_data_strategy_decision_audit.bat
+.\scripts\paper_trading\hqe_recorded_data_strategy_decision_audit.bat
 
 Default input:
 reports\paper_trading\recorded_data_strategy_replay_sandbox\strategy_replay_sandbox.json

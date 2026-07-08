@@ -6,7 +6,7 @@ Purpose:
 The gate reads the adapter contract and decides whether its adapter requests are structurally acceptable for a future paper/simulation adapter dry-run phase.
 
 Command:
-.\hqe_recorded_data_paper_strategy_adapter_contract_acceptance.bat
+.\scripts\paper_trading\hqe_recorded_data_paper_strategy_adapter_contract_acceptance.bat
 
 Default input:
 reports\paper_trading\recorded_data_paper_strategy_adapter_contract\paper_strategy_adapter_contract.json

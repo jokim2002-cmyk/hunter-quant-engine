@@ -6,7 +6,7 @@ Purpose:
 The recorded backtest launch gate pack reads the Dashboard Sprint readiness close pack and creates a safe launch gate plus operator steps for the first recorded-data paper backtest review workflow.
 
 Command:
-.\hqe_recorded_backtest_launch_gate_pack.bat
+.\scripts\paper_trading\hqe_recorded_backtest_launch_gate_pack.bat
 
 Default input:
 reports\paper_trading\dashboard_sprint_readiness_close_pack\dashboard_sprint_readiness_close_pack.json

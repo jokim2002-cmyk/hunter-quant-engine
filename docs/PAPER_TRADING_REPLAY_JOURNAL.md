@@ -38,17 +38,17 @@ It can:
 
 Run the full workflow:
 
-    .\hqe_paper_replay_journal_all.bat
+    .\scripts\paper_trading\hqe_paper_replay_journal_all.bat
 
 This shortcut runs:
 
 The all-in-one shortcut uses the pretty runs viewer instead of raw index JSON.
 
-    .\hqe_paper_replay_journal.bat
-    .\hqe_paper_replay_journal_summary.bat
-    .\hqe_paper_replay_journal_summary.bat
-    .\hqe_paper_replay_journal_runs.bat
-    .\hqe_paper_replay_journal_folder.bat
+    .\scripts\paper_trading\hqe_paper_replay_journal.bat
+    .\scripts\paper_trading\hqe_paper_replay_journal_summary.bat
+    .\scripts\paper_trading\hqe_paper_replay_journal_summary.bat
+    .\scripts\paper_trading\hqe_paper_replay_journal_runs.bat
+    .\scripts\paper_trading\hqe_paper_replay_journal_folder.bat
 
 ---
 
@@ -56,25 +56,25 @@ The all-in-one shortcut uses the pretty runs viewer instead of raw index JSON.
 
 Run fake paper replay and save the journal bundle:
 
-    .\hqe_paper_replay_journal.bat
+    .\scripts\paper_trading\hqe_paper_replay_journal.bat
 
 Print the generated summary:
 
 The summary shortcut uses a friendly terminal view instead of raw summary JSON.
 
-    .\hqe_paper_replay_journal_summary.bat
+    .\scripts\paper_trading\hqe_paper_replay_journal_summary.bat
 
 Print the generated index JSON:
 
-    .\hqe_paper_replay_journal_index.bat
+    .\scripts\paper_trading\hqe_paper_replay_journal_index.bat
 
 List replay journal runs:
 
-    .\hqe_paper_replay_journal_runs.bat
+    .\scripts\paper_trading\hqe_paper_replay_journal_runs.bat
 
 Open the generated replay journal folder:
 
-    .\hqe_paper_replay_journal_folder.bat
+    .\scripts\paper_trading\hqe_paper_replay_journal_folder.bat
 
 ---
 
@@ -136,7 +136,7 @@ Required rules:
 
 Run:
 
-    .\hqe_paper_replay_journal_all.bat
+    .\scripts\paper_trading\hqe_paper_replay_journal_all.bat
 
 Then verify:
 

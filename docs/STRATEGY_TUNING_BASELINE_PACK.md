@@ -6,7 +6,7 @@ Purpose:
 The strategy tuning baseline pack reads the first real backtest report review pack and creates safe tuning questions for future paper-only mode comparison.
 
 Command:
-.\hqe_strategy_tuning_baseline_pack.bat
+.\scripts\paper_trading\hqe_strategy_tuning_baseline_pack.bat
 
 Default input:
 reports\paper_trading\first_real_backtest_report_review_pack\first_real_backtest_report_review_pack.json

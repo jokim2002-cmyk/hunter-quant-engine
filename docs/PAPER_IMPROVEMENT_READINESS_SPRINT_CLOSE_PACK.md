@@ -6,7 +6,7 @@ Purpose:
 The paper improvement readiness sprint close pack reads the paper improvement acceptance gate pack and closes Phase 5 as a paper-only planning/readiness workflow.
 
 Command:
-.\hqe_paper_improvement_readiness_sprint_close_pack.bat
+.\scripts\paper_trading\hqe_paper_improvement_readiness_sprint_close_pack.bat
 
 Default input:
 reports\paper_trading\paper_improvement_acceptance_gate_pack\paper_improvement_acceptance_gate_pack.json

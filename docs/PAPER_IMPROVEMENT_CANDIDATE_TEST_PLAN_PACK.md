@@ -6,7 +6,7 @@ Purpose:
 The paper improvement candidate test plan pack reads the paper improvement candidate registry pack and creates planning-only candidate test plan items.
 
 Command:
-.\hqe_paper_improvement_candidate_test_plan_pack.bat
+.\scripts\paper_trading\hqe_paper_improvement_candidate_test_plan_pack.bat
 
 Default input:
 reports\paper_trading\paper_improvement_candidate_registry_pack\paper_improvement_candidate_registry_pack.json

@@ -6,7 +6,7 @@ Purpose:
 The paper backtest metrics context snapshot pack reads the paper backtest ledger evidence snapshot pack and creates metrics-focused paper evidence context items.
 
 Command:
-.\hqe_paper_backtest_metrics_context_snapshot_pack.bat
+.\scripts\paper_trading\hqe_paper_backtest_metrics_context_snapshot_pack.bat
 
 Default input:
 reports\paper_trading\paper_backtest_ledger_evidence_snapshot_pack\paper_backtest_ledger_evidence_snapshot_pack.json

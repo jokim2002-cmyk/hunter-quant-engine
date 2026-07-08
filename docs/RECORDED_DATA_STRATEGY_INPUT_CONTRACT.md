@@ -18,13 +18,13 @@ Generated files:
 - manifest.json
 
 Command:
-.\hqe_recorded_data_strategy_input_contract.bat
+.\scripts\paper_trading\hqe_recorded_data_strategy_input_contract.bat
 
 Optional minimum bar rule:
-.\hqe_recorded_data_strategy_input_contract.bat --min-bars 100
+.\scripts\paper_trading\hqe_recorded_data_strategy_input_contract.bat --min-bars 100
 
 Optional event limit:
-.\hqe_recorded_data_strategy_input_contract.bat --max-events 100
+.\scripts\paper_trading\hqe_recorded_data_strategy_input_contract.bat --max-events 100
 
 Checks:
 - dry-run events JSONL exists

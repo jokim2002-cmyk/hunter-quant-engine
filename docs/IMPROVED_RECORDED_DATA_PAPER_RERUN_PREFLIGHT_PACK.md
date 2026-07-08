@@ -5,7 +5,7 @@ Module CCCCC continues Phase 7 after the improved rerun planning pack.
 Command:
 
 ```bat
-.\hqe_improved_recorded_data_paper_rerun_preflight_pack.bat
+.\scripts\paper_trading\hqe_improved_recorded_data_paper_rerun_preflight_pack.bat
 ```
 
 Purpose:

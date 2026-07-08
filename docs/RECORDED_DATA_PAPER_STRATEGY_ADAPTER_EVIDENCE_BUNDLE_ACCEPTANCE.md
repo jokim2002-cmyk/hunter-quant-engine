@@ -6,7 +6,7 @@ Purpose:
 The gate reads the adapter evidence bundle and decides whether its required stages are structurally acceptable for future adapter evidence release/readiness modules.
 
 Command:
-.\hqe_recorded_data_paper_strategy_adapter_evidence_bundle_acceptance.bat
+.\scripts\paper_trading\hqe_recorded_data_paper_strategy_adapter_evidence_bundle_acceptance.bat
 
 Default input:
 reports\paper_trading\recorded_data_paper_strategy_adapter_evidence_bundle\paper_strategy_adapter_evidence_bundle.json

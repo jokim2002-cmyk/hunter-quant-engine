@@ -10,13 +10,13 @@ The bundle runs the replay evidence pipeline end to end:
 4. Combined evidence summary and manifest.
 
 Command:
-.\hqe_recorded_data_replay_evidence.bat
+.\scripts\paper_trading\hqe_recorded_data_replay_evidence.bat
 
 Optional custom path example:
-.\hqe_recorded_data_replay_evidence.bat --recorded-root data\recorded --base-output-dir reports\paper_trading --output-dir reports\paper_trading\recorded_data_replay_evidence
+.\scripts\paper_trading\hqe_recorded_data_replay_evidence.bat --recorded-root data\recorded --base-output-dir reports\paper_trading --output-dir reports\paper_trading\recorded_data_replay_evidence
 
 Optional dry-run record limit:
-.\hqe_recorded_data_replay_evidence.bat --max-records 100
+.\scripts\paper_trading\hqe_recorded_data_replay_evidence.bat --max-records 100
 
 Default stage outputs:
 - reports\paper_trading\recorded_data_replay_dataset

@@ -6,7 +6,7 @@ Purpose:
 The release notes pack summarizes the recorded-data paper backtest chain, final evidence outputs, safety contract, limitations, and next release-candidate step.
 
 Command:
-.\hqe_v1_testing_release_notes.bat
+.\scripts\paper_trading\hqe_v1_testing_release_notes.bat
 
 Default input:
 reports\paper_trading\v1_testing_operator_handoff_pack\v1_testing_operator_handoff_pack.json
