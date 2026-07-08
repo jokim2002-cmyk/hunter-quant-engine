@@ -121,6 +121,50 @@ def build_option_buy_backtest_runner(
     return OptionBuyBacktestRunner(planner=planner)
 
 
+def build_option_buy_backtest_runner(
+    *,
+    min_volume: int = 0,
+    min_open_interest: int = 0,
+    require_bid_ask_quote: bool = False,
+    max_spread: float | None = None,
+    stop_loss_percent: float = 0.30,
+    target_percent: float = 0.60,
+    entry_slippage_percent: float = 0.0,
+    lots: int = 1,
+    cost_profile: str = COST_PROFILE_CUSTOM,
+    min_estimated_net_reward: float = 0.0,
+) -> OptionBuyBacktestRunner:
+    """
+    Build an option-buy backtest runner with explicit robustness controls.
+    """
+    transaction_cost_profile = build_transaction_cost_profile_from_name(cost_profile)
+    cost_calculator = TransactionCostCalculator(transaction_cost_profile)
+
+    planner = OptionBuyPlanner(
+        strike_selector=DynamicOptionStrikeSelector(
+            liquidity_config=OptionLiquidityFilterConfig(
+                min_volume=min_volume,
+                min_open_interest=min_open_interest,
+                require_bid_ask_quote=require_bid_ask_quote,
+                max_spread=max_spread,
+            )
+        ),
+        premium_level_planner=FixedPercentOptionPremiumTradeLevelPlanner(
+            config=OptionPremiumTradeLevelConfig(
+                stop_loss_percent=stop_loss_percent,
+                target_percent=target_percent,
+                entry_slippage_percent=entry_slippage_percent,
+            )
+        ),
+        trade_plan_builder=OptionBuyTradePlanBuilder(
+            lots=lots,
+            cost_calculator=cost_calculator,
+            min_estimated_net_reward=min_estimated_net_reward,
+        ),
+    )
+    return OptionBuyBacktestRunner(planner=planner)
+
+
 def run_backtest(
     scenario_csv: str | Path | None = None,
     premium_csv: str | Path | None = None,
