@@ -34,6 +34,9 @@ from src.backtesting.option_premium_candle_csv_loader import (
     OptionPremiumCandleCsvLoader,
 )
 from src.backtesting.trade_signal_csv_loader import TradeSignalCsvLoader
+from src.backtesting.time_scoped_option_premium_candle_provider import (
+    TimeScopedOptionPremiumCandleProvider,
+)
 from src.costs.transaction_cost_calculator import TransactionCostCalculator
 from src.costs.transaction_cost_profile_preset import (
     COST_PROFILE_CUSTOM,
@@ -180,6 +183,8 @@ def run_backtest(
     lots: int = 1,
     cost_profile: str = COST_PROFILE_CUSTOM,
     min_estimated_net_reward: float = 0.0,
+    time_scope_premium_candles: bool = False,
+    max_bars_held: int | None = None,
 ) -> OptionBuyBacktestSummary:
     """
     Run an offline option-buy backtest from scenario and premium CSV files.
@@ -190,6 +195,11 @@ def run_backtest(
         snapshot_csv=snapshot_csv,
     )
     premium_provider = OptionPremiumCandleCsvLoader().load_provider(premium_csv)
+    if time_scope_premium_candles or max_bars_held is not None:
+        premium_provider = TimeScopedOptionPremiumCandleProvider(
+            delegate=premium_provider,
+            max_bars_held=max_bars_held,
+        )
 
     signals = tuple(scenario.signal for scenario in scenarios)
     snapshots = tuple(scenario.snapshot for scenario in scenarios)
@@ -514,6 +524,18 @@ def build_argument_parser() -> argparse.ArgumentParser:
         default=0.0,
         help="Reject plans whose estimated net target reward is below this value.",
     )
+
+    parser.add_argument(
+        "--time-scope-premium-candles",
+        action="store_true",
+        help="Replay only option premium candles at or after the signal timestamp.",
+    )
+    parser.add_argument(
+        "--max-bars-held",
+        type=int,
+        default=None,
+        help="Maximum number of post-signal premium bars to replay per option plan.",
+    )
     return parser
 
 
@@ -550,6 +572,8 @@ def main(
         lots=args.lots,
         cost_profile=args.cost_profile,
         min_estimated_net_reward=args.min_estimated_net_reward,
+        time_scope_premium_candles=args.time_scope_premium_candles,
+        max_bars_held=args.max_bars_held,
     )
 
     if args.summary_json:
