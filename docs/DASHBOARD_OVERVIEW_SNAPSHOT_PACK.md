@@ -6,7 +6,7 @@ Purpose:
 The dashboard overview snapshot pack reads the dashboard input index pack and creates static dashboard overview cards for future Streamlit UI work.
 
 Command:
-.\scripts\paper_trading\hqe_dashboard_overview_snapshot_pack.bat
+.\hqe_dashboard_overview_snapshot_pack.bat
 
 Default input:
 reports\paper_trading\dashboard_input_index_pack\dashboard_input_index_pack.json

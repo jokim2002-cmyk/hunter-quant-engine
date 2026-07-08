@@ -6,7 +6,7 @@ Purpose:
 The recorded backtest review summary pack reads the recorded backtest output presence verification pack and creates an operator-safe review summary.
 
 Command:
-.\scripts\paper_trading\hqe_recorded_backtest_review_summary_pack.bat
+.\hqe_recorded_backtest_review_summary_pack.bat
 
 Default input:
 reports\paper_trading\recorded_backtest_output_presence_verification_pack\recorded_backtest_output_presence_verification_pack.json

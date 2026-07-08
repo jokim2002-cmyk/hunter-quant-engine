@@ -6,7 +6,7 @@ Purpose:
 The recorded backtest review workflow close pack reads the recorded backtest review summary pack and closes Phase 3 as a paper-only evidence workflow.
 
 Command:
-.\scripts\paper_trading\hqe_recorded_backtest_review_workflow_close_pack.bat
+.\hqe_recorded_backtest_review_workflow_close_pack.bat
 
 Default input:
 reports\paper_trading\recorded_backtest_review_summary_pack\recorded_backtest_review_summary_pack.json

@@ -6,7 +6,7 @@ Purpose:
 The dry-run reads adapter readiness and adapter request manifests, then writes deterministic dry-run events. It does not execute strategy logic.
 
 Command:
-.\scripts\paper_trading\hqe_recorded_data_paper_strategy_adapter_dry_run.bat
+.\hqe_recorded_data_paper_strategy_adapter_dry_run.bat
 
 Default inputs:
 reports\paper_trading\recorded_data_paper_strategy_adapter_readiness\paper_strategy_adapter_readiness.json

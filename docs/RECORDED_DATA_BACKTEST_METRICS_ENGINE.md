@@ -6,7 +6,7 @@ Purpose:
 The metrics engine reads the backtest trade ledger and writes simulated reference metrics for the future backtest report writer.
 
 Command:
-.\scripts\paper_trading\hqe_recorded_data_backtest_metrics_engine.bat
+.\hqe_recorded_data_backtest_metrics_engine.bat
 
 Default input:
 reports\paper_trading\recorded_data_backtest_trade_ledger\backtest_trade_ledger.json

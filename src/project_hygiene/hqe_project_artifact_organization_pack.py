@@ -79,8 +79,17 @@ class ArtifactOrganizationReport:
     inventory: list[RunnerInventoryItem]
 
 
+def _is_root_compatibility_runner(path: Path, root: Path) -> bool:
+    organized_runner = root / "scripts" / "paper_trading" / path.name
+    return organized_runner.exists()
+
+
 def _runner_files(root: Path) -> list[Path]:
-    return sorted(path for path in root.glob("hqe_*.bat") if path.is_file())
+    return sorted(
+        path
+        for path in root.glob("hqe_*.bat")
+        if path.is_file() and not _is_root_compatibility_runner(path, root)
+    )
 
 
 def _organized_runner_files(script_dir: Path) -> list[Path]:

@@ -16,7 +16,7 @@ It does not claim profitability.
 
 Run:
 
-    .\scripts\paper_trading\hqe_recorded_data_inventory.bat
+    .\hqe_recorded_data_inventory.bat
 
 The command scans:
 

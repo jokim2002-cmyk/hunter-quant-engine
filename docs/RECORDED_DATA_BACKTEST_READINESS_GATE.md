@@ -6,7 +6,7 @@ Purpose:
 The readiness gate orchestrates the one-command paper backtest runner and the backtest acceptance gate, then writes a final readiness report for the future v1.0 testing release gate.
 
 Command:
-.\scripts\paper_trading\hqe_recorded_data_backtest_readiness_gate.bat
+.\hqe_recorded_data_backtest_readiness_gate.bat
 
 Default inputs:
 reports\paper_trading\recorded_data_paper_strategy_adapter_dry_run_consumer_evidence_readiness\paper_strategy_adapter_dry_run_consumer_evidence_readiness.json

@@ -15,7 +15,7 @@ It does not claim profitability.
 
 Run:
 
-    .\scripts\paper_trading\hqe_live_execution_firewall_check.bat
+    .\hqe_live_execution_firewall_check.bat
 
 The command writes:
 

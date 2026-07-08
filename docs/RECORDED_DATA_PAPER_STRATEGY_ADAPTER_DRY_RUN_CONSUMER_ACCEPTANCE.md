@@ -6,7 +6,7 @@ Purpose:
 The gate reads the adapter dry-run consumer report and validates consumed events before future consumer readiness/evidence modules can consume them.
 
 Command:
-.\scripts\paper_trading\hqe_recorded_data_paper_strategy_adapter_dry_run_consumer_acceptance.bat
+.\hqe_recorded_data_paper_strategy_adapter_dry_run_consumer_acceptance.bat
 
 Default input:
 reports\paper_trading\recorded_data_paper_strategy_adapter_dry_run_consumer\paper_strategy_adapter_dry_run_consumer.json

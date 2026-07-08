@@ -6,7 +6,7 @@ Purpose:
 The real dataset backtest input pack discovers saved recorded-data files and writes a safe operator pack for the first real recorded-data paper backtest run.
 
 Command:
-.\scripts\paper_trading\hqe_real_dataset_backtest_input_pack.bat
+.\hqe_real_dataset_backtest_input_pack.bat
 
 Default input directories:
 - data\recorded
@@ -28,12 +28,12 @@ Supported dataset file types:
 - .parquet
 
 Suggested run order after a dataset is present:
-- .\scripts\paper_trading\hqe_recorded_data_inventory.bat
-- .\scripts\paper_trading\hqe_recorded_data_replay_dataset.bat
-- .\scripts\paper_trading\hqe_recorded_data_replay_quality_gate.bat
-- .\scripts\paper_trading\hqe_recorded_data_backtest_readiness_gate.bat
-- .\scripts\paper_trading\hqe_v1_testing_release_gate.bat
-- .\scripts\paper_trading\hqe_v1_testing_operator_handoff_pack.bat
+- .\hqe_recorded_data_inventory.bat
+- .\hqe_recorded_data_replay_dataset.bat
+- .\hqe_recorded_data_replay_quality_gate.bat
+- .\hqe_recorded_data_backtest_readiness_gate.bat
+- .\hqe_v1_testing_release_gate.bat
+- .\hqe_v1_testing_operator_handoff_pack.bat
 
 Safety:
 - LONG = CE BUY paper plan only.

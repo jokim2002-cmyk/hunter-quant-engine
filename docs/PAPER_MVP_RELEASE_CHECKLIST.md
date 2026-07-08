@@ -27,8 +27,8 @@ release.
 
 Run these before release:
 
-    .\scripts\paper_trading\hqe_quick_check.bat
-    .\scripts\paper_trading\hqe_paper_mvp_release_check.bat
+    .\hqe_quick_check.bat
+    .\hqe_paper_mvp_release_check.bat
 
 Expected result:
 
@@ -41,8 +41,8 @@ Expected result:
 
 The paper operator should be able to run:
 
-    .\scripts\paper_trading\hqe_paper_mvp_operator_demo.bat
-    .\scripts\paper_trading\hqe_paper_replay_journal_all.bat
+    .\hqe_paper_mvp_operator_demo.bat
+    .\hqe_paper_replay_journal_all.bat
 
 The workflow should:
 

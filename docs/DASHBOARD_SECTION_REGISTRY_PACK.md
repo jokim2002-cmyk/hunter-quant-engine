@@ -6,7 +6,7 @@ Purpose:
 The dashboard section registry pack reads the dashboard overview snapshot pack and creates dashboard sections plus card routes for future Streamlit component scaffold work.
 
 Command:
-.\scripts\paper_trading\hqe_dashboard_section_registry_pack.bat
+.\hqe_dashboard_section_registry_pack.bat
 
 Default input:
 reports\paper_trading\dashboard_overview_snapshot_pack\dashboard_overview_snapshot_pack.json

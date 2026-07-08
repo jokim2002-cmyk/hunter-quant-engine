@@ -14,9 +14,9 @@ It does not claim profitability.
 
 Run:
 
-    .\scripts\paper_trading\hqe_paper_mvp_operator_demo.bat
-    .\scripts\paper_trading\hqe_paper_evidence_aggregate.bat
-    .\scripts\paper_trading\hqe_live_readiness_check.bat
+    .\hqe_paper_mvp_operator_demo.bat
+    .\hqe_paper_evidence_aggregate.bat
+    .\hqe_live_readiness_check.bat
 
 The live-readiness check reads:
 

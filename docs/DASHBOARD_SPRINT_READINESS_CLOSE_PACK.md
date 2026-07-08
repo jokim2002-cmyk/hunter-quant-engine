@@ -6,7 +6,7 @@ Purpose:
 The dashboard sprint readiness close pack reads the dashboard dry run validation pack and closes the Dashboard Sprint as a paper-only evidence workflow.
 
 Command:
-.\scripts\paper_trading\hqe_dashboard_sprint_readiness_close_pack.bat
+.\hqe_dashboard_sprint_readiness_close_pack.bat
 
 Default input:
 reports\paper_trading\dashboard_dry_run_validation_pack\dashboard_dry_run_validation_pack.json

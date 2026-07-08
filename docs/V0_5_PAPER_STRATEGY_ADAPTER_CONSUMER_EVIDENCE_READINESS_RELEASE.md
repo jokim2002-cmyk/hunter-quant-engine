@@ -7,7 +7,7 @@ Release scope:
 This release closes the recorded-data paper strategy adapter dry-run consumer evidence readiness layer.
 
 Main operator command:
-.\scripts\paper_trading\hqe_recorded_data_paper_strategy_adapter_dry_run_consumer_evidence_readiness.bat
+.\hqe_recorded_data_paper_strategy_adapter_dry_run_consumer_evidence_readiness.bat
 
 Primary release output:
 reports\paper_trading\recorded_data_paper_strategy_adapter_dry_run_consumer_evidence_readiness
@@ -22,12 +22,12 @@ Core included modules:
 - Module TT: v0.5 paper strategy adapter consumer evidence readiness release close.
 
 Related commands:
-.\scripts\paper_trading\hqe_recorded_data_paper_strategy_adapter_dry_run_consumer.bat
-.\scripts\paper_trading\hqe_recorded_data_paper_strategy_adapter_dry_run_consumer_acceptance.bat
-.\scripts\paper_trading\hqe_recorded_data_paper_strategy_adapter_dry_run_consumer_readiness.bat
-.\scripts\paper_trading\hqe_recorded_data_paper_strategy_adapter_dry_run_consumer_evidence_bundle.bat
-.\scripts\paper_trading\hqe_recorded_data_paper_strategy_adapter_dry_run_consumer_evidence_bundle_acceptance.bat
-.\scripts\paper_trading\hqe_recorded_data_paper_strategy_adapter_dry_run_consumer_evidence_readiness.bat
+.\hqe_recorded_data_paper_strategy_adapter_dry_run_consumer.bat
+.\hqe_recorded_data_paper_strategy_adapter_dry_run_consumer_acceptance.bat
+.\hqe_recorded_data_paper_strategy_adapter_dry_run_consumer_readiness.bat
+.\hqe_recorded_data_paper_strategy_adapter_dry_run_consumer_evidence_bundle.bat
+.\hqe_recorded_data_paper_strategy_adapter_dry_run_consumer_evidence_bundle_acceptance.bat
+.\hqe_recorded_data_paper_strategy_adapter_dry_run_consumer_evidence_readiness.bat
 
 Expected full quick-check suite after this release:
 1891 passed

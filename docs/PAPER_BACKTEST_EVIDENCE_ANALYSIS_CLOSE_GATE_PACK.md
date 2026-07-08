@@ -6,7 +6,7 @@ Purpose:
 The paper backtest evidence analysis close gate pack reads the paper backtest report safety language snapshot pack and creates the final close gate before Phase 4 close.
 
 Command:
-.\scripts\paper_trading\hqe_paper_backtest_evidence_analysis_close_gate_pack.bat
+.\hqe_paper_backtest_evidence_analysis_close_gate_pack.bat
 
 Default input:
 reports\paper_trading\paper_backtest_report_safety_language_snapshot_pack\paper_backtest_report_safety_language_snapshot_pack.json

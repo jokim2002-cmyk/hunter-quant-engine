@@ -6,7 +6,7 @@ Purpose:
 The paper improvement candidate registry pack reads the paper improvement readiness launch pack and creates a planning-only improvement candidate registry.
 
 Command:
-.\scripts\paper_trading\hqe_paper_improvement_candidate_registry_pack.bat
+.\hqe_paper_improvement_candidate_registry_pack.bat
 
 Default input:
 reports\paper_trading\paper_improvement_readiness_launch_pack\paper_improvement_readiness_launch_pack.json

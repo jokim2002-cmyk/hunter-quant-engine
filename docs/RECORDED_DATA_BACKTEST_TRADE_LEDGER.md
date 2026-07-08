@@ -6,7 +6,7 @@ Purpose:
 The ledger reads paper fill/exit lifecycle records and writes structured trade rows for future metrics.
 
 Command:
-.\scripts\paper_trading\hqe_recorded_data_backtest_trade_ledger.bat
+.\hqe_recorded_data_backtest_trade_ledger.bat
 
 Default input:
 reports\paper_trading\recorded_data_paper_fill_exit_simulator\paper_fill_exit_simulator.json

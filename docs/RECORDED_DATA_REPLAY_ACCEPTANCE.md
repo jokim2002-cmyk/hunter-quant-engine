@@ -17,13 +17,13 @@ Generated files:
 - manifest.json
 
 Command:
-.\scripts\paper_trading\hqe_recorded_data_replay_acceptance.bat
+.\hqe_recorded_data_replay_acceptance.bat
 
 Optional minimum event rule:
-.\scripts\paper_trading\hqe_recorded_data_replay_acceptance.bat --min-events 100
+.\hqe_recorded_data_replay_acceptance.bat --min-events 100
 
 Optional warning policy:
-.\scripts\paper_trading\hqe_recorded_data_replay_acceptance.bat --allow-warnings
+.\hqe_recorded_data_replay_acceptance.bat --allow-warnings
 
 Checks:
 - evidence summary exists and is valid JSON

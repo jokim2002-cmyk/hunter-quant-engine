@@ -9,7 +9,7 @@ The gate runs:
 3. Final adapter evidence readiness report.
 
 Command:
-.\scripts\paper_trading\hqe_recorded_data_paper_strategy_adapter_evidence_readiness.bat
+.\hqe_recorded_data_paper_strategy_adapter_evidence_readiness.bat
 
 Default inputs:
 reports\paper_trading\recorded_data_paper_strategy_replay_plan_readiness\paper_strategy_replay_plan_readiness.json

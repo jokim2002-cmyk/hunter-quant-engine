@@ -20,17 +20,17 @@ Completed chain:
 - paper-only backtest readiness gate
 
 Main shortcuts:
-- .\scripts\paper_trading\hqe_recorded_data_strategy_replay_sandbox.bat
-- .\scripts\paper_trading\hqe_recorded_data_strategy_decision_audit.bat
-- .\scripts\paper_trading\hqe_recorded_data_strategy_decision_acceptance.bat
-- .\scripts\paper_trading\hqe_recorded_data_paper_option_trade_plan_simulator.bat
-- .\scripts\paper_trading\hqe_recorded_data_paper_fill_exit_simulator.bat
-- .\scripts\paper_trading\hqe_recorded_data_backtest_trade_ledger.bat
-- .\scripts\paper_trading\hqe_recorded_data_backtest_metrics_engine.bat
-- .\scripts\paper_trading\hqe_recorded_data_backtest_report_writer.bat
-- .\scripts\paper_trading\hqe_recorded_data_one_command_backtest_runner.bat
-- .\scripts\paper_trading\hqe_recorded_data_backtest_acceptance_gate.bat
-- .\scripts\paper_trading\hqe_recorded_data_backtest_readiness_gate.bat
+- .\hqe_recorded_data_strategy_replay_sandbox.bat
+- .\hqe_recorded_data_strategy_decision_audit.bat
+- .\hqe_recorded_data_strategy_decision_acceptance.bat
+- .\hqe_recorded_data_paper_option_trade_plan_simulator.bat
+- .\hqe_recorded_data_paper_fill_exit_simulator.bat
+- .\hqe_recorded_data_backtest_trade_ledger.bat
+- .\hqe_recorded_data_backtest_metrics_engine.bat
+- .\hqe_recorded_data_backtest_report_writer.bat
+- .\hqe_recorded_data_one_command_backtest_runner.bat
+- .\hqe_recorded_data_backtest_acceptance_gate.bat
+- .\hqe_recorded_data_backtest_readiness_gate.bat
 
 Backtest readiness scope:
 The release validates that recorded replay input can flow through a paper-only NIFTY option-buy backtest chain and produce report, metrics, ledger, acceptance, and readiness evidence.

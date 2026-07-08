@@ -20,13 +20,13 @@ Generated files:
 - manifest.json
 
 Command:
-.\scripts\paper_trading\hqe_recorded_data_paper_strategy_replay_plan.bat
+.\hqe_recorded_data_paper_strategy_replay_plan.bat
 
 Optional rules:
-.\scripts\paper_trading\hqe_recorded_data_paper_strategy_replay_plan.bat --min-scenarios 1 --min-bars 100
+.\hqe_recorded_data_paper_strategy_replay_plan.bat --min-scenarios 1 --min-bars 100
 
 Optional warning policy:
-.\scripts\paper_trading\hqe_recorded_data_paper_strategy_replay_plan.bat --allow-warnings
+.\hqe_recorded_data_paper_strategy_replay_plan.bat --allow-warnings
 
 Safety boundary:
 This module is paper/evidence only. It does not run strategies, create signals, create trade plans, connect to a broker, request live market data, place real orders, use real money, calculate PnL, or prove profitability.

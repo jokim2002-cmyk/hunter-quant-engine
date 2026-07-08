@@ -6,7 +6,7 @@ Purpose:
 The acceptance gate reads the strategy decision audit report and confirms that the decisions are safe, deterministic, and structurally valid for the next paper backtest phase.
 
 Command:
-.\scripts\paper_trading\hqe_recorded_data_strategy_decision_acceptance.bat
+.\hqe_recorded_data_strategy_decision_acceptance.bat
 
 Default input:
 reports\paper_trading\recorded_data_strategy_decision_audit\strategy_decision_audit.json

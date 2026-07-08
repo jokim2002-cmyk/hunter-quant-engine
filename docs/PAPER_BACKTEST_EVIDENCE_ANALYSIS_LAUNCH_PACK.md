@@ -6,7 +6,7 @@ Purpose:
 The paper backtest evidence analysis launch pack reads the recorded backtest review workflow close pack and creates paper-only evidence analysis launch items.
 
 Command:
-.\scripts\paper_trading\hqe_paper_backtest_evidence_analysis_launch_pack.bat
+.\hqe_paper_backtest_evidence_analysis_launch_pack.bat
 
 Default input:
 reports\paper_trading\recorded_backtest_review_workflow_close_pack\recorded_backtest_review_workflow_close_pack.json

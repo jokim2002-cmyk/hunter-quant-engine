@@ -6,7 +6,7 @@ Purpose:
 The recorded backtest command plan pack reads the recorded backtest launch gate pack and creates manual command steps for the recorded-data paper backtest workflow.
 
 Command:
-.\scripts\paper_trading\hqe_recorded_backtest_command_plan_pack.bat
+.\hqe_recorded_backtest_command_plan_pack.bat
 
 Default input:
 reports\paper_trading\recorded_backtest_launch_gate_pack\recorded_backtest_launch_gate_pack.json

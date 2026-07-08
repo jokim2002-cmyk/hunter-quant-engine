@@ -6,7 +6,7 @@ Purpose:
 The paper improvement readiness launch pack reads the paper backtest evidence analysis sprint close pack and creates paper-only improvement readiness launch items.
 
 Command:
-.\scripts\paper_trading\hqe_paper_improvement_readiness_launch_pack.bat
+.\hqe_paper_improvement_readiness_launch_pack.bat
 
 Default input:
 reports\paper_trading\paper_backtest_evidence_analysis_sprint_close_pack\paper_backtest_evidence_analysis_sprint_close_pack.json

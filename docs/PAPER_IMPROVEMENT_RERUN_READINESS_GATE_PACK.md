@@ -6,7 +6,7 @@ Purpose:
 The paper improvement rerun readiness gate pack reads the paper improvement candidate test plan pack and creates paper-only rerun readiness gate items.
 
 Command:
-.\scripts\paper_trading\hqe_paper_improvement_rerun_readiness_gate_pack.bat
+.\hqe_paper_improvement_rerun_readiness_gate_pack.bat
 
 Default input:
 reports\paper_trading\paper_improvement_candidate_test_plan_pack\paper_improvement_candidate_test_plan_pack.json

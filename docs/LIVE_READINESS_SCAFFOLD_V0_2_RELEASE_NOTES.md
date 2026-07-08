@@ -38,19 +38,19 @@ This checkpoint includes:
 
 Run the full test suite:
 
-    .\scripts\paper_trading\hqe_quick_check.bat
+    .\hqe_quick_check.bat
 
 Run the full safe preflight:
 
-    .\scripts\paper_trading\hqe_live_readiness_preflight.bat
+    .\hqe_live_readiness_preflight.bat
 
 Run the deny-only firewall directly:
 
-    .\scripts\paper_trading\hqe_live_execution_firewall_check.bat
+    .\hqe_live_execution_firewall_check.bat
 
 Run the disabled safety lock directly:
 
-    .\scripts\paper_trading\hqe_live_safety_lock_check.bat
+    .\hqe_live_safety_lock_check.bat
 
 ## Meaning of Pass
 

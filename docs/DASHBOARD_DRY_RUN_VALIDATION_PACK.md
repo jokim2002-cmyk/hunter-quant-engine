@@ -6,7 +6,7 @@ Purpose:
 The dashboard dry run validation pack reads the dashboard smoke test plan pack and creates future dashboard dry-run validation items.
 
 Command:
-.\scripts\paper_trading\hqe_dashboard_dry_run_validation_pack.bat
+.\hqe_dashboard_dry_run_validation_pack.bat
 
 Default input:
 reports\paper_trading\dashboard_smoke_test_plan_pack\dashboard_smoke_test_plan_pack.json

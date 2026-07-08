@@ -5,7 +5,7 @@ Module AAAAA closes the post-v1.0 Paper Improvement Execution Sprint.
 Command:
 
 ```bat
-.\scripts\paper_trading\hqe_paper_improvement_execution_sprint_close_pack.bat
+.\hqe_paper_improvement_execution_sprint_close_pack.bat
 ```
 
 Purpose:

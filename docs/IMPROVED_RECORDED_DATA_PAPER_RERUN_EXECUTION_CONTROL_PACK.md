@@ -5,7 +5,7 @@ Module DDDDD continues Phase 7 after the improved rerun preflight pack.
 Command:
 
 ```bat
-.\scripts\paper_trading\hqe_improved_recorded_data_paper_rerun_execution_control_pack.bat
+.\hqe_improved_recorded_data_paper_rerun_execution_control_pack.bat
 ```
 
 Purpose:

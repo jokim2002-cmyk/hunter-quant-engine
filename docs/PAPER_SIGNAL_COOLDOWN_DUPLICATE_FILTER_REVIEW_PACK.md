@@ -5,7 +5,7 @@ Module YYYY continues the post-v1.0 Paper Improvement Execution Sprint.
 Command:
 
 ```bat
-.\scripts\paper_trading\hqe_paper_signal_cooldown_duplicate_filter_review_pack.bat
+.\hqe_paper_signal_cooldown_duplicate_filter_review_pack.bat
 ```
 
 Purpose:

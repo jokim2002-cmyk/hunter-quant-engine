@@ -22,11 +22,11 @@ The older example script also works:
 
 Paper demo shortcuts:
 
-    .\scripts\paper_trading\hqe_paper_demo.bat
-    .\scripts\paper_trading\hqe_paper_report.bat
-    .\scripts\paper_trading\hqe_paper_demo_report.bat
-    .\scripts\paper_trading\hqe_paper_folder.bat
-    .\scripts\paper_trading\hqe_paper_report_text.bat
+    .\hqe_paper_demo.bat
+    .\hqe_paper_report.bat
+    .\hqe_paper_demo_report.bat
+    .\hqe_paper_folder.bat
+    .\hqe_paper_report_text.bat
 
 Shortcut meanings:
 

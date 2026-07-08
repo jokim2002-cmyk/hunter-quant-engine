@@ -17,13 +17,13 @@ Generated files:
 - manifest.json
 
 Command:
-.\scripts\paper_trading\hqe_recorded_data_strategy_replay_scenario_acceptance.bat
+.\hqe_recorded_data_strategy_replay_scenario_acceptance.bat
 
 Optional minimum scenario and bar rules:
-.\scripts\paper_trading\hqe_recorded_data_strategy_replay_scenario_acceptance.bat --min-scenarios 1 --min-bars-per-scenario 100
+.\hqe_recorded_data_strategy_replay_scenario_acceptance.bat --min-scenarios 1 --min-bars-per-scenario 100
 
 Optional warning policy:
-.\scripts\paper_trading\hqe_recorded_data_strategy_replay_scenario_acceptance.bat --allow-warnings
+.\hqe_recorded_data_strategy_replay_scenario_acceptance.bat --allow-warnings
 
 Checks:
 - scenario manifest exists and is valid JSON

@@ -6,7 +6,7 @@ Purpose:
 The release candidate gate reads the release notes evidence and validates the final paper-only safety contract, final output paths, release-note sections, and readiness flag.
 
 Command:
-.\scripts\paper_trading\hqe_v1_testing_release_candidate_gate.bat
+.\hqe_v1_testing_release_candidate_gate.bat
 
 Default input:
 reports\paper_trading\v1_testing_release_notes\v1_testing_release_notes.json

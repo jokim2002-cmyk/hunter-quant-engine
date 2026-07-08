@@ -6,7 +6,7 @@ Purpose:
 The dashboard input index pack reads the Real Backtest Usage Sprint readiness close report and creates a paper-only dashboard input index for future Streamlit UI work.
 
 Command:
-.\scripts\paper_trading\hqe_dashboard_input_index_pack.bat
+.\hqe_dashboard_input_index_pack.bat
 
 Default input:
 reports\paper_trading\real_backtest_usage_sprint_readiness_close\real_backtest_usage_sprint_readiness_close.json

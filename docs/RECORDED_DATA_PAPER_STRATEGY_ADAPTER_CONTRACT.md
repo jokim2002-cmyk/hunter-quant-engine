@@ -6,7 +6,7 @@ Purpose:
 The contract reads the plan readiness report and the paper strategy replay plan, then creates adapter request manifests for a future paper/simulation strategy adapter.
 
 Command:
-.\scripts\paper_trading\hqe_recorded_data_paper_strategy_adapter_contract.bat
+.\hqe_recorded_data_paper_strategy_adapter_contract.bat
 
 Default inputs:
 reports\paper_trading\recorded_data_paper_strategy_replay_plan_readiness\paper_strategy_replay_plan_readiness.json

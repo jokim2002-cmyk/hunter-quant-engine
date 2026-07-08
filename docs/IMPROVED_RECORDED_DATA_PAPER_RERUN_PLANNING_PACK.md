@@ -5,7 +5,7 @@ Module BBBBB starts Phase 7 after the paper improvement execution sprint.
 Command:
 
 ```bat
-.\scripts\paper_trading\hqe_improved_recorded_data_paper_rerun_planning_pack.bat
+.\hqe_improved_recorded_data_paper_rerun_planning_pack.bat
 ```
 
 Purpose:

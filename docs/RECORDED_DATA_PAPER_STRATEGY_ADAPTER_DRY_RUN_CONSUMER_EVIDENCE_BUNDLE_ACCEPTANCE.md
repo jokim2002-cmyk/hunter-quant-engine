@@ -6,7 +6,7 @@ Purpose:
 The gate reads the adapter dry-run consumer evidence bundle and decides whether its required stages are structurally acceptable for future consumer readiness/release modules.
 
 Command:
-.\scripts\paper_trading\hqe_recorded_data_paper_strategy_adapter_dry_run_consumer_evidence_bundle_acceptance.bat
+.\hqe_recorded_data_paper_strategy_adapter_dry_run_consumer_evidence_bundle_acceptance.bat
 
 Default input:
 reports\paper_trading\recorded_data_paper_strategy_adapter_dry_run_consumer_evidence_bundle\paper_strategy_adapter_dry_run_consumer_evidence_bundle.json

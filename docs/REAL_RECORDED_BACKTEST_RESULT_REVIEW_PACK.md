@@ -24,4 +24,4 @@ Safety scope:
 
 Shortcut:
 
-.\scripts\paper_trading\hqe_real_recorded_backtest_result_review_pack.bat
+.\hqe_real_recorded_backtest_result_review_pack.bat

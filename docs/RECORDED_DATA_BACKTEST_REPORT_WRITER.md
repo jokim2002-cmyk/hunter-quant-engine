@@ -6,7 +6,7 @@ Purpose:
 The report writer reads the metrics engine output and the trade ledger output, validates both, and writes a final report bundle for the future one-command backtest runner.
 
 Command:
-.\scripts\paper_trading\hqe_recorded_data_backtest_report_writer.bat
+.\hqe_recorded_data_backtest_report_writer.bat
 
 Default inputs:
 reports\paper_trading\recorded_data_backtest_metrics_engine\backtest_metrics.json

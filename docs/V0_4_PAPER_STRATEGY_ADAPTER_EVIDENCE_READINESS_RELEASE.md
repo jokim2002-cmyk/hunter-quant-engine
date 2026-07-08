@@ -7,7 +7,7 @@ Release scope:
 This release closes the recorded-data paper strategy adapter evidence readiness layer.
 
 Main operator command:
-.\scripts\paper_trading\hqe_recorded_data_paper_strategy_adapter_evidence_readiness.bat
+.\hqe_recorded_data_paper_strategy_adapter_evidence_readiness.bat
 
 Primary release output:
 reports\paper_trading\recorded_data_paper_strategy_adapter_evidence_readiness
@@ -27,18 +27,18 @@ Core included modules:
 - Module LL: Recorded data paper strategy adapter evidence readiness gate.
 
 Related commands:
-.\scripts\paper_trading\hqe_recorded_data_paper_strategy_replay_plan.bat
-.\scripts\paper_trading\hqe_recorded_data_paper_strategy_replay_plan_acceptance.bat
-.\scripts\paper_trading\hqe_recorded_data_paper_strategy_replay_plan_readiness.bat
-.\scripts\paper_trading\hqe_recorded_data_paper_strategy_adapter_contract.bat
-.\scripts\paper_trading\hqe_recorded_data_paper_strategy_adapter_contract_acceptance.bat
-.\scripts\paper_trading\hqe_recorded_data_paper_strategy_adapter_readiness.bat
-.\scripts\paper_trading\hqe_recorded_data_paper_strategy_adapter_dry_run.bat
-.\scripts\paper_trading\hqe_recorded_data_paper_strategy_adapter_dry_run_acceptance.bat
-.\scripts\paper_trading\hqe_recorded_data_paper_strategy_adapter_dry_run_readiness.bat
-.\scripts\paper_trading\hqe_recorded_data_paper_strategy_adapter_evidence_bundle.bat
-.\scripts\paper_trading\hqe_recorded_data_paper_strategy_adapter_evidence_bundle_acceptance.bat
-.\scripts\paper_trading\hqe_recorded_data_paper_strategy_adapter_evidence_readiness.bat
+.\hqe_recorded_data_paper_strategy_replay_plan.bat
+.\hqe_recorded_data_paper_strategy_replay_plan_acceptance.bat
+.\hqe_recorded_data_paper_strategy_replay_plan_readiness.bat
+.\hqe_recorded_data_paper_strategy_adapter_contract.bat
+.\hqe_recorded_data_paper_strategy_adapter_contract_acceptance.bat
+.\hqe_recorded_data_paper_strategy_adapter_readiness.bat
+.\hqe_recorded_data_paper_strategy_adapter_dry_run.bat
+.\hqe_recorded_data_paper_strategy_adapter_dry_run_acceptance.bat
+.\hqe_recorded_data_paper_strategy_adapter_dry_run_readiness.bat
+.\hqe_recorded_data_paper_strategy_adapter_evidence_bundle.bat
+.\hqe_recorded_data_paper_strategy_adapter_evidence_bundle_acceptance.bat
+.\hqe_recorded_data_paper_strategy_adapter_evidence_readiness.bat
 
 Expected full quick-check suite after this release:
 1817 passed

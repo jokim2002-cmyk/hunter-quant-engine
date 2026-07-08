@@ -5,7 +5,7 @@ Module HHHHH closes Phase 8.
 Command:
 
 ```bat
-.\scripts\paper_trading\hqe_safe_improved_recorded_data_paper_rerun_runner_build_sprint_close_pack.bat
+.\hqe_safe_improved_recorded_data_paper_rerun_runner_build_sprint_close_pack.bat
 ```
 
 Purpose:

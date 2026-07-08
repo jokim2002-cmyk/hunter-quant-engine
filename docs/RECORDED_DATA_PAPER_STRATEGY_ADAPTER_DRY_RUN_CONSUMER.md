@@ -6,7 +6,7 @@ Purpose:
 The consumer reads adapter evidence readiness plus adapter dry-run events, then consumes those events in audit-only mode.
 
 Command:
-.\scripts\paper_trading\hqe_recorded_data_paper_strategy_adapter_dry_run_consumer.bat
+.\hqe_recorded_data_paper_strategy_adapter_dry_run_consumer.bat
 
 Default inputs:
 reports\paper_trading\recorded_data_paper_strategy_adapter_evidence_readiness\paper_strategy_adapter_evidence_readiness.json

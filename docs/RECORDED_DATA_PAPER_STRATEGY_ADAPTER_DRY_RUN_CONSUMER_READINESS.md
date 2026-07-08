@@ -9,7 +9,7 @@ The gate runs:
 3. Final adapter dry-run consumer readiness report.
 
 Command:
-.\scripts\paper_trading\hqe_recorded_data_paper_strategy_adapter_dry_run_consumer_readiness.bat
+.\hqe_recorded_data_paper_strategy_adapter_dry_run_consumer_readiness.bat
 
 Default inputs:
 reports\paper_trading\recorded_data_paper_strategy_adapter_evidence_readiness\paper_strategy_adapter_evidence_readiness.json

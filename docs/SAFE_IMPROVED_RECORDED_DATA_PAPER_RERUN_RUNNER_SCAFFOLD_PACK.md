@@ -5,7 +5,7 @@ Module FFFFF starts Phase 8.
 Command:
 
 ```bat
-.\scripts\paper_trading\hqe_safe_improved_recorded_data_paper_rerun_runner_scaffold_pack.bat
+.\hqe_safe_improved_recorded_data_paper_rerun_runner_scaffold_pack.bat
 ```
 
 Purpose:

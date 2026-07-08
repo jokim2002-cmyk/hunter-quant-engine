@@ -6,7 +6,7 @@ Module WWWW.
 Command:
 
 ```bat
-.\scripts\paper_trading\hqe_paper_exit_rule_sensitivity_review_pack.bat
+.\hqe_paper_exit_rule_sensitivity_review_pack.bat
 ```
 
 Purpose:

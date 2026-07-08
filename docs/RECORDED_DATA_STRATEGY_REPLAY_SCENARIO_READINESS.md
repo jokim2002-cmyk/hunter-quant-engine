@@ -10,19 +10,19 @@ The scenario readiness gate runs:
 4. Final scenario readiness report.
 
 Command:
-.\scripts\paper_trading\hqe_recorded_data_strategy_replay_scenario_readiness.bat
+.\hqe_recorded_data_strategy_replay_scenario_readiness.bat
 
 Optional recorded root:
-.\scripts\paper_trading\hqe_recorded_data_strategy_replay_scenario_readiness.bat --recorded-root data\recorded
+.\hqe_recorded_data_strategy_replay_scenario_readiness.bat --recorded-root data\recorded
 
 Optional readiness rules:
-.\scripts\paper_trading\hqe_recorded_data_strategy_replay_scenario_readiness.bat --min-events 100 --min-bars 100 --min-scenarios 1 --min-bars-per-scenario 100
+.\hqe_recorded_data_strategy_replay_scenario_readiness.bat --min-events 100 --min-bars 100 --min-scenarios 1 --min-bars-per-scenario 100
 
 Optional warning policy:
-.\scripts\paper_trading\hqe_recorded_data_strategy_replay_scenario_readiness.bat --allow-warnings
+.\hqe_recorded_data_strategy_replay_scenario_readiness.bat --allow-warnings
 
 Optional limits:
-.\scripts\paper_trading\hqe_recorded_data_strategy_replay_scenario_readiness.bat --max-records 100 --max-events 100 --max-scenarios 5
+.\hqe_recorded_data_strategy_replay_scenario_readiness.bat --max-records 100 --max-events 100 --max-scenarios 5
 
 Default outputs:
 - reports\paper_trading\recorded_data_replay_dataset

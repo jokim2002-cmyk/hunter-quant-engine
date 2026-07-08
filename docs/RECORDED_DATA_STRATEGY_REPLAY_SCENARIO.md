@@ -19,13 +19,13 @@ Generated files:
 - manifest.json
 
 Command:
-.\scripts\paper_trading\hqe_recorded_data_strategy_replay_scenario.bat
+.\hqe_recorded_data_strategy_replay_scenario.bat
 
 Optional minimum bars per scenario:
-.\scripts\paper_trading\hqe_recorded_data_strategy_replay_scenario.bat --min-bars-per-scenario 100
+.\hqe_recorded_data_strategy_replay_scenario.bat --min-bars-per-scenario 100
 
 Optional scenario limit:
-.\scripts\paper_trading\hqe_recorded_data_strategy_replay_scenario.bat --max-scenarios 5
+.\hqe_recorded_data_strategy_replay_scenario.bat --max-scenarios 5
 
 Checks:
 - strategy input bars JSONL exists

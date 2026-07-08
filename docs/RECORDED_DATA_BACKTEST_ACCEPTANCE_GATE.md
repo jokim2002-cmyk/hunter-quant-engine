@@ -6,7 +6,7 @@ Purpose:
 The acceptance gate checks that the paper-only backtest chain completed and is acceptable for the future v1.0 testing release gate.
 
 Command:
-.\scripts\paper_trading\hqe_recorded_data_backtest_acceptance_gate.bat
+.\hqe_recorded_data_backtest_acceptance_gate.bat
 
 Default input:
 reports\paper_trading\recorded_data_one_command_backtest_runner\one_command_backtest_runner.json

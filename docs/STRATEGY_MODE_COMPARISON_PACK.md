@@ -6,7 +6,7 @@ Purpose:
 The strategy mode comparison pack reads the strategy tuning baseline pack and writes strict, balanced, and relaxed paper-only mode definitions for future recorded-data comparison.
 
 Command:
-.\scripts\paper_trading\hqe_strategy_mode_comparison_pack.bat
+.\hqe_strategy_mode_comparison_pack.bat
 
 Default input:
 reports\paper_trading\strategy_tuning_baseline_pack\strategy_tuning_baseline_pack.json

@@ -6,7 +6,7 @@ Purpose:
 The first real backtest output verification pack reads the first real dataset backtest run pack and checks whether expected paper backtest output files exist after the operator run.
 
 Command:
-.\scripts\paper_trading\hqe_first_real_backtest_output_verification_pack.bat
+.\hqe_first_real_backtest_output_verification_pack.bat
 
 Default input:
 reports\paper_trading\first_real_dataset_backtest_run_pack\first_real_dataset_backtest_run_pack.json

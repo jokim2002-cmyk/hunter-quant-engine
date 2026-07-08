@@ -55,7 +55,7 @@ Then run tests:
 
 First run strategy mode benchmark:
 
-.\scripts\paper_trading\hqe_benchmark_modes.bat
+.\hqe_benchmark_modes.bat
 
 Then inspect:
 
@@ -64,7 +64,7 @@ Get-Content "data\processed\fyers_nifty_5m_mode_benchmark_summary.csv"
 
 Then run strategy experiments:
 
-.\scripts\paper_trading\hqe_run_experiments.bat
+.\hqe_run_experiments.bat
 
 Then inspect:
 

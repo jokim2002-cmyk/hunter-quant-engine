@@ -21,7 +21,7 @@ It does not claim profitability.
 
 Run:
 
-    .\scripts\paper_trading\hqe_live_readiness_preflight.bat
+    .\hqe_live_readiness_preflight.bat
 
 The command writes:
 

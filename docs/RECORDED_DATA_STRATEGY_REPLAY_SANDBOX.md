@@ -6,7 +6,7 @@ Purpose:
 The sandbox reads validated recorded-data strategy input bars and converts them into deterministic strategy replay sandbox events.
 
 Command:
-.\scripts\paper_trading\hqe_recorded_data_strategy_replay_sandbox.bat
+.\hqe_recorded_data_strategy_replay_sandbox.bat
 
 Default inputs:
 reports\paper_trading\recorded_data_paper_strategy_adapter_dry_run_consumer_evidence_readiness\paper_strategy_adapter_dry_run_consumer_evidence_readiness.json

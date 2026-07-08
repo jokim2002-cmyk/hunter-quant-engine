@@ -9,7 +9,7 @@ The gate runs:
 3. Final adapter dry-run readiness report.
 
 Command:
-.\scripts\paper_trading\hqe_recorded_data_paper_strategy_adapter_dry_run_readiness.bat
+.\hqe_recorded_data_paper_strategy_adapter_dry_run_readiness.bat
 
 Default inputs:
 reports\paper_trading\recorded_data_paper_strategy_adapter_readiness\paper_strategy_adapter_readiness.json

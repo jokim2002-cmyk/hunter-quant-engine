@@ -6,7 +6,7 @@ Purpose:
 The real backtest usage sprint readiness close reads the cost-adjusted mode comparison pack and closes Phase 1 as a paper-only real recorded-data backtest usage evidence workflow.
 
 Command:
-.\scripts\paper_trading\hqe_real_backtest_usage_sprint_readiness_close.bat
+.\hqe_real_backtest_usage_sprint_readiness_close.bat
 
 Default input:
 reports\paper_trading\strategy_mode_cost_adjusted_comparison_pack\strategy_mode_cost_adjusted_comparison_pack.json

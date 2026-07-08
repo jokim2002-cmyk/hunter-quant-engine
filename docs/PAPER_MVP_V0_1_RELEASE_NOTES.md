@@ -44,19 +44,19 @@ Paper MVP v0.1 includes:
 
 Run the full local check:
 
-    .\scripts\paper_trading\hqe_quick_check.bat
+    .\hqe_quick_check.bat
 
 Run the Paper MVP operator demo:
 
-    .\scripts\paper_trading\hqe_paper_mvp_operator_demo.bat
+    .\hqe_paper_mvp_operator_demo.bat
 
 Run the replay journal workflow:
 
-    .\scripts\paper_trading\hqe_paper_replay_journal_all.bat
+    .\hqe_paper_replay_journal_all.bat
 
 Run the release gate:
 
-    .\scripts\paper_trading\hqe_paper_mvp_release_check.bat
+    .\hqe_paper_mvp_release_check.bat
 
 ## Release Tag
 

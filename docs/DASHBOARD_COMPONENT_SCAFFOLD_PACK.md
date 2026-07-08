@@ -6,7 +6,7 @@ Purpose:
 The dashboard component scaffold pack reads the dashboard section registry pack and creates paper-only component scaffold definitions for future Streamlit app shell work.
 
 Command:
-.\scripts\paper_trading\hqe_dashboard_component_scaffold_pack.bat
+.\hqe_dashboard_component_scaffold_pack.bat
 
 Default input:
 reports\paper_trading\dashboard_section_registry_pack\dashboard_section_registry_pack.json

@@ -6,7 +6,7 @@ Purpose:
 The simulator reads paper option trade plans and strategy decision audit close references, then creates paper-only fill/exit lifecycle records for the future backtest ledger.
 
 Command:
-.\scripts\paper_trading\hqe_recorded_data_paper_fill_exit_simulator.bat
+.\hqe_recorded_data_paper_fill_exit_simulator.bat
 
 Default inputs:
 reports\paper_trading\recorded_data_paper_option_trade_plan_simulator\paper_option_trade_plan_simulator.json
