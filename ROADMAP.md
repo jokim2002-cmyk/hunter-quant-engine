@@ -2589,3 +2589,29 @@ Progress:
 - Full HQE product estimate after Module XXXX: 93-98%.
 
 Expected full quick-check suite after Module XXXX: verify with `.\.venv\Scripts\python.exe -m pytest`.
+
+## Module YYYY - Paper signal cooldown and duplicate filter review pack
+
+Status: implemented in this module.
+
+Scope:
+- Read the paper tuning candidate readiness pack.
+- Read the paper exit rule sensitivity review pack.
+- Read the paper trade frequency guard evidence.
+- Review signal cooldown, repeated signal, and near-duplicate trade-plan assumptions.
+- Write JSON, text, CSV, and manifest evidence outputs.
+- Keep backtest execution, optimization, strategy logic changes, broker/live execution, live market data, real orders, real money, and profitability claims out of scope.
+
+Progress:
+- v1.0 Testing Edition: 63/63 modules complete.
+- Phase 1 Real Backtest Usage Sprint complete.
+- Phase 2 Dashboard Sprint complete.
+- Phase 3 Recorded Backtest Review Workflow complete.
+- Phase 4 Paper Backtest Evidence Analysis Sprint complete.
+- Phase 5 Paper Improvement Readiness Sprint complete.
+- Completed total before Module YYYY: 102 modules.
+- Completed total after Module YYYY: 103 modules.
+- Phase 6 Paper Improvement Execution Sprint pending after Module YYYY: 2 modules.
+- Full HQE product estimate after Module YYYY: 94-99%.
+
+Expected full quick-check suite after Module YYYY: verify with `.\.venv\Scripts\python.exe -m pytest`.
