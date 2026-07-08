@@ -2628,3 +2628,20 @@ Safety: this is paper/simulation review-readiness evidence only. It does not run
 - Completed total after Module MMMMM: 117 modules.
 - Phase 10 pending after Module MMMMM: 2 modules.
 - Full HQE product estimate after Module MMMMM: 99%.
+
+### Module NNNNN - Safe paper-runner review criteria pack
+
+This module continues Phase 10 by defining the safe review criteria for future paper-runner evidence. It locks recorded-data-only review, paper-only ledger review, no strategy mutation, option-buy mapping, no-profitability claim, and output completeness criteria.
+
+Command:
+`.\hqe_safe_paper_runner_review_criteria_pack.bat`
+
+Organized runner:
+`.\scripts\paper_trading\hqe_safe_paper_runner_review_criteria_pack.bat`
+
+Safety: this is paper/simulation review criteria only. It does not run backtests, change strategy logic, connect to brokers, request live data, place real orders, use real money, approve live trading, or prove profitability.
+
+- Completed total before Module NNNNN: 117 modules.
+- Completed total after Module NNNNN: 118 modules.
+- Phase 10 pending after Module NNNNN: 1 module.
+- Full HQE product estimate after Module NNNNN: 99%.
