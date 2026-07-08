@@ -17,6 +17,7 @@ if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 from src.backtesting.option_buy_backtest_runner import OptionBuyBacktestRunner
+from src.backtesting.option_premium_backtester import OptionPremiumBacktester
 from src.backtesting.option_buy_backtest_scenario_builder import (
     OptionBuyBacktestScenarioBuilder,
 )
@@ -89,6 +90,7 @@ def build_option_buy_backtest_runner(
     stop_loss_percent: float = 0.30,
     target_percent: float = 0.60,
     entry_slippage_percent: float = 0.0,
+    exit_slippage_percent: float = 0.0,
     lots: int = 1,
     cost_profile: str = COST_PROFILE_CUSTOM,
     min_estimated_net_reward: float = 0.0,
@@ -121,7 +123,12 @@ def build_option_buy_backtest_runner(
             min_estimated_net_reward=min_estimated_net_reward,
         ),
     )
-    return OptionBuyBacktestRunner(planner=planner)
+    return OptionBuyBacktestRunner(
+        planner=planner,
+        premium_backtester=OptionPremiumBacktester(
+            exit_slippage_percent=exit_slippage_percent,
+        ),
+    )
 
 
 def build_option_buy_backtest_runner(
@@ -133,6 +140,7 @@ def build_option_buy_backtest_runner(
     stop_loss_percent: float = 0.30,
     target_percent: float = 0.60,
     entry_slippage_percent: float = 0.0,
+    exit_slippage_percent: float = 0.0,
     lots: int = 1,
     cost_profile: str = COST_PROFILE_CUSTOM,
     min_estimated_net_reward: float = 0.0,
@@ -165,7 +173,12 @@ def build_option_buy_backtest_runner(
             min_estimated_net_reward=min_estimated_net_reward,
         ),
     )
-    return OptionBuyBacktestRunner(planner=planner)
+    return OptionBuyBacktestRunner(
+        planner=planner,
+        premium_backtester=OptionPremiumBacktester(
+            exit_slippage_percent=exit_slippage_percent,
+        ),
+    )
 
 
 def run_backtest(
@@ -180,6 +193,7 @@ def run_backtest(
     stop_loss_percent: float = 0.30,
     target_percent: float = 0.60,
     entry_slippage_percent: float = 0.0,
+    exit_slippage_percent: float = 0.0,
     lots: int = 1,
     cost_profile: str = COST_PROFILE_CUSTOM,
     min_estimated_net_reward: float = 0.0,
@@ -212,6 +226,7 @@ def run_backtest(
         stop_loss_percent=stop_loss_percent,
         target_percent=target_percent,
         entry_slippage_percent=entry_slippage_percent,
+        exit_slippage_percent=exit_slippage_percent,
         lots=lots,
         cost_profile=cost_profile,
         min_estimated_net_reward=min_estimated_net_reward,
@@ -507,6 +522,12 @@ def build_argument_parser() -> argparse.ArgumentParser:
         help="Buyer-adverse entry slippage percent applied before planning levels.",
     )
     parser.add_argument(
+        "--exit-slippage-percent",
+        type=float,
+        default=0.0,
+        help="Buyer-adverse exit slippage percent applied to realized exit premium.",
+    )
+    parser.add_argument(
         "--lots",
         type=int,
         default=1,
@@ -569,6 +590,7 @@ def main(
         stop_loss_percent=args.stop_loss_percent,
         target_percent=args.target_percent,
         entry_slippage_percent=args.entry_slippage_percent,
+        exit_slippage_percent=args.exit_slippage_percent,
         lots=args.lots,
         cost_profile=args.cost_profile,
         min_estimated_net_reward=args.min_estimated_net_reward,

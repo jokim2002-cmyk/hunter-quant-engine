@@ -1,4 +1,4 @@
-﻿"""
+"""
 Option Premium Backtester
 
 Conservative single-plan option premium backtest core.
@@ -18,7 +18,25 @@ from src.trade_planning.option_buy_trade_plan_status import OptionBuyTradePlanSt
 class OptionPremiumBacktester:
     """
     Backtests one approved option-buy trade plan against premium OHLC candles.
+
+    exit_slippage_percent is buyer-adverse and reduces the realized exit premium.
+    Defaults keep legacy behavior unchanged.
     """
+
+    def __init__(
+        self,
+        exit_slippage_percent: float = 0.0,
+    ):
+        """
+        Initialize option premium backtester.
+
+        Args:
+            exit_slippage_percent: Buyer-adverse exit slippage percent.
+        """
+        if exit_slippage_percent < 0:
+            raise ValueError("exit_slippage_percent cannot be negative")
+
+        self.exit_slippage_percent = exit_slippage_percent
 
     def backtest(
         self,
@@ -39,7 +57,7 @@ class OptionPremiumBacktester:
                 return OptionPremiumBacktestResult(
                     plan=plan,
                     exit_reason=OptionPremiumBacktestExitReason.STOP_LOSS_HIT,
-                    exit_premium=plan.stop_loss_premium,
+                    exit_premium=self._apply_exit_slippage(plan.stop_loss_premium),
                     bars_held=index,
                     estimated_charges=plan.estimated_charges,
                 )
@@ -48,7 +66,7 @@ class OptionPremiumBacktester:
                 return OptionPremiumBacktestResult(
                     plan=plan,
                     exit_reason=OptionPremiumBacktestExitReason.TARGET_HIT,
-                    exit_premium=plan.target_premium,
+                    exit_premium=self._apply_exit_slippage(plan.target_premium),
                     bars_held=index,
                     estimated_charges=plan.estimated_charges,
                 )
@@ -56,7 +74,16 @@ class OptionPremiumBacktester:
         return OptionPremiumBacktestResult(
             plan=plan,
             exit_reason=OptionPremiumBacktestExitReason.END_OF_DATA,
-            exit_premium=premium_candles[-1].close,
+            exit_premium=self._apply_exit_slippage(premium_candles[-1].close),
             bars_held=len(premium_candles),
             estimated_charges=plan.estimated_charges,
         )
+
+    def _apply_exit_slippage(
+        self,
+        exit_premium: float,
+    ) -> float:
+        """
+        Apply buyer-adverse exit slippage to the realized exit premium.
+        """
+        return exit_premium * (1 - self.exit_slippage_percent)
