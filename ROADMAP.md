@@ -2537,3 +2537,28 @@ Progress:
 - Completed total after Module VVVV: 100 modules.
 - Phase 6 Paper Improvement Execution Sprint pending after Module VVVV: 4 modules.
 - Full HQE product estimate after Module VVVV: 92-97%.
+
+## Module WWWW - Paper slippage and cost sensitivity pack
+
+Status: implemented in this module.
+
+Scope:
+- Read the paper tuning candidate readiness pack.
+- Read the paper option reference pricing reality check output.
+- Audit slippage, bid/ask spread, and cost-sensitivity assumptions.
+- Write JSON, text, CSV, and manifest evidence outputs.
+- Keep backtest execution, optimization, strategy logic changes, broker/live execution, live market data, real orders, real money, and profitability claims out of scope.
+
+Progress:
+- v1.0 Testing Edition: 63/63 modules complete.
+- Phase 1 Real Backtest Usage Sprint complete.
+- Phase 2 Dashboard Sprint complete.
+- Phase 3 Recorded Backtest Review Workflow complete.
+- Phase 4 Paper Backtest Evidence Analysis Sprint complete.
+- Phase 5 Paper Improvement Readiness Sprint complete.
+- Completed total before Module WWWW: 100 modules.
+- Completed total after Module WWWW: 101 modules.
+- Phase 6 Paper Improvement Execution Sprint pending after Module WWWW: 3 modules.
+- Full HQE product estimate after Module WWWW: 93-98%.
+
+Expected full quick-check suite after Module WWWW: verify with `.venv\Scripts\python.exe -m pytest`.
