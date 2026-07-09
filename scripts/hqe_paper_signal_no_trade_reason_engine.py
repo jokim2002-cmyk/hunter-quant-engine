@@ -82,7 +82,7 @@ REJECTED_DECISIONS = {
 }
 
 TRUE_VALUES = {"1", "true", "yes", "y", "approved", "pass", "ready", "ok"}
-FALSE_VALUES = {"0", "false", "no", "n", "rejected", "blocked", "fail", "hold", ""}
+FALSE_VALUES = {"0", "false", "no", "n", "rejected", "blocked", "fail", "hold"}
 
 
 @dataclass(frozen=True)
