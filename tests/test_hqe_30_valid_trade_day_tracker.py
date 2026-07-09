@@ -1,11 +1,13 @@
 import csv
 import importlib.util
+import sys
 from pathlib import Path
 
 MODULE_PATH = Path(__file__).resolve().parents[1] / "scripts" / "hqe_30_valid_trade_day_tracker.py"
 spec = importlib.util.spec_from_file_location("hqe_30_valid_trade_day_tracker", MODULE_PATH)
 tracker = importlib.util.module_from_spec(spec)
 assert spec and spec.loader
+sys.modules[spec.name] = tracker
 spec.loader.exec_module(tracker)
 
 
