@@ -139,3 +139,18 @@ the release freeze gate.
 
 Real trading remains locked.
 
+## App V2 distribution and clean launch flow
+
+- Preflight checker added
+- Source release pack builder added
+- Clean user launcher added
+- SHA-256 release manifest added
+- Safety locks remain mandatory
+
+## Current next action
+
+Build and verify the App V2 release pack, then test the clean launcher on the
+owner machine.
+
+Real trading remains locked.
+
