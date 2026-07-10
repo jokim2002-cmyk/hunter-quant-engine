@@ -635,3 +635,17 @@ freeze hashes and final sign-off evidence were completed.
 Commit after PASS: `Add final paper-only RC evidence and sign-off`
 
 Real trading remains outside this release. This is not a profitability claim.
+
+## HQE Desktop Shortcut ASCII Deployment Repair
+
+Blocking deployment repair completed:
+
+1. Replaced the shortcut installer with pure ASCII PowerShell
+2. Removed Unicode punctuation that broke Windows PowerShell 5.1 parsing
+3. Added an ASCII-safety regression test
+4. Refreshed and verified the paper-only RC freeze hashes
+
+Commit after PASS: `Fix ASCII-safe desktop shortcut deployment`
+
+Product scope and sign-off remain paper/data/research only.
+Real trading remains excluded. This is not a profitability claim.

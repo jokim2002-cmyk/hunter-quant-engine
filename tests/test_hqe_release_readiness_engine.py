@@ -102,3 +102,33 @@ def test_release_guard_locks_execution():
     )
     assert payload["real_orders_enabled"] is False
     assert payload["broker_execution_enabled"] is False
+
+def test_shortcut_scripts_are_ascii_safe():
+    install = (
+        REPO
+        / "release"
+        / "HQE_INSTALL_DESKTOP_SHORTCUT.ps1"
+    )
+    remove = (
+        REPO
+        / "release"
+        / "HQE_REMOVE_DESKTOP_SHORTCUT.ps1"
+    )
+
+    for path in (install, remove):
+        raw = path.read_bytes()
+        text = raw.decode("ascii")
+        assert "\u2013" not in text
+        assert "\u2014" not in text
+        assert "\u2018" not in text
+        assert "\u2019" not in text
+        assert "\u201c" not in text
+        assert "\u201d" not in text
+
+    install_text = install.read_text(encoding="ascii")
+    assert (
+        "Hunter Quant Engine - Paper/Data Research App"
+        in install_text
+    )
+    assert "Hunter Quant Engine.lnk" in install_text
+    assert "pythonw.exe" in install_text
