@@ -324,3 +324,18 @@ Commit after PASS: `Add app-native Fyers login and secure token refresh`
 Next roadmap target: unified app-native market-data source and feed-health layer.
 
 Real trading remains locked. This is not a profitability claim.
+
+## HQE App Completion Batch 5 — Unified Market Data Center
+
+- Unified Fyers data-only status center embedded in the main app
+- Latest data file, candle timestamp, row count and freshness detection
+- Market-open versus market-closed interpretation
+- Safe app-native Fyers data refresh and latest-file open controls
+- Future broker data adapters remain disabled placeholders
+- Permanent safety locks preserved
+
+Commit after PASS: `Add unified app-native market data center`
+
+Next roadmap target: app-native daily startup orchestration and automatic operator checklist consolidation.
+
+Real trading remains locked. This is not a profitability claim.

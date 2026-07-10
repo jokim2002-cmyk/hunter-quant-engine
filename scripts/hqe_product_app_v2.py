@@ -13,6 +13,11 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, Optional
 
+from hqe_app_market_data_center import (
+    launch_market_data_worker,
+    market_data_snapshot,
+)
+
 from hqe_app_fyers_auth import (
     apply_stored_fyers_environment,
     auth_status_snapshot,
@@ -917,9 +922,178 @@ def run_gui(args: argparse.Namespace) -> int:
         value="Broker/data health will appear after refresh."
     )
 
+    market_data_center_status = tk.StringVar(
+        value="Unified market-data status will appear after refresh."
+    )
+
     fyers_auth_status = tk.StringVar(
         value="Fyers secure login status will appear after refresh."
     )
+
+    def refresh_market_data_center(show_dialog: bool = False) -> dict:
+        try:
+            snapshot = market_data_snapshot(repo_root(), workspace)
+            market_data_center_status.set(snapshot["display_text"])
+            latest = snapshot["latest_data"]
+            footer_status.set(latest["message"])
+            if show_dialog:
+                messagebox.showinfo(
+                    "Unified Market Data Center",
+                    snapshot["display_text"] + "\n\n" + latest["message"],
+                )
+            return snapshot
+        except Exception as exc:
+            market_data_center_status.set(
+                "Unified market-data refresh failed safely."
+            )
+            footer_status.set(f"Market-data status error: {exc}")
+            if show_dialog:
+                messagebox.showerror("Unified Market Data Center", str(exc))
+            return {}
+
+    def poll_market_data_refresh() -> None:
+        snapshot = refresh_market_data_center(False)
+        operation = snapshot.get("operation", {})
+        if operation.get("status") == "RUNNING":
+            root.after(900, poll_market_data_refresh)
+            return
+        message = operation.get("message", "Market-data refresh finished.")
+        footer_status.set(message)
+        if operation.get("status") == "PASS":
+            messagebox.showinfo("Market Data", message)
+        elif operation.get("status") == "FAILED":
+            messagebox.showerror("Market Data", message)
+
+    def run_market_data_refresh() -> None:
+        try:
+            launch_market_data_worker(
+                repo_root(),
+                workspace,
+                "refresh_fyers_data",
+                "NSE:NIFTY50-INDEX",
+            )
+            market_data_center_status.set(
+                "Fyers data-only refresh is running..."
+            )
+            footer_status.set(
+                "Refreshing market data only. Real orders remain blocked."
+            )
+            root.after(900, poll_market_data_refresh)
+        except Exception as exc:
+            messagebox.showerror("Market Data", str(exc))
+            footer_status.set(f"Market-data refresh could not start: {exc}")
+
+    def open_latest_market_data_file() -> None:
+        snapshot = refresh_market_data_center(False)
+        latest_path = snapshot.get("latest_data", {}).get("path", "")
+        if not latest_path:
+            messagebox.showwarning(
+                "Market Data",
+                "No market-data CSV is available yet.",
+            )
+            return
+        path = Path(latest_path)
+        if not path.exists():
+            messagebox.showerror(
+                "Market Data",
+                f"Latest market-data file is missing: {path}",
+            )
+            return
+        try:
+            os.startfile(path)
+        except Exception as exc:
+            messagebox.showerror("Market Data", str(exc))
+
+    def open_market_data_center() -> None:
+        snapshot = refresh_market_data_center(False)
+        dialog = tk.Toplevel(root)
+        dialog.title("HQE — Unified Market Data Center")
+        dialog.geometry("680x560")
+        dialog.minsize(620, 500)
+        dialog.configure(bg=palette["bg"])
+        dialog.transient(root)
+
+        frame = tk.Frame(dialog, bg=palette["panel"], padx=20, pady=18)
+        frame.pack(fill="both", expand=True, padx=18, pady=18)
+
+        tk.Label(
+            frame,
+            text="Unified Market Data Center",
+            bg=palette["panel"],
+            fg=palette["text"],
+            font=("Segoe UI Semibold", 17),
+            anchor="w",
+        ).pack(fill="x")
+
+        detail_var = tk.StringVar(
+            value=(
+                snapshot.get("display_text", "Status unavailable")
+                + "\n"
+                + snapshot.get("latest_data", {}).get("message", "")
+            )
+        )
+
+        tk.Label(
+            frame,
+            textvariable=detail_var,
+            bg=palette["panel_alt"],
+            fg=palette["muted"],
+            justify="left",
+            anchor="nw",
+            wraplength=600,
+            padx=12,
+            pady=12,
+        ).pack(fill="x", pady=(12, 12))
+
+        sources = snapshot.get("sources", {})
+        source_lines = [
+            f"{source['display_name']}: {source['status']} / {source['mode']}"
+            for source in sources.values()
+        ]
+        tk.Label(
+            frame,
+            text="\n".join(source_lines),
+            bg=palette["panel"],
+            fg=palette["muted"],
+            justify="left",
+            anchor="w",
+        ).pack(fill="x", pady=(0, 14))
+
+        def refresh_dialog() -> None:
+            current = refresh_market_data_center(False)
+            detail_var.set(
+                current.get("display_text", "Status unavailable")
+                + "\n"
+                + current.get("latest_data", {}).get("message", "")
+            )
+
+        ttk.Button(
+            frame,
+            text="Refresh Status",
+            command=refresh_dialog,
+        ).pack(fill="x", pady=3)
+        ttk.Button(
+            frame,
+            text="Refresh Fyers Data Now",
+            command=run_market_data_refresh,
+        ).pack(fill="x", pady=3)
+        ttk.Button(
+            frame,
+            text="Open Latest Data File",
+            command=open_latest_market_data_file,
+        ).pack(fill="x", pady=3)
+
+        tk.Label(
+            frame,
+            text=(
+                "DATA ONLY • REAL ORDERS BLOCKED • "
+                "NO AUTO TRADING • NO OPTION SELLING"
+            ),
+            bg=palette["panel"],
+            fg=palette["muted"],
+            anchor="w",
+            pady=12,
+        ).pack(fill="x")
 
     def refresh_fyers_auth_status() -> dict:
         snapshot = auth_status_snapshot()
@@ -1755,6 +1929,7 @@ def run_gui(args: argparse.Namespace) -> int:
     root.after(250, lambda: refresh_daily_operations(False))
     apply_stored_fyers_environment(overwrite=True)
     root.after(300, refresh_fyers_auth_status)
+    root.after(600, lambda: refresh_market_data_center(False))
     root.after(450, lambda: refresh_broker_data_health(False))
     root.mainloop()
     return 0
