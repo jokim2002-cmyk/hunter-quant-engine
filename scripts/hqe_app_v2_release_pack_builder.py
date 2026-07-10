@@ -21,7 +21,7 @@ INCLUDE_FILES = [
     "scripts/hqe_app_v2_preflight.py",
 ]
 
-INCLUDE_DIRS = ["src"]
+INCLUDE_DIRS = ["src", "scripts"]
 
 
 def repo_root() -> Path:

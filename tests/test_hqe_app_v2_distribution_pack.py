@@ -40,6 +40,7 @@ def test_release_pack_builder_creates_manifest(tmp_path):
     assert (release_dir / "HQE_APP_V2_RELEASE_MANIFEST.json").exists()
     assert (release_dir / "START_HQE_APP_V2.cmd").exists()
     assert (release_dir / "README_FIRST.txt").exists()
+    assert (release_dir / "scripts" / "hqe_multi_broker_data_architecture.py").exists()
     assert payload["real_orders_enabled"] is False
 
 
