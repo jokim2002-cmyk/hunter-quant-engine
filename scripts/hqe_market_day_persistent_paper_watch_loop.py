@@ -159,7 +159,11 @@ def write_status(path: Path, payload: Dict[str, Any]) -> None:
     path.write_text(json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8")
 
 
-def run_data_fetch(workspace: Path, symbol: str) -> Dict[str, Any]:
+def run_data_fetch(
+    workspace: Path,
+    symbol: str,
+    trading_date: str,
+) -> Dict[str, Any]:
     repo = repo_root()
     py = repo / ".venv" / "Scripts" / "python.exe"
     fetcher = repo / "scripts" / "hqe_current_day_live_data_cycle.py"
@@ -172,9 +176,12 @@ def run_data_fetch(workspace: Path, symbol: str) -> Dict[str, Any]:
                 str(fetcher),
                 "--workspace",
                 str(workspace),
+                "--repo-root",
+                str(repo),
+                "--trading-date",
+                trading_date,
                 "--symbol",
                 symbol,
-                "--execute-live-data-only",
                 "--write",
             ],
             cwd=str(repo),
@@ -253,7 +260,11 @@ def main() -> int:
             market_window_ok = args.ignore_market_window or in_time_window(args.start_time, args.end_time)
 
             if args.run_data_fetch and market_window_ok:
-                last_fetch = run_data_fetch(workspace, args.symbol)
+                last_fetch = run_data_fetch(
+                    workspace,
+                    args.symbol,
+                    args.trading_date,
+                )
 
             health = data_health(workspace)
             secrets = env_status()
@@ -261,6 +272,13 @@ def main() -> int:
             status = "WATCHING_DATA_ONLY" if market_window_ok else "WAITING_OUTSIDE_MARKET_WINDOW"
             if not ready:
                 status = "WAITING_FOR_TOKEN_OR_DATA"
+            if (
+                args.run_data_fetch
+                and market_window_ok
+                and last_fetch.get("attempted")
+                and int(last_fetch.get("returncode", 0)) != 0
+            ):
+                status = "LIVE_DATA_FETCH_FAILED"
 
             row = {
                 "generated_at_utc": utc_now(),
