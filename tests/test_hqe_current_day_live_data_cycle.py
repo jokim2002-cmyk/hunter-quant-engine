@@ -97,3 +97,62 @@ def test_live_cycle_requires_current_day_flag_command(monkeypatch, tmp_path):
     assert "--trading-date" in captured["command"]
     assert "2026-07-10" in captured["command"]
     assert payload["cycle_status"] == "LIVE_DATA_CYCLE_PASS"
+
+
+
+def test_live_cycle_hot_reloads_token_file(monkeypatch, tmp_path):
+    module = load_module()
+    repo = tmp_path / "repo"
+    workspace = tmp_path / "workspace"
+    (repo / ".venv" / "Scripts").mkdir(parents=True)
+    (repo / "scripts").mkdir(parents=True)
+    (repo / "secrets").mkdir(parents=True)
+    workspace.mkdir()
+
+    fresh_token = "fresh-token-from-file"
+    (repo / "secrets" / "fyers_access_token.txt").write_text(
+        fresh_token,
+        encoding="utf-8",
+    )
+
+    captured = {}
+
+    class Result:
+        returncode = 0
+        stdout = ""
+        stderr = ""
+
+    def fake_run(command, **kwargs):
+        captured["env"] = kwargs["env"]
+        status = workspace / "MODULE_173_FYERS_HISTORICAL_5M_DATA_ONLY_FETCHER_STATUS.json"
+        status.write_text(
+            json.dumps(
+                {
+                    "history_result": {
+                        "rows": 1,
+                        "response_redacted": {
+                            "code": 200,
+                            "s": "ok",
+                            "message": "",
+                            "candles": [[1783655100, 1, 2, 0.5, 1.5, 10]],
+                        },
+                    }
+                }
+            ),
+            encoding="utf-8",
+        )
+        return Result()
+
+    monkeypatch.setattr(module.subprocess, "run", fake_run)
+    monkeypatch.setenv("FYERS_ACCESS_TOKEN", "stale-inherited-token")
+
+    payload = module.run_cycle(
+        repo,
+        workspace,
+        trading_date="2026-07-10",
+    )
+
+    assert captured["env"]["FYERS_ACCESS_TOKEN"] == fresh_token
+    assert payload["token_hot_reload_enabled"] is True
+    assert payload["token_source"].endswith("secrets\\fyers_access_token.txt")
+    assert payload["cycle_status"] == "LIVE_DATA_CYCLE_PASS"

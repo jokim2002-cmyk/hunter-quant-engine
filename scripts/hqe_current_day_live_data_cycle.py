@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import shutil
 import subprocess
 from datetime import datetime, timezone
@@ -67,12 +68,27 @@ def run_cycle(
         "--execute-live-data-only",
     ]
 
+    child_env = os.environ.copy()
+    token_candidates = [
+        repo / "secrets" / "fyers_access_token.txt",
+        Path.home() / "AppData" / "Local" / "HunterQuantEngine" / "FyersAuth" / "FYERS_ACCESS_TOKEN.txt",
+    ]
+    token_source = None
+    for candidate in token_candidates:
+        if candidate.exists():
+            token = candidate.read_text(encoding="utf-8-sig").strip()
+            if token:
+                child_env["FYERS_ACCESS_TOKEN"] = token
+                token_source = str(candidate)
+                break
+
     completed = subprocess.run(
         command,
         cwd=repo,
         capture_output=True,
         text=True,
         timeout=120,
+        env=child_env,
     )
 
     status = read_json(status_path)
@@ -116,6 +132,8 @@ def run_cycle(
         "workspace": str(workspace),
         "trading_date_requested": current_date,
         "command": command,
+        "token_hot_reload_enabled": True,
+        "token_source": token_source,
         "returncode": completed.returncode,
         "stdout_tail": completed.stdout[-1200:],
         "stderr_tail": completed.stderr[-1200:],
