@@ -760,14 +760,114 @@ def run_gui(args: argparse.Namespace) -> int:
     )
     broker_panel.pack(side="left", fill="both", expand=True, padx=(0, 9))
 
-    action_panel = tk.Frame(
-        body,
-        bg=palette["panel"],
-        width=330,
-        highlightbackground=palette["border"],
-        highlightthickness=1,
+    action_panel_scroll_host = tk.Frame(body)
+    action_panel_scroll_host.pack(side='left', fill='y', padx=(9, 0))
+    action_panel_canvas = tk.Canvas(
+        action_panel_scroll_host,
+        highlightthickness=0,
+        borderwidth=0,
     )
-    action_panel.pack(side="left", fill="y", padx=(9, 0))
+    action_panel_scrollbar = ttk.Scrollbar(
+        action_panel_scroll_host,
+        orient="vertical",
+        command=action_panel_canvas.yview,
+    )
+    action_panel_canvas.configure(
+        yscrollcommand=action_panel_scrollbar.set,
+    )
+    action_panel_canvas.pack(
+        side="left",
+        fill="both",
+        expand=True,
+    )
+    action_panel = tk.Frame(action_panel_canvas, bg=palette['panel'], width=330, highlightbackground=palette['border'], highlightthickness=1)
+    action_panel_scroll_host.configure(
+        background=action_panel.cget("background"),
+    )
+    action_panel_canvas.configure(
+        background=action_panel.cget("background"),
+    )
+    action_panel_window_id = (
+        action_panel_canvas.create_window(
+            (0, 0),
+            window=action_panel,
+            anchor="nw",
+        )
+    )
+
+    def _hqe_sync_action_panel_scroll(
+        _event=None,
+    ) -> None:
+        canvas_width = max(
+            1,
+            action_panel_canvas.winfo_width(),
+        )
+        action_panel_canvas.itemconfigure(
+            action_panel_window_id,
+            width=canvas_width,
+        )
+        action_panel_canvas.configure(
+            scrollregion=action_panel_canvas.bbox(
+                "all"
+            ),
+        )
+        needs_scroll = (
+            action_panel.winfo_reqheight()
+            > action_panel_canvas.winfo_height() + 2
+        )
+        scrollbar_visible = bool(
+            action_panel_scrollbar.winfo_ismapped()
+        )
+        if needs_scroll and not scrollbar_visible:
+            action_panel_scrollbar.pack(
+                side="right",
+                fill="y",
+            )
+        elif not needs_scroll and scrollbar_visible:
+            action_panel_scrollbar.pack_forget()
+
+    def _hqe_action_panel_mousewheel(event):
+        pointer_x, pointer_y = (
+            action_panel_canvas.winfo_pointerxy()
+        )
+        left = action_panel_canvas.winfo_rootx()
+        top = action_panel_canvas.winfo_rooty()
+        right = left + action_panel_canvas.winfo_width()
+        bottom = top + action_panel_canvas.winfo_height()
+        inside = (
+            left <= pointer_x <= right
+            and top <= pointer_y <= bottom
+        )
+        if not inside:
+            return None
+        if (
+            action_panel.winfo_reqheight()
+            <= action_panel_canvas.winfo_height() + 2
+        ):
+            return None
+        delta = -1 if event.delta > 0 else 1
+        action_panel_canvas.yview_scroll(
+            delta, "units"
+        )
+        return "break"
+
+    action_panel.bind(
+        "<Configure>",
+        _hqe_sync_action_panel_scroll,
+    )
+    action_panel_canvas.bind(
+        "<Configure>",
+        _hqe_sync_action_panel_scroll,
+    )
+    root.bind_all(
+        "<MouseWheel>",
+        _hqe_action_panel_mousewheel,
+        add="+",
+    )
+    root.after(
+        250,
+        _hqe_sync_action_panel_scroll,
+    )
     action_panel.pack_propagate(False)
 
     tk.Label(
