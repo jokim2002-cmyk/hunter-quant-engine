@@ -308,3 +308,19 @@ Commit after PASS: `Add app-native broker and data health center`
 Next roadmap target: app-native Fyers login/token refresh flow, followed by the unified market-data layer.
 
 Real trading remains locked. This is not a profitability claim.
+
+## HQE App Completion Batch 4 — App-Native Fyers Login
+
+- Fyers login settings and token refresh moved inside the HQE application
+- Windows DPAPI encrypted local storage
+- No plain-text credential/token files
+- Browser login URL, authorization-code exchange, existing-token import and clear/reconnect controls
+- App-launched paper/data subprocesses inherit securely loaded Fyers credentials
+- Secret values remain redacted
+- Permanent safety locks preserved
+
+Commit after PASS: `Add app-native Fyers login and secure token refresh`
+
+Next roadmap target: unified app-native market-data source and feed-health layer.
+
+Real trading remains locked. This is not a profitability claim.

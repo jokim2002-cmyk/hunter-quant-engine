@@ -13,6 +13,16 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, Optional
 
+from hqe_app_fyers_auth import (
+    apply_stored_fyers_environment,
+    auth_status_snapshot,
+    clear_auth_record,
+    exchange_auth_code,
+    load_auth_record,
+    merge_and_save,
+    open_login_browser,
+)
+
 from hqe_app_broker_data_health import (
     broker_health_snapshot,
     launch_broker_health_worker,
@@ -907,6 +917,244 @@ def run_gui(args: argparse.Namespace) -> int:
         value="Broker/data health will appear after refresh."
     )
 
+    fyers_auth_status = tk.StringVar(
+        value="Fyers secure login status will appear after refresh."
+    )
+
+    def refresh_fyers_auth_status() -> dict:
+        snapshot = auth_status_snapshot()
+        fyers_auth_status.set(
+            f"Fyers: {snapshot['status']} | "
+            f"Client: {snapshot['client_id_masked'] or 'not set'} | "
+            f"Token: {'stored' if snapshot['access_token_present'] else 'missing'}"
+        )
+        return snapshot
+
+    def open_fyers_auth_dialog() -> None:
+        snapshot = refresh_fyers_auth_status()
+        try:
+            stored = load_auth_record()
+        except Exception:
+            stored = {
+                "client_id": "",
+                "secret_key": "",
+                "redirect_uri": "",
+                "access_token": "",
+            }
+
+        dialog = tk.Toplevel(root)
+        dialog.title("HQE — Fyers Login & Token Refresh")
+        dialog.geometry("620x610")
+        dialog.minsize(590, 560)
+        dialog.configure(bg=palette["bg"])
+        dialog.transient(root)
+        dialog.grab_set()
+
+        frame = tk.Frame(dialog, bg=palette["panel"], padx=20, pady=18)
+        frame.pack(fill="both", expand=True, padx=18, pady=18)
+
+        tk.Label(
+            frame,
+            text="Fyers Login & Token Refresh",
+            bg=palette["panel"],
+            fg=palette["text"],
+            font=("Segoe UI Semibold", 17),
+            anchor="w",
+        ).pack(fill="x")
+
+        tk.Label(
+            frame,
+            text=(
+                "Credentials are encrypted with Windows DPAPI. "
+                "Real orders and broker execution remain permanently blocked."
+            ),
+            bg=palette["panel"],
+            fg=palette["muted"],
+            justify="left",
+            wraplength=540,
+            anchor="w",
+        ).pack(fill="x", pady=(6, 14))
+
+        status_var = tk.StringVar(value=snapshot["message"])
+        fields = tk.Frame(frame, bg=palette["panel"])
+        fields.pack(fill="x")
+
+        def add_field(label_text: str, initial: str = "", secret: bool = False):
+            tk.Label(
+                fields,
+                text=label_text,
+                bg=palette["panel"],
+                fg=palette["muted"],
+                anchor="w",
+            ).pack(fill="x", pady=(7, 2))
+            entry = ttk.Entry(fields, show="*" if secret else "")
+            entry.pack(fill="x")
+            if initial:
+                entry.insert(0, initial)
+            return entry
+
+        client_entry = add_field("Fyers Client ID", stored.get("client_id", ""))
+        secret_entry = add_field("Fyers Secret Key", "", True)
+        redirect_entry = add_field("Redirect URI", stored.get("redirect_uri", ""))
+        auth_code_entry = add_field("Authorization Code", "", True)
+        token_entry = add_field("Existing Access Token", "", True)
+
+        def values() -> tuple[str, str, str]:
+            return (
+                client_entry.get().strip() or stored.get("client_id", ""),
+                secret_entry.get().strip() or stored.get("secret_key", ""),
+                redirect_entry.get().strip() or stored.get("redirect_uri", ""),
+            )
+
+        def refresh_local_status(message: str = "") -> None:
+            current = refresh_fyers_auth_status()
+            status_var.set(message or current["message"])
+            refresh_broker_data_health(False)
+
+        def save_settings() -> None:
+            try:
+                client_id, secret_key, redirect_uri = values()
+                merge_and_save(
+                    client_id=client_id,
+                    secret_key=secret_key,
+                    redirect_uri=redirect_uri,
+                )
+                secret_entry.delete(0, "end")
+                refresh_local_status("Fyers login settings securely saved.")
+            except Exception as exc:
+                messagebox.showerror("Fyers Login", str(exc))
+
+        def open_browser_login() -> None:
+            try:
+                client_id, secret_key, redirect_uri = values()
+                merge_and_save(
+                    client_id=client_id,
+                    secret_key=secret_key,
+                    redirect_uri=redirect_uri,
+                )
+                open_login_browser(client_id, secret_key, redirect_uri)
+                refresh_local_status(
+                    "Fyers login page opened. Paste the authorization code below."
+                )
+            except Exception as exc:
+                messagebox.showerror("Fyers Login", str(exc))
+
+        def finish_exchange(result: dict | None, error: str = "") -> None:
+            if error:
+                status_var.set(error)
+                messagebox.showerror("Fyers Token Refresh", error)
+                return
+            auth_code_entry.delete(0, "end")
+            secret_entry.delete(0, "end")
+            refresh_local_status(
+                (result or {}).get("message", "Fyers token securely refreshed.")
+            )
+            messagebox.showinfo(
+                "Fyers Token Refresh",
+                "Access token securely refreshed. Real orders remain blocked.",
+            )
+
+        def exchange_worker(
+            client_id: str,
+            secret_key: str,
+            redirect_uri: str,
+            auth_code: str,
+        ) -> None:
+            try:
+                result = exchange_auth_code(
+                    client_id=client_id,
+                    secret_key=secret_key,
+                    redirect_uri=redirect_uri,
+                    auth_code=auth_code,
+                )
+                root.after(0, lambda: finish_exchange(result))
+            except Exception as exc:
+                safe_error = (
+                    "Token refresh failed: "
+                    + type(exc).__name__
+                    + ". Check login details and authorization code."
+                )
+                root.after(0, lambda: finish_exchange(None, safe_error))
+
+        def exchange_code() -> None:
+            client_id, secret_key, redirect_uri = values()
+            auth_code = auth_code_entry.get().strip()
+            status_var.set("Refreshing Fyers access token securely...")
+            threading.Thread(
+                target=exchange_worker,
+                args=(client_id, secret_key, redirect_uri, auth_code),
+                daemon=True,
+            ).start()
+
+        def save_existing_token() -> None:
+            try:
+                client_id, secret_key, redirect_uri = values()
+                token = token_entry.get().strip()
+                if not token:
+                    raise ValueError("Existing access token is required.")
+                merge_and_save(
+                    client_id=client_id,
+                    secret_key=secret_key,
+                    redirect_uri=redirect_uri,
+                    access_token=token,
+                )
+                token_entry.delete(0, "end")
+                secret_entry.delete(0, "end")
+                refresh_local_status("Existing access token securely stored.")
+            except Exception as exc:
+                messagebox.showerror("Fyers Login", str(exc))
+
+        def clear_login() -> None:
+            if not messagebox.askyesno(
+                "Clear Fyers Login",
+                "Remove the securely stored Fyers login and token?",
+            ):
+                return
+            clear_auth_record()
+            for entry in (
+                client_entry,
+                secret_entry,
+                redirect_entry,
+                auth_code_entry,
+                token_entry,
+            ):
+                entry.delete(0, "end")
+            refresh_local_status("Stored Fyers login removed.")
+
+        buttons = tk.Frame(frame, bg=palette["panel"])
+        buttons.pack(fill="x", pady=(15, 8))
+        ttk.Button(buttons, text="Save Login Settings", command=save_settings).pack(
+            fill="x", pady=3
+        )
+        ttk.Button(
+            buttons,
+            text="Open Fyers Login Page",
+            command=open_browser_login,
+        ).pack(fill="x", pady=3)
+        ttk.Button(buttons, text="Exchange Auth Code", command=exchange_code).pack(
+            fill="x", pady=3
+        )
+        ttk.Button(
+            buttons,
+            text="Save Existing Access Token",
+            command=save_existing_token,
+        ).pack(fill="x", pady=3)
+        ttk.Button(buttons, text="Clear Stored Login", command=clear_login).pack(
+            fill="x", pady=3
+        )
+
+        tk.Label(
+            frame,
+            textvariable=status_var,
+            bg=palette["panel_alt"],
+            fg=palette["muted"],
+            justify="left",
+            anchor="w",
+            wraplength=540,
+            padx=10,
+            pady=9,
+        ).pack(fill="x", pady=(8, 0))
+
     def refresh_broker_data_health(show_dialog: bool = False) -> None:
         try:
             snapshot = broker_health_snapshot(repo_root(), workspace)
@@ -1505,6 +1753,8 @@ def run_gui(args: argparse.Namespace) -> int:
     refresh_status()
     root.after(15000, refresh_status)
     root.after(250, lambda: refresh_daily_operations(False))
+    apply_stored_fyers_environment(overwrite=True)
+    root.after(300, refresh_fyers_auth_status)
     root.after(450, lambda: refresh_broker_data_health(False))
     root.mainloop()
     return 0
