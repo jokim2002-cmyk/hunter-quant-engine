@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import struct
+import shutil
 from pathlib import Path
 
 
@@ -98,8 +99,14 @@ def main() -> int:
     p.add_argument("--output", default=str(Path("assets") / "HQE_PRODUCT_APP.ico"))
     args = p.parse_args()
     out = Path(args.output)
-    write_ico(out)
-    print(f"ICON_WRITTEN {out}")
+    branded = Path("assets") / "branding" / "hqe_app_icon" / "HQE.ico"
+    out.parent.mkdir(parents=True, exist_ok=True)
+    if branded.exists() and branded.resolve() != out.resolve():
+        shutil.copy2(branded, out)
+        print(f"ICON_WRITTEN {out} SOURCE_BRANDING {branded}")
+    else:
+        write_ico(out)
+        print(f"ICON_WRITTEN {out}")
     return 0
 
 

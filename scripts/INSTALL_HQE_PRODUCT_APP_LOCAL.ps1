@@ -12,9 +12,14 @@ if (-not (Test-Path $Py)) { throw "Python venv not found: $Py" }
 $Assets = Join-Path $RepoRoot "assets"
 New-Item -ItemType Directory -Force $Assets | Out-Null
 $Icon = Join-Path $Assets "HQE_PRODUCT_APP.ico"
+$BrandIcon = Join-Path $RepoRoot "assets\branding\hqe_app_icon\HQE.ico"
 
-& $Py scripts\hqe_product_app_icon.py --output $Icon
-if ($LASTEXITCODE -ne 0) { throw "Icon generation failed" }
+if (Test-Path $BrandIcon) {
+  Copy-Item $BrandIcon $Icon -Force
+} else {
+  & $Py scripts\hqe_product_app_icon.py --output $Icon
+  if ($LASTEXITCODE -ne 0) { throw "Icon generation failed" }
+}
 
 New-Item -ItemType Directory -Force $Workspace | Out-Null
 $AppCmd = Join-Path $Workspace "HQE_PRODUCT_APP.cmd"
