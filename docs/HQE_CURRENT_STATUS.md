@@ -162,3 +162,18 @@ Real trading remains locked.
 - Standalone compiled installer remains a future packaging stage
 
 Real trading remains locked.
+
+## App V2 owner installer and versioned release
+
+- Versioned owner installer pack builder added
+- Current-user no-admin install flow added
+- Desktop shortcut creation added
+- Uninstall flow added
+- Installer integrity manifest added
+- Install verification utility added
+
+## Current next action
+
+Build the real owner installer package, install it on the owner machine, verify the desktop shortcut launch, then test uninstall/reinstall.
+
+Real trading remains locked.
