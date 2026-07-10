@@ -480,3 +480,26 @@ Next cohesive roadmap bunch: visual strategy builder, editable rule
 forms, validation preview and strategy-selector workflow.
 
 Real trading remains locked. This is not a profitability claim.
+
+## HQE Strategy Builder and Selector Bunch
+
+Combined roadmap work completed:
+
+1. Visual paper-only strategy form
+2. Category-aware rule defaults
+3. Entry, filter, exit and risk validation
+4. Strategy preview with warnings
+5. Save-as-draft workflow
+6. Active paper-strategy selection
+7. Selection clearing and status
+8. App-native Strategy Builder & Selector Center
+
+Active selection is configuration-only. It does not execute a strategy,
+place orders or enable broker execution.
+
+Commit after PASS: `Add strategy builder and selector bunch`
+
+Next cohesive roadmap bunch: Backtest Product Center with dataset,
+strategy, date, risk and cost controls plus result visualization.
+
+Real trading remains locked. This is not a profitability claim.

@@ -13,6 +13,14 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, Optional
 
+from hqe_app_strategy_builder_center import (
+    build_preview as build_strategy_preview,
+    builder_center_snapshot,
+    clear_paper_selection,
+    save_builder_draft,
+    select_paper_pack,
+)
+
 from hqe_app_strategy_pack_center import (
     clone_pack as clone_strategy_pack,
     export_pack as export_strategy_pack,
@@ -4027,6 +4035,448 @@ def run_gui(args: argparse.Namespace) -> int:
     ).pack(fill="x", padx=18, pady=3)
 
     root.after(1800, lambda: refresh_strategy_pack_center(False))
+
+
+    strategy_builder_status = tk.StringVar(
+        value="Strategy Builder & Selector will appear after refresh."
+    )
+
+    def refresh_strategy_builder_center(
+        show_dialog: bool = False,
+    ) -> dict:
+        try:
+            snapshot = builder_center_snapshot(
+                repo_root(),
+                workspace,
+            )
+            strategy_builder_status.set(snapshot["display_text"])
+            footer_status.set(snapshot["display_text"])
+            if show_dialog:
+                messagebox.showinfo(
+                    "Strategy Builder & Selector",
+                    snapshot["display_text"],
+                )
+            return snapshot
+        except Exception as exc:
+            strategy_builder_status.set(
+                "Strategy Builder refresh failed safely."
+            )
+            footer_status.set(f"Strategy Builder error: {exc}")
+            if show_dialog:
+                messagebox.showerror(
+                    "Strategy Builder & Selector",
+                    str(exc),
+                )
+            return {}
+
+    def open_strategy_builder_center() -> None:
+        snapshot = refresh_strategy_builder_center(False)
+
+        dialog = tk.Toplevel(root)
+        dialog.title("HQE — Strategy Builder & Selector")
+        dialog.geometry("1120x760")
+        dialog.minsize(980, 680)
+        dialog.configure(bg=palette["bg"])
+        dialog.transient(root)
+
+        outer = tk.Frame(
+            dialog,
+            bg=palette["panel"],
+            padx=16,
+            pady=14,
+        )
+        outer.pack(fill="both", expand=True, padx=14, pady=14)
+
+        tk.Label(
+            outer,
+            text="Strategy Builder & Selector",
+            bg=palette["panel"],
+            fg=palette["text"],
+            font=("Segoe UI Semibold", 18),
+            anchor="w",
+        ).pack(fill="x")
+
+        active_var = tk.StringVar(
+            value=snapshot.get(
+                "selection",
+                {},
+            ).get(
+                "display_text",
+                "Active paper strategy: none selected",
+            )
+        )
+        tk.Label(
+            outer,
+            textvariable=active_var,
+            bg=palette["panel_alt"],
+            fg=palette["muted"],
+            anchor="w",
+            padx=10,
+            pady=8,
+        ).pack(fill="x", pady=(8, 10))
+
+        body = tk.Frame(outer, bg=palette["panel"])
+        body.pack(fill="both", expand=True)
+
+        form_frame = tk.LabelFrame(
+            body,
+            text="Visual Paper Strategy Form",
+            bg=palette["panel"],
+            fg=palette["text"],
+            padx=10,
+            pady=8,
+        )
+        form_frame.pack(
+            side="left",
+            fill="both",
+            expand=False,
+        )
+
+        preview_frame = tk.LabelFrame(
+            body,
+            text="Validation Preview",
+            bg=palette["panel"],
+            fg=palette["text"],
+            padx=10,
+            pady=8,
+        )
+        preview_frame.pack(
+            side="left",
+            fill="both",
+            expand=True,
+            padx=(12, 0),
+        )
+
+        fields = [
+            ("strategy_id", "Strategy ID"),
+            ("name", "Strategy Name"),
+            ("description", "Description"),
+            ("category", "Category"),
+            ("symbol", "Symbol"),
+            ("timeframe", "Timeframe"),
+            ("option_sides", "Option Sides"),
+            ("minimum_dte", "Minimum DTE"),
+            ("ltp_min", "Option LTP Min"),
+            ("ltp_max", "Option LTP Max"),
+            (
+                "minimum_estimated_net_reward",
+                "Minimum Estimated Net Reward",
+            ),
+            ("entry_indicator", "Entry Indicator"),
+            ("entry_period", "Entry Period"),
+            (
+                "confirmation_indicator",
+                "Confirmation Indicator",
+            ),
+            ("confirmation_value", "Confirmation Value"),
+            ("er20_min", "ER20 Minimum"),
+            ("range24_min", "Range24 Minimum"),
+            ("stop_loss_percent", "Stop Loss %"),
+            ("target_percent", "Target %"),
+            (
+                "max_risk_per_trade_percent",
+                "Max Paper Risk/Trade %",
+            ),
+            ("max_trades_per_day", "Max Trades/Day"),
+            ("cooldown_bars", "Cooldown Bars"),
+        ]
+
+        variables: dict[str, tk.StringVar] = {}
+        defaults = snapshot.get("defaults", {})
+
+        for row, (key, label) in enumerate(fields):
+            tk.Label(
+                form_frame,
+                text=label,
+                bg=palette["panel"],
+                fg=palette["muted"],
+                anchor="w",
+            ).grid(
+                row=row,
+                column=0,
+                sticky="w",
+                padx=(0, 8),
+                pady=2,
+            )
+            value = defaults.get(key, "")
+            if isinstance(value, list):
+                value = ",".join(str(item) for item in value)
+            variable = tk.StringVar(value=str(value))
+            variables[key] = variable
+
+            if key == "category":
+                widget = ttk.Combobox(
+                    form_frame,
+                    textvariable=variable,
+                    values=(
+                        "breakout",
+                        "momentum_trend",
+                        "reversal",
+                        "scalping",
+                    ),
+                    state="readonly",
+                    width=30,
+                )
+            elif key == "symbol":
+                widget = ttk.Combobox(
+                    form_frame,
+                    textvariable=variable,
+                    values=(
+                        "NIFTY",
+                        "BANKNIFTY",
+                        "FINNIFTY",
+                        "SENSEX",
+                    ),
+                    state="readonly",
+                    width=30,
+                )
+            elif key == "timeframe":
+                widget = ttk.Combobox(
+                    form_frame,
+                    textvariable=variable,
+                    values=("1m", "3m", "5m", "15m", "30m", "1h"),
+                    state="readonly",
+                    width=30,
+                )
+            else:
+                widget = ttk.Entry(
+                    form_frame,
+                    textvariable=variable,
+                    width=33,
+                )
+            widget.grid(
+                row=row,
+                column=1,
+                sticky="ew",
+                pady=2,
+            )
+
+        preview_text = tk.Text(
+            preview_frame,
+            wrap="word",
+            height=26,
+            width=58,
+        )
+        preview_text.pack(fill="both", expand=True)
+
+        latest_preview = {"pack": None}
+
+        pack_list = tk.Listbox(
+            preview_frame,
+            height=8,
+            exportselection=False,
+        )
+        pack_list.pack(fill="x", pady=(10, 0))
+        visible_packs: list[dict] = []
+
+        def form_payload() -> dict:
+            payload = {
+                key: variable.get().strip()
+                for key, variable in variables.items()
+            }
+            payload["option_sides"] = variables[
+                "option_sides"
+            ].get()
+            return payload
+
+        def render_preview(result: dict) -> None:
+            preview = result["preview"]
+            latest_preview["pack"] = result["pack"]
+            preview_text.delete("1.0", "end")
+            preview_text.insert(
+                "end",
+                preview.get("summary", ""),
+            )
+            warnings = preview.get("warnings", [])
+            errors = preview.get("errors", [])
+            if warnings:
+                preview_text.insert(
+                    "end",
+                    "\n\nWARNINGS:\n- " + "\n- ".join(warnings),
+                )
+            if errors:
+                preview_text.insert(
+                    "end",
+                    "\n\nERRORS:\n- " + "\n- ".join(errors),
+                )
+            preview_text.insert(
+                "end",
+                "\n\nPaper compatible: "
+                + str(preview.get("paper_compatible", False)),
+            )
+
+        def preview_current() -> None:
+            try:
+                render_preview(
+                    build_strategy_preview(form_payload())
+                )
+            except Exception as exc:
+                latest_preview["pack"] = None
+                preview_text.delete("1.0", "end")
+                preview_text.insert("end", f"VALIDATION ERROR:\n{exc}")
+
+        def save_current() -> None:
+            try:
+                target = save_builder_draft(
+                    form_payload(),
+                    workspace,
+                )
+                messagebox.showinfo(
+                    "Strategy Builder & Selector",
+                    f"Draft saved:\n{target}",
+                )
+                refresh_pack_list()
+            except Exception as exc:
+                messagebox.showerror(
+                    "Strategy Builder & Selector",
+                    str(exc),
+                )
+
+        def selected_record() -> dict:
+            selection = pack_list.curselection()
+            if not selection:
+                return {}
+            index = int(selection[0])
+            if index >= len(visible_packs):
+                return {}
+            return visible_packs[index]
+
+        def select_for_paper() -> None:
+            record = selected_record()
+            if not record:
+                messagebox.showwarning(
+                    "Strategy Builder & Selector",
+                    "Select a valid strategy pack first.",
+                )
+                return
+            try:
+                target = select_paper_pack(
+                    Path(record["path"]),
+                    workspace,
+                )
+                messagebox.showinfo(
+                    "Strategy Builder & Selector",
+                    f"Selected for paper validation:\n{target}",
+                )
+                refresh_all()
+            except Exception as exc:
+                messagebox.showerror(
+                    "Strategy Builder & Selector",
+                    str(exc),
+                )
+
+        def clear_selection() -> None:
+            clear_paper_selection(workspace)
+            refresh_all()
+
+        def refresh_pack_list() -> None:
+            current = refresh_strategy_builder_center(False)
+            registry = current.get("registry", {})
+            visible_packs.clear()
+            pack_list.delete(0, "end")
+            for record in registry.get("packs", []):
+                if not record.get("valid"):
+                    continue
+                visible_packs.append(record)
+                pack_list.insert(
+                    "end",
+                    f"{record.get('name', '')} | "
+                    f"{record.get('version', '')} | "
+                    f"{record.get('source', '')}",
+                )
+
+        def refresh_all() -> None:
+            current = refresh_strategy_builder_center(False)
+            active_var.set(
+                current.get(
+                    "selection",
+                    {},
+                ).get(
+                    "display_text",
+                    "Active paper strategy: none selected",
+                )
+            )
+            refresh_pack_list()
+
+        buttons = tk.Frame(outer, bg=palette["panel"])
+        buttons.pack(fill="x", pady=(12, 0))
+
+        ttk.Button(
+            buttons,
+            text="Preview Strategy",
+            command=preview_current,
+        ).pack(side="left", padx=(0, 6))
+
+        ttk.Button(
+            buttons,
+            text="Save as Draft",
+            command=save_current,
+        ).pack(side="left", padx=6)
+
+        ttk.Button(
+            buttons,
+            text="Select for Paper Validation",
+            command=select_for_paper,
+        ).pack(side="left", padx=6)
+
+        ttk.Button(
+            buttons,
+            text="Clear Active Selection",
+            command=clear_selection,
+        ).pack(side="left", padx=6)
+
+        ttk.Button(
+            buttons,
+            text="Open Strategy Pack Center",
+            command=open_strategy_pack_center,
+        ).pack(side="left", padx=6)
+
+        tk.Label(
+            outer,
+            text=(
+                "PAPER SELECTION ONLY • NO STRATEGY EXECUTION • "
+                "REAL ORDERS NO • OPTION SELLING NO"
+            ),
+            bg=palette["panel"],
+            fg=palette["muted"],
+            anchor="w",
+            pady=10,
+        ).pack(fill="x")
+
+        refresh_pack_list()
+        preview_current()
+
+    strategy_builder_panel = tk.Frame(
+        action_panel,
+        bg=palette["panel_alt"],
+        highlightbackground=palette["border"],
+        highlightthickness=1,
+    )
+    strategy_builder_panel.pack(fill="x", padx=18, pady=(4, 8))
+
+    tk.Label(
+        strategy_builder_panel,
+        textvariable=strategy_builder_status,
+        bg=palette["panel_alt"],
+        fg=palette["muted"],
+        justify="left",
+        anchor="w",
+        wraplength=300,
+        padx=10,
+        pady=8,
+    ).pack(fill="x")
+
+    ttk.Button(
+        action_panel,
+        text="Strategy Builder & Selector",
+        style="Secondary.TButton",
+        command=open_strategy_builder_center,
+    ).pack(fill="x", padx=18, pady=3)
+
+    root.after(
+        1950,
+        lambda: refresh_strategy_builder_center(False),
+    )
 
     root.mainloop()
     return 0
