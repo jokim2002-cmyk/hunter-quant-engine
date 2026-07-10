@@ -13,6 +13,12 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, Optional
 
+from hqe_app_daily_close_center import (
+    daily_close_snapshot,
+    launch_daily_close_worker,
+    operation_status as daily_close_operation_status,
+)
+
 from hqe_app_daily_startup_center import (
     daily_readiness_snapshot,
     launch_daily_startup_worker,
@@ -2102,6 +2108,180 @@ def run_gui(args: argparse.Namespace) -> int:
     ).pack(fill="x", padx=18, pady=3)
 
     root.after(750, lambda: refresh_daily_startup_center(False))
+
+
+    daily_close_status = tk.StringVar(
+        value="Daily close status will appear after refresh."
+    )
+
+    def refresh_daily_close_center(show_dialog: bool = False) -> dict:
+        try:
+            snapshot = daily_close_snapshot(repo_root(), workspace)
+            daily_close_status.set(snapshot["display_text"])
+            footer_status.set(
+                f"Daily close: {snapshot['overall_status']}"
+            )
+            if show_dialog:
+                messagebox.showinfo(
+                    "Daily Close & Report",
+                    snapshot["display_text"],
+                )
+            return snapshot
+        except Exception as exc:
+            daily_close_status.set("Daily close refresh failed safely.")
+            footer_status.set(f"Daily close status error: {exc}")
+            if show_dialog:
+                messagebox.showerror("Daily Close & Report", str(exc))
+            return {}
+
+    def poll_daily_close_operation() -> None:
+        payload = daily_close_operation_status(workspace)
+        if payload["status"] == "RUNNING":
+            root.after(900, poll_daily_close_operation)
+            return
+        refresh_daily_close_center(False)
+        footer_status.set(
+            payload["message"] or "Daily close operation finished."
+        )
+        if payload["status"] == "PASS":
+            messagebox.showinfo("Daily Close & Report", payload["message"])
+        elif payload["status"] in {"FAILED", "BLOCKED"}:
+            messagebox.showerror("Daily Close & Report", payload["message"])
+
+    def generate_daily_close_from_app() -> None:
+        try:
+            launch_daily_close_worker(repo_root(), workspace)
+            daily_close_status.set("Generating daily close report safely...")
+            footer_status.set(
+                "Daily close report running. Real orders remain blocked."
+            )
+            root.after(900, poll_daily_close_operation)
+        except Exception as exc:
+            messagebox.showerror("Daily Close & Report", str(exc))
+
+    def open_daily_close_artifact(kind: str) -> None:
+        snapshot = refresh_daily_close_center(False)
+        key = "latest_report" if kind == "report" else "latest_evidence"
+        raw_path = str(snapshot.get(key, "")).strip()
+        if not raw_path:
+            messagebox.showwarning(
+                "Daily Close & Report",
+                f"No latest {kind} is available yet.",
+            )
+            return
+        path = Path(raw_path)
+        if not path.exists():
+            messagebox.showerror(
+                "Daily Close & Report",
+                f"Latest {kind} is missing: {path}",
+            )
+            return
+        try:
+            os.startfile(path)
+        except Exception as exc:
+            messagebox.showerror("Daily Close & Report", str(exc))
+
+    def open_daily_close_center() -> None:
+        snapshot = refresh_daily_close_center(False)
+        dialog = tk.Toplevel(root)
+        dialog.title("HQE — Daily Close & Report")
+        dialog.geometry("700x540")
+        dialog.configure(bg=palette["bg"])
+        dialog.transient(root)
+
+        frame = tk.Frame(dialog, bg=palette["panel"], padx=20, pady=18)
+        frame.pack(fill="both", expand=True, padx=18, pady=18)
+
+        tk.Label(
+            frame,
+            text="End-of-Day Close & Report Center",
+            bg=palette["panel"],
+            fg=palette["text"],
+            font=("Segoe UI Semibold", 17),
+            anchor="w",
+        ).pack(fill="x")
+
+        detail_var = tk.StringVar(value=snapshot.get("display_text", ""))
+        tk.Label(
+            frame,
+            textvariable=detail_var,
+            bg=palette["panel_alt"],
+            fg=palette["muted"],
+            justify="left",
+            anchor="nw",
+            wraplength=620,
+            padx=12,
+            pady=12,
+        ).pack(fill="x", pady=(12, 12))
+
+        def refresh_dialog() -> None:
+            current = refresh_daily_close_center(False)
+            detail_var.set(current.get("display_text", ""))
+
+        ttk.Button(
+            frame,
+            text="Refresh Close Status",
+            command=refresh_dialog,
+        ).pack(fill="x", pady=3)
+
+        ttk.Button(
+            frame,
+            text="Generate Daily Close Report",
+            command=generate_daily_close_from_app,
+        ).pack(fill="x", pady=3)
+
+        ttk.Button(
+            frame,
+            text="Open Latest Report",
+            command=lambda: open_daily_close_artifact("report"),
+        ).pack(fill="x", pady=3)
+
+        ttk.Button(
+            frame,
+            text="Open Latest Evidence",
+            command=lambda: open_daily_close_artifact("evidence"),
+        ).pack(fill="x", pady=3)
+
+        tk.Label(
+            frame,
+            text=(
+                "PAPER/DATA ONLY • REAL ORDERS BLOCKED • "
+                "NO AUTO TRADING • NO OPTION SELLING"
+            ),
+            bg=palette["panel"],
+            fg=palette["muted"],
+            anchor="w",
+            pady=12,
+        ).pack(fill="x")
+
+    daily_close_panel = tk.Frame(
+        action_panel,
+        bg=palette["panel_alt"],
+        highlightbackground=palette["border"],
+        highlightthickness=1,
+    )
+    daily_close_panel.pack(fill="x", padx=18, pady=(4, 8))
+
+    tk.Label(
+        daily_close_panel,
+        textvariable=daily_close_status,
+        bg=palette["panel_alt"],
+        fg=palette["muted"],
+        justify="left",
+        anchor="w",
+        wraplength=300,
+        padx=10,
+        pady=8,
+    ).pack(fill="x")
+
+    ttk.Button(
+        action_panel,
+        text="Daily Close & Report",
+        style="Secondary.TButton",
+        command=open_daily_close_center,
+    ).pack(fill="x", padx=18, pady=3)
+
+    root.after(900, lambda: refresh_daily_close_center(False))
 
     root.mainloop()
     return 0

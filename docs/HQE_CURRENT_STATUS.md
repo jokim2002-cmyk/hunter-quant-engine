@@ -354,3 +354,19 @@ Commit after PASS: `Add app-native daily startup and operator checklist`
 Next roadmap target: app-native end-of-day close orchestration.
 
 Real trading remains locked. This is not a profitability claim.
+
+## HQE App Completion Batch 7 — Daily Close and Report Center
+
+- Dynamic latest-day and trading-date discovery
+- App-native daily-close readiness and safety guard status
+- One-click daily close report generation
+- Latest report/evidence open actions
+- Hidden background worker and responsive polling
+- No hardcoded DAY_001 paths
+- Permanent safety locks preserved
+
+Commit after PASS: `Add app-native daily close and report center`
+
+Next roadmap target: app-native session history and evidence browser.
+
+Real trading remains locked. This is not a profitability claim.
