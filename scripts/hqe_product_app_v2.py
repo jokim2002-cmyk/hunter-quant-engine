@@ -13,6 +13,11 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, Optional
 
+from hqe_app_release_candidate_audit_center import (
+    launch_rc_audit_worker,
+    rc_audit_center_snapshot,
+)
+
 from hqe_app_release_center import (
     launch_desktop_shortcut_install,
     launch_release_operation,
@@ -5742,6 +5747,314 @@ def run_gui(args: argparse.Namespace) -> int:
     root.after(
         2400,
         lambda: refresh_release_center(False),
+    )
+
+
+    rc_audit_status = tk.StringVar(
+        value="Final RC audit status will appear after refresh."
+    )
+
+    def refresh_rc_audit_center(
+        show_dialog: bool = False,
+    ) -> dict:
+        try:
+            snapshot = rc_audit_center_snapshot(
+                repo_root(),
+                workspace,
+            )
+            rc_audit_status.set(snapshot["display_text"])
+            footer_status.set(snapshot["display_text"])
+            if show_dialog:
+                messagebox.showinfo(
+                    "Final RC Audit & Freeze",
+                    snapshot["display_text"],
+                )
+            return snapshot
+        except Exception as exc:
+            rc_audit_status.set(
+                "Final RC audit refresh failed safely."
+            )
+            footer_status.set(f"Final RC audit error: {exc}")
+            if show_dialog:
+                messagebox.showerror(
+                    "Final RC Audit & Freeze",
+                    str(exc),
+                )
+            return {}
+
+    def poll_rc_audit() -> None:
+        snapshot = refresh_rc_audit_center(False)
+        latest = snapshot.get("latest_audit", {})
+        status = str(latest.get("status", ""))
+        if not status:
+            root.after(1000, poll_rc_audit)
+            return
+        message = str(
+            latest.get(
+                "message",
+                "End-to-end RC audit completed.",
+            )
+        )
+        footer_status.set(message)
+        if status == "FAILED":
+            messagebox.showerror(
+                "Final RC Audit & Freeze",
+                message,
+            )
+        else:
+            messagebox.showinfo(
+                "Final RC Audit & Freeze",
+                message,
+            )
+
+    def run_final_rc_audit() -> None:
+        try:
+            launch_rc_audit_worker(
+                repo_root(),
+                workspace,
+            )
+            rc_audit_status.set(
+                "End-to-end RC audit is running safely..."
+            )
+            footer_status.set(
+                "RC audit running; no trading operation started."
+            )
+            root.after(1400, poll_rc_audit)
+        except Exception as exc:
+            messagebox.showerror(
+                "Final RC Audit & Freeze",
+                str(exc),
+            )
+
+    def open_rc_audit_path(kind: str) -> None:
+        snapshot = refresh_rc_audit_center(False)
+        raw_path = str(
+            {
+                "report": snapshot.get("latest_report", ""),
+                "freeze": snapshot.get("freeze_manifest", ""),
+                "guide": snapshot.get("operator_guide", ""),
+            }.get(kind, "")
+        ).strip()
+        if not raw_path:
+            messagebox.showwarning(
+                "Final RC Audit & Freeze",
+                f"No {kind} file is available yet.",
+            )
+            return
+        path = Path(raw_path)
+        if not path.exists():
+            messagebox.showerror(
+                "Final RC Audit & Freeze",
+                f"File is missing: {path}",
+            )
+            return
+        try:
+            os.startfile(path)
+        except Exception as exc:
+            messagebox.showerror(
+                "Final RC Audit & Freeze",
+                str(exc),
+            )
+
+    def open_rc_audit_center() -> None:
+        snapshot = refresh_rc_audit_center(False)
+
+        dialog = tk.Toplevel(root)
+        dialog.title("HQE — Final RC Audit & Freeze")
+        dialog.geometry("980x650")
+        dialog.minsize(860, 570)
+        dialog.configure(bg=palette["bg"])
+        dialog.transient(root)
+
+        outer = tk.Frame(
+            dialog,
+            bg=palette["panel"],
+            padx=16,
+            pady=14,
+        )
+        outer.pack(fill="both", expand=True, padx=14, pady=14)
+
+        tk.Label(
+            outer,
+            text="Final RC Audit & Freeze",
+            bg=palette["panel"],
+            fg=palette["text"],
+            font=("Segoe UI Semibold", 18),
+            anchor="w",
+        ).pack(fill="x")
+
+        summary_var = tk.StringVar(
+            value=snapshot.get("display_text", "")
+        )
+        tk.Label(
+            outer,
+            textvariable=summary_var,
+            bg=palette["panel_alt"],
+            fg=palette["muted"],
+            anchor="w",
+            padx=10,
+            pady=8,
+        ).pack(fill="x", pady=(8, 10))
+
+        freeze_var = tk.StringVar()
+        audit_var = tk.StringVar()
+
+        top = tk.Frame(outer, bg=palette["panel"])
+        top.pack(fill="x")
+
+        for title, variable in (
+            ("Paper-Only Freeze", freeze_var),
+            ("Latest End-to-End Audit", audit_var),
+        ):
+            card = tk.LabelFrame(
+                top,
+                text=title,
+                bg=palette["panel"],
+                fg=palette["text"],
+                padx=10,
+                pady=8,
+            )
+            card.pack(
+                side="left",
+                fill="both",
+                expand=True,
+                padx=4,
+            )
+            tk.Label(
+                card,
+                textvariable=variable,
+                bg=palette["panel"],
+                fg=palette["muted"],
+                justify="left",
+                anchor="nw",
+                wraplength=430,
+            ).pack(fill="both", expand=True)
+
+        check_list = tk.Listbox(
+            outer,
+            exportselection=False,
+        )
+        check_list.pack(
+            fill="both",
+            expand=True,
+            pady=(12, 0),
+        )
+
+        def render(current: dict) -> None:
+            summary_var.set(current.get("display_text", ""))
+            freeze = current.get("freeze", {})
+            latest = current.get("latest_audit", {})
+            freeze_var.set(
+                f"Status: {freeze.get('status', '')}\n"
+                f"Files: {freeze.get('file_count', 0)}\n"
+                f"{freeze.get('message', '')}"
+            )
+            audit_var.set(
+                f"Status: {latest.get('status', 'NOT_RUN')}\n"
+                f"Passed: {latest.get('passed_count', 0)} | "
+                f"Review: {latest.get('review_count', 0)} | "
+                f"Failed: {latest.get('failed_count', 0)}\n"
+                f"{latest.get('message', '')}"
+            )
+            check_list.delete(0, "end")
+            for item in latest.get("checks", []):
+                check_list.insert(
+                    "end",
+                    f"[{item.get('status', '')}] "
+                    f"{item.get('name', '')} — "
+                    f"{item.get('message', '')}",
+                )
+
+        def refresh_dialog() -> None:
+            render(refresh_rc_audit_center(False))
+
+        buttons = tk.Frame(outer, bg=palette["panel"])
+        buttons.pack(fill="x", pady=(12, 0))
+
+        ttk.Button(
+            buttons,
+            text="Run End-to-End RC Audit",
+            command=run_final_rc_audit,
+        ).pack(side="left", padx=(0, 6))
+
+        ttk.Button(
+            buttons,
+            text="Open Latest Audit Report",
+            command=lambda: open_rc_audit_path("report"),
+        ).pack(side="left", padx=6)
+
+        ttk.Button(
+            buttons,
+            text="Open Freeze Manifest",
+            command=lambda: open_rc_audit_path("freeze"),
+        ).pack(side="left", padx=6)
+
+        ttk.Button(
+            buttons,
+            text="Open Operator Guide",
+            command=lambda: open_rc_audit_path("guide"),
+        ).pack(side="left", padx=6)
+
+        ttk.Button(
+            buttons,
+            text="Refresh Audit Status",
+            command=refresh_dialog,
+        ).pack(side="left", padx=6)
+
+        tk.Label(
+            outer,
+            text=(
+                "PAPER/DATA/RESEARCH RC ONLY • NO TRADING OPERATION • "
+                "THIS IS NOT A PROFITABILITY CLAIM"
+            ),
+            bg=palette["panel"],
+            fg=palette["muted"],
+            anchor="w",
+            pady=10,
+        ).pack(fill="x")
+
+        render(snapshot)
+
+    rc_audit_panel = tk.Frame(
+        action_panel,
+        bg=palette["panel_alt"],
+        highlightbackground=palette["border"],
+        highlightthickness=2,
+    )
+    rc_audit_panel.pack(fill="x", padx=18, pady=(6, 10))
+
+    tk.Label(
+        rc_audit_panel,
+        text="FINAL PAPER-ONLY RELEASE CANDIDATE",
+        bg=palette["panel_alt"],
+        fg=palette["text"],
+        font=("Segoe UI Semibold", 11),
+        anchor="w",
+        padx=10,
+        pady=(8, 2),
+    ).pack(fill="x")
+
+    tk.Label(
+        rc_audit_panel,
+        textvariable=rc_audit_status,
+        bg=palette["panel_alt"],
+        fg=palette["muted"],
+        justify="left",
+        anchor="w",
+        wraplength=300,
+        padx=10,
+        pady=6,
+    ).pack(fill="x")
+
+    ttk.Button(
+        rc_audit_panel,
+        text="Final RC Audit & Freeze",
+        command=open_rc_audit_center,
+    ).pack(fill="x", padx=10, pady=(2, 10))
+
+    root.after(
+        2550,
+        lambda: refresh_rc_audit_center(False),
     )
 
     root.mainloop()
