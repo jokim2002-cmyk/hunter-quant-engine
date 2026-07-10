@@ -768,6 +768,437 @@ def run_gui(args: argparse.Namespace) -> int:
         highlightthickness=1,
     )
     action_panel.pack(side="left", fill="y", padx=(9, 0))
+
+    def open_advanced_tools_hub() -> None:
+        advanced_tools_dialog = tk.Toplevel(root)
+        advanced_tools_dialog.title("HQE - Advanced Tools & Product Centers")
+        advanced_tools_dialog.geometry("780x700")
+        advanced_tools_dialog.minsize(680, 540)
+        advanced_tools_dialog.configure(bg=palette["bg"])
+        advanced_tools_dialog.transient(root)
+
+        advanced_tools_shell = tk.Frame(
+            advanced_tools_dialog,
+            bg=palette["bg"],
+            padx=14,
+            pady=14,
+        )
+        advanced_tools_shell.pack(fill="both", expand=True)
+
+        tk.Label(
+            advanced_tools_shell,
+            text="Advanced Tools & Product Centers",
+            bg=palette["bg"],
+            fg=palette["text"],
+            font=("Segoe UI Semibold", 18),
+            anchor="w",
+        ).pack(fill="x")
+        tk.Label(
+            advanced_tools_shell,
+            text="All product, evidence and maintenance centers in one place.",
+            bg=palette["bg"],
+            fg=palette["muted"],
+            anchor="w",
+            pady=6,
+        ).pack(fill="x")
+
+        advanced_tools_body = tk.Frame(
+            advanced_tools_shell,
+            bg=palette["bg"],
+        )
+        advanced_tools_body.pack(fill="both", expand=True, pady=(8, 0))
+        advanced_tools_canvas = tk.Canvas(
+            advanced_tools_body,
+            bg=palette["bg"],
+            highlightthickness=0,
+            borderwidth=0,
+        )
+        advanced_tools_scrollbar = ttk.Scrollbar(
+            advanced_tools_body,
+            orient="vertical",
+            command=advanced_tools_canvas.yview,
+        )
+        advanced_tools_canvas.configure(
+            yscrollcommand=advanced_tools_scrollbar.set,
+        )
+        advanced_tools_scrollbar.pack(side="right", fill="y")
+        advanced_tools_canvas.pack(side="left", fill="both", expand=True)
+        advanced_tools_inner = tk.Frame(
+            advanced_tools_canvas,
+            bg=palette["bg"],
+        )
+        advanced_tools_window = (
+            advanced_tools_canvas.create_window(
+                (0, 0),
+                window=advanced_tools_inner,
+                anchor="nw",
+            )
+        )
+
+        def _sync_advanced_tools(_event=None):
+            advanced_tools_canvas.configure(
+                scrollregion=advanced_tools_canvas.bbox("all"),
+            )
+            advanced_tools_canvas.itemconfigure(
+                advanced_tools_window,
+                width=max(1, advanced_tools_canvas.winfo_width()),
+            )
+
+        def _advanced_tools_wheel(event):
+            advanced_tools_canvas.yview_scroll(-1 if event.delta > 0 else 1, "units")
+            return "break"
+
+        advanced_tools_inner.bind("<Configure>", _sync_advanced_tools)
+        advanced_tools_canvas.bind("<Configure>", _sync_advanced_tools)
+        advanced_tools_canvas.bind("<MouseWheel>", _advanced_tools_wheel)
+        advanced_tools_inner.bind("<MouseWheel>", _advanced_tools_wheel)
+
+        advanced_card_1 = tk.Frame(
+            advanced_tools_inner,
+            bg=palette["panel"],
+            highlightthickness=1,
+            highlightbackground=palette["border"],
+            padx=12,
+            pady=10,
+        )
+        advanced_card_1.pack(fill="x", padx=4, pady=5)
+        tk.Label(
+            advanced_card_1,
+            text='Operator Dashboard',
+            bg=palette["panel"],
+            fg=palette["text"],
+            font=("Segoe UI Semibold", 12),
+            anchor="w",
+        ).pack(fill="x")
+        tk.Label(
+            advanced_card_1,
+            text='Guided Connect -> Prepare -> Watch -> Close -> Review flow.',
+            bg=palette["panel"],
+            fg=palette["muted"],
+            anchor="w",
+            justify="left",
+            wraplength=610,
+            pady=5,
+        ).pack(fill="x")
+        ttk.Button(
+            advanced_card_1,
+            text="Open Operator Dashboard",
+            command=open_operator_dashboard,
+        ).pack(side="right", pady=(4, 0))
+
+        advanced_card_2 = tk.Frame(
+            advanced_tools_inner,
+            bg=palette["panel"],
+            highlightthickness=1,
+            highlightbackground=palette["border"],
+            padx=12,
+            pady=10,
+        )
+        advanced_card_2.pack(fill="x", padx=4, pady=5)
+        tk.Label(
+            advanced_card_2,
+            text='Market Data Quality Center',
+            bg=palette["panel"],
+            fg=palette["text"],
+            font=("Segoe UI Semibold", 12),
+            anchor="w",
+        ).pack(fill="x")
+        tk.Label(
+            advanced_card_2,
+            text='Inspect gaps, duplicates, timestamps, OHLCV quality and approved data sources.',
+            bg=palette["panel"],
+            fg=palette["muted"],
+            anchor="w",
+            justify="left",
+            wraplength=610,
+            pady=5,
+        ).pack(fill="x")
+        ttk.Button(
+            advanced_card_2,
+            text="Open Market Data Quality Center",
+            command=open_market_data_quality_center,
+        ).pack(side="right", pady=(4, 0))
+
+        advanced_card_3 = tk.Frame(
+            advanced_tools_inner,
+            bg=palette["panel"],
+            highlightthickness=1,
+            highlightbackground=palette["border"],
+            padx=12,
+            pady=10,
+        )
+        advanced_card_3.pack(fill="x", padx=4, pady=5)
+        tk.Label(
+            advanced_card_3,
+            text='Strategy Pack Center',
+            bg=palette["panel"],
+            fg=palette["text"],
+            font=("Segoe UI Semibold", 12),
+            anchor="w",
+        ).pack(fill="x")
+        tk.Label(
+            advanced_card_3,
+            text='Review built-in and draft strategy packs; clone, import or export paper-only packs.',
+            bg=palette["panel"],
+            fg=palette["muted"],
+            anchor="w",
+            justify="left",
+            wraplength=610,
+            pady=5,
+        ).pack(fill="x")
+        ttk.Button(
+            advanced_card_3,
+            text="Open Strategy Pack Center",
+            command=open_strategy_pack_center,
+        ).pack(side="right", pady=(4, 0))
+
+        advanced_card_4 = tk.Frame(
+            advanced_tools_inner,
+            bg=palette["panel"],
+            highlightthickness=1,
+            highlightbackground=palette["border"],
+            padx=12,
+            pady=10,
+        )
+        advanced_card_4.pack(fill="x", padx=4, pady=5)
+        tk.Label(
+            advanced_card_4,
+            text='Strategy Builder & Selector',
+            bg=palette["panel"],
+            fg=palette["text"],
+            font=("Segoe UI Semibold", 12),
+            anchor="w",
+        ).pack(fill="x")
+        tk.Label(
+            advanced_card_4,
+            text='Build, validate and select a paper-only strategy draft.',
+            bg=palette["panel"],
+            fg=palette["muted"],
+            anchor="w",
+            justify="left",
+            wraplength=610,
+            pady=5,
+        ).pack(fill="x")
+        ttk.Button(
+            advanced_card_4,
+            text="Open Strategy Builder & Selector",
+            command=open_strategy_builder_center,
+        ).pack(side="right", pady=(4, 0))
+
+        advanced_card_5 = tk.Frame(
+            advanced_tools_inner,
+            bg=palette["panel"],
+            highlightthickness=1,
+            highlightbackground=palette["border"],
+            padx=12,
+            pady=10,
+        )
+        advanced_card_5.pack(fill="x", padx=4, pady=5)
+        tk.Label(
+            advanced_card_5,
+            text='Backtest Product Center',
+            bg=palette["panel"],
+            fg=palette["text"],
+            font=("Segoe UI Semibold", 12),
+            anchor="w",
+        ).pack(fill="x")
+        tk.Label(
+            advanced_card_5,
+            text='Create guarded recorded-data research backtest jobs and review evidence.',
+            bg=palette["panel"],
+            fg=palette["muted"],
+            anchor="w",
+            justify="left",
+            wraplength=610,
+            pady=5,
+        ).pack(fill="x")
+        ttk.Button(
+            advanced_card_5,
+            text="Open Backtest Product Center",
+            command=open_backtest_product_center,
+        ).pack(side="right", pady=(4, 0))
+
+        advanced_card_6 = tk.Frame(
+            advanced_tools_inner,
+            bg=palette["panel"],
+            highlightthickness=1,
+            highlightbackground=palette["border"],
+            padx=12,
+            pady=10,
+        )
+        advanced_card_6.pack(fill="x", padx=4, pady=5)
+        tk.Label(
+            advanced_card_6,
+            text='Session History',
+            bg=palette["panel"],
+            fg=palette["text"],
+            font=("Segoe UI Semibold", 12),
+            anchor="w",
+        ).pack(fill="x")
+        tk.Label(
+            advanced_card_6,
+            text='Browse earlier paper sessions, reports and evidence files.',
+            bg=palette["panel"],
+            fg=palette["muted"],
+            anchor="w",
+            justify="left",
+            wraplength=610,
+            pady=5,
+        ).pack(fill="x")
+        ttk.Button(
+            advanced_card_6,
+            text="Open Session History",
+            command=open_session_history_center,
+        ).pack(side="right", pady=(4, 0))
+
+        advanced_card_7 = tk.Frame(
+            advanced_tools_inner,
+            bg=palette["panel"],
+            highlightthickness=1,
+            highlightbackground=palette["border"],
+            padx=12,
+            pady=10,
+        )
+        advanced_card_7.pack(fill="x", padx=4, pady=5)
+        tk.Label(
+            advanced_card_7,
+            text='Paper Validation Intelligence',
+            bg=palette["panel"],
+            fg=palette["text"],
+            font=("Segoe UI Semibold", 12),
+            anchor="w",
+        ).pack(fill="x")
+        tk.Label(
+            advanced_card_7,
+            text='Track days, genuine paper trades, expiry weeks, no-trade reasons and drift.',
+            bg=palette["panel"],
+            fg=palette["muted"],
+            anchor="w",
+            justify="left",
+            wraplength=610,
+            pady=5,
+        ).pack(fill="x")
+        ttk.Button(
+            advanced_card_7,
+            text="Open Paper Validation Intelligence",
+            command=open_paper_validation_report_center,
+        ).pack(side="right", pady=(4, 0))
+
+        advanced_card_8 = tk.Frame(
+            advanced_tools_inner,
+            bg=palette["panel"],
+            highlightthickness=1,
+            highlightbackground=palette["border"],
+            padx=12,
+            pady=10,
+        )
+        advanced_card_8.pack(fill="x", padx=4, pady=5)
+        tk.Label(
+            advanced_card_8,
+            text='Windows Release Center',
+            bg=palette["panel"],
+            fg=palette["text"],
+            font=("Segoe UI Semibold", 12),
+            anchor="w",
+        ).pack(fill="x")
+        tk.Label(
+            advanced_card_8,
+            text='Desktop shortcut, backup, restore staging, diagnostics and release dry run.',
+            bg=palette["panel"],
+            fg=palette["muted"],
+            anchor="w",
+            justify="left",
+            wraplength=610,
+            pady=5,
+        ).pack(fill="x")
+        ttk.Button(
+            advanced_card_8,
+            text="Open Windows Release Center",
+            command=open_release_center,
+        ).pack(side="right", pady=(4, 0))
+
+        advanced_card_9 = tk.Frame(
+            advanced_tools_inner,
+            bg=palette["panel"],
+            highlightthickness=1,
+            highlightbackground=palette["border"],
+            padx=12,
+            pady=10,
+        )
+        advanced_card_9.pack(fill="x", padx=4, pady=5)
+        tk.Label(
+            advanced_card_9,
+            text='Final RC Audit & Freeze',
+            bg=palette["panel"],
+            fg=palette["text"],
+            font=("Segoe UI Semibold", 12),
+            anchor="w",
+        ).pack(fill="x")
+        tk.Label(
+            advanced_card_9,
+            text='Verify release safety, required files and freeze hashes.',
+            bg=palette["panel"],
+            fg=palette["muted"],
+            anchor="w",
+            justify="left",
+            wraplength=610,
+            pady=5,
+        ).pack(fill="x")
+        ttk.Button(
+            advanced_card_9,
+            text="Open Final RC Audit & Freeze",
+            command=open_rc_audit_center,
+        ).pack(side="right", pady=(4, 0))
+
+        advanced_card_10 = tk.Frame(
+            advanced_tools_inner,
+            bg=palette["panel"],
+            highlightthickness=1,
+            highlightbackground=palette["border"],
+            padx=12,
+            pady=10,
+        )
+        advanced_card_10.pack(fill="x", padx=4, pady=5)
+        tk.Label(
+            advanced_card_10,
+            text='Operator Acceptance & RC Sign-Off',
+            bg=palette["panel"],
+            fg=palette["text"],
+            font=("Segoe UI Semibold", 12),
+            anchor="w",
+        ).pack(fill="x")
+        tk.Label(
+            advanced_card_10,
+            text='Review the final app journey and paper-only release acceptance evidence.',
+            bg=palette["panel"],
+            fg=palette["muted"],
+            anchor="w",
+            justify="left",
+            wraplength=610,
+            pady=5,
+        ).pack(fill="x")
+        ttk.Button(
+            advanced_card_10,
+            text="Open Operator Acceptance & RC Sign-Off",
+            command=open_operator_acceptance_center,
+        ).pack(side="right", pady=(4, 0))
+
+        tk.Label(
+            advanced_tools_inner,
+            text="Maintenance and audit centers are not required for normal daily market use.",
+            bg=palette["bg"],
+            fg=palette["muted"],
+            anchor="w",
+            pady=10,
+        ).pack(fill="x", padx=4)
+
+    ttk.Button(
+        action_panel,
+        text="Advanced Tools & Product Centers",
+        style="Secondary.TButton",
+        command=open_advanced_tools_hub,
+    ).pack(fill="x", padx=18, pady=(8, 4))
+
     action_panel.pack_propagate(False)
 
     tk.Label(

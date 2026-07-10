@@ -663,3 +663,18 @@ Commit after PASS: `Fix Tkinter label padding startup crash`
 
 Product sign-off remains paper/data/research only.
 Real trading remains excluded. This is not a profitability claim.
+
+## HQE Visible Advanced Tools Hub
+
+UI access repair completed:
+
+1. Added a visible `Advanced Tools & Product Centers` button
+2. Added a dedicated scrollable hub for all advanced centers
+3. Kept the stable main right-side action panel unchanged
+4. Added direct access to all 10 product/evidence/release centers
+5. Updated the operator guide and regression coverage
+
+Commit after PASS: `Add visible Advanced Tools hub`
+
+Product remains paper/data/research only.
+Real trading remains excluded. This is not a profitability claim.

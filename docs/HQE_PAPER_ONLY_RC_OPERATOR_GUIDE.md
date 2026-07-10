@@ -79,3 +79,23 @@ evidence is incomplete. Review those items without inventing data.
 - Fake trades: NO
 
 This is not a profitability claim.
+
+## Advanced Tools and Product Centers
+
+From the Overview page, use **Advanced Tools & Product Centers**.
+
+The scrollable hub provides direct access to:
+
+- Operator Dashboard
+- Market Data Quality Center
+- Strategy Pack Center
+- Strategy Builder & Selector
+- Backtest Product Center
+- Session History
+- Paper Validation Intelligence
+- Windows Release Center
+- Final RC Audit & Freeze
+- Operator Acceptance & RC Sign-Off
+
+Daily market use normally requires Overview, Broker Connect, Paper Watch,
+Today Report and System Safety. Release/audit centers are maintenance tools.
