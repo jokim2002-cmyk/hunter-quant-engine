@@ -3409,7 +3409,7 @@ def run_gui(args: argparse.Namespace) -> int:
         font=("Segoe UI Semibold", 11),
         anchor="w",
         padx=10,
-        pady=(8, 2),
+        pady=8,
     ).pack(fill="x")
 
     tk.Label(
@@ -6036,7 +6036,7 @@ def run_gui(args: argparse.Namespace) -> int:
         font=("Segoe UI Semibold", 11),
         anchor="w",
         padx=10,
-        pady=(8, 2),
+        pady=8,
     ).pack(fill="x")
 
     tk.Label(
@@ -6321,7 +6321,7 @@ def run_gui(args: argparse.Namespace) -> int:
         font=("Segoe UI Semibold", 11),
         anchor="w",
         padx=10,
-        pady=(8, 2),
+        pady=8,
     ).pack(fill="x")
 
     tk.Label(

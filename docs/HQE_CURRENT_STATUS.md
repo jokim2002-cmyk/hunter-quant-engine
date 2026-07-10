@@ -649,3 +649,17 @@ Commit after PASS: `Fix ASCII-safe desktop shortcut deployment`
 
 Product scope and sign-off remain paper/data/research only.
 Real trading remains excluded. This is not a profitability claim.
+
+## HQE Tkinter Label Padding Startup Repair
+
+Blocking GUI startup repair completed:
+
+1. Replaced tuple-valued `tk.Label` internal padding with scalar values
+2. Added an AST regression test for invalid Label `padx` / `pady`
+3. Ran a real GUI startup smoke check
+4. Refreshed and verified paper-only RC freeze hashes
+
+Commit after PASS: `Fix Tkinter label padding startup crash`
+
+Product sign-off remains paper/data/research only.
+Real trading remains excluded. This is not a profitability claim.
