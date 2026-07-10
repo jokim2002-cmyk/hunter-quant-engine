@@ -13,6 +13,11 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, Optional
 
+from hqe_app_safety_evidence_center import (
+    launch_safety_audit_worker,
+    safety_snapshot,
+)
+
 from hqe_app_session_history_center import (
     filter_sessions,
     session_history_snapshot,
@@ -2562,6 +2567,266 @@ def run_gui(args: argparse.Namespace) -> int:
     ).pack(fill="x", padx=18, pady=3)
 
     root.after(1050, lambda: refresh_session_history_center(False))
+
+
+    safety_evidence_status = tk.StringVar(
+        value="Safety evidence status will appear after refresh."
+    )
+
+    def refresh_safety_evidence_center(
+        show_dialog: bool = False,
+    ) -> dict:
+        try:
+            snapshot = safety_snapshot(repo_root(), workspace)
+            safety_evidence_status.set(snapshot["display_text"])
+            footer_status.set(snapshot["display_text"])
+            if show_dialog:
+                messagebox.showinfo(
+                    "Safety & Kill-Switch Evidence",
+                    snapshot["display_text"],
+                )
+            return snapshot
+        except Exception as exc:
+            safety_evidence_status.set(
+                "Safety evidence refresh failed safely."
+            )
+            footer_status.set(f"Safety evidence error: {exc}")
+            if show_dialog:
+                messagebox.showerror(
+                    "Safety & Kill-Switch Evidence",
+                    str(exc),
+                )
+            return {}
+
+    def poll_safety_audit() -> None:
+        snapshot = refresh_safety_evidence_center(False)
+        audit = snapshot.get("audit", {})
+        status = str(audit.get("status", "RUNNING"))
+        if status == "RUNNING":
+            root.after(900, poll_safety_audit)
+            return
+        message = str(
+            audit.get("message", "Safety audit finished.")
+        )
+        footer_status.set(message)
+        if status == "PASS":
+            messagebox.showinfo(
+                "Safety & Kill-Switch Evidence",
+                message,
+            )
+        elif status in {"CHECK_REQUIRED", "FAILED", "BLOCKED"}:
+            messagebox.showerror(
+                "Safety & Kill-Switch Evidence",
+                message,
+            )
+
+    def run_safety_audit_from_app() -> None:
+        try:
+            launch_safety_audit_worker(repo_root(), workspace)
+            safety_evidence_status.set(
+                "Running read-only safety guard audit..."
+            )
+            footer_status.set(
+                "Safety audit running. Real orders remain blocked."
+            )
+            root.after(900, poll_safety_audit)
+        except Exception as exc:
+            messagebox.showerror(
+                "Safety & Kill-Switch Evidence",
+                str(exc),
+            )
+
+    def open_latest_safety_evidence() -> None:
+        snapshot = refresh_safety_evidence_center(False)
+        raw_path = str(
+            snapshot.get("latest_evidence_path", "")
+        ).strip()
+        if not raw_path:
+            messagebox.showwarning(
+                "Safety & Kill-Switch Evidence",
+                "No safety evidence is available yet.",
+            )
+            return
+        path = Path(raw_path)
+        if not path.exists():
+            messagebox.showerror(
+                "Safety & Kill-Switch Evidence",
+                f"Safety evidence is missing: {path}",
+            )
+            return
+        try:
+            os.startfile(path)
+        except Exception as exc:
+            messagebox.showerror(
+                "Safety & Kill-Switch Evidence",
+                str(exc),
+            )
+
+    def open_safety_evidence_center() -> None:
+        snapshot = refresh_safety_evidence_center(False)
+
+        dialog = tk.Toplevel(root)
+        dialog.title("HQE — Safety & Kill-Switch Evidence")
+        dialog.geometry("900x620")
+        dialog.minsize(780, 520)
+        dialog.configure(bg=palette["bg"])
+        dialog.transient(root)
+
+        outer = tk.Frame(
+            dialog,
+            bg=palette["panel"],
+            padx=18,
+            pady=16,
+        )
+        outer.pack(fill="both", expand=True, padx=16, pady=16)
+
+        tk.Label(
+            outer,
+            text="Safety & Kill-Switch Evidence Center",
+            bg=palette["panel"],
+            fg=palette["text"],
+            font=("Segoe UI Semibold", 17),
+            anchor="w",
+        ).pack(fill="x")
+
+        summary_var = tk.StringVar(
+            value=snapshot.get("display_text", "")
+        )
+        tk.Label(
+            outer,
+            textvariable=summary_var,
+            bg=palette["panel_alt"],
+            fg=palette["muted"],
+            anchor="w",
+            padx=10,
+            pady=8,
+        ).pack(fill="x", pady=(10, 10))
+
+        evidence_list = tk.Listbox(
+            outer,
+            exportselection=False,
+        )
+        evidence_list.pack(fill="both", expand=True)
+
+        visible_evidence: list[dict] = []
+
+        def populate(current: dict) -> None:
+            evidence_list.delete(0, "end")
+            visible_evidence.clear()
+            for item in current.get("evidence", []):
+                visible_evidence.append(item)
+                evidence_list.insert(
+                    "end",
+                    f"[{item['category']}] "
+                    f"{item['kill_switch_state']} | "
+                    f"{item['name']}",
+                )
+
+        def refresh_dialog() -> None:
+            current = refresh_safety_evidence_center(False)
+            summary_var.set(current.get("display_text", ""))
+            populate(current)
+
+        def open_selected() -> None:
+            selection = evidence_list.curselection()
+            if not selection:
+                messagebox.showwarning(
+                    "Safety & Kill-Switch Evidence",
+                    "Select evidence first.",
+                )
+                return
+            index = int(selection[0])
+            if index >= len(visible_evidence):
+                return
+            path = Path(visible_evidence[index]["path"])
+            if not path.exists():
+                messagebox.showerror(
+                    "Safety & Kill-Switch Evidence",
+                    f"Evidence is missing: {path}",
+                )
+                return
+            try:
+                os.startfile(path)
+            except Exception as exc:
+                messagebox.showerror(
+                    "Safety & Kill-Switch Evidence",
+                    str(exc),
+                )
+
+        button_row = tk.Frame(outer, bg=palette["panel"])
+        button_row.pack(fill="x", pady=(12, 0))
+
+        ttk.Button(
+            button_row,
+            text="Refresh Safety Status",
+            command=refresh_dialog,
+        ).pack(side="left", padx=(0, 6))
+
+        ttk.Button(
+            button_row,
+            text="Run Safety Audit",
+            command=run_safety_audit_from_app,
+        ).pack(side="left", padx=6)
+
+        ttk.Button(
+            button_row,
+            text="Open Selected Evidence",
+            command=open_selected,
+        ).pack(side="left", padx=6)
+
+        ttk.Button(
+            button_row,
+            text="Open Latest Safety Evidence",
+            command=open_latest_safety_evidence,
+        ).pack(side="left", padx=6)
+
+        evidence_list.bind(
+            "<Double-Button-1>",
+            lambda _event: open_selected(),
+        )
+
+        tk.Label(
+            outer,
+            text=(
+                "READ ONLY • REAL MONEY NO • REAL ORDERS NO • "
+                "BROKER EXECUTION NO • AUTO TRADING NO"
+            ),
+            bg=palette["panel"],
+            fg=palette["muted"],
+            anchor="w",
+            pady=10,
+        ).pack(fill="x")
+
+        populate(snapshot)
+
+    safety_evidence_panel = tk.Frame(
+        action_panel,
+        bg=palette["panel_alt"],
+        highlightbackground=palette["border"],
+        highlightthickness=1,
+    )
+    safety_evidence_panel.pack(fill="x", padx=18, pady=(4, 8))
+
+    tk.Label(
+        safety_evidence_panel,
+        textvariable=safety_evidence_status,
+        bg=palette["panel_alt"],
+        fg=palette["muted"],
+        justify="left",
+        anchor="w",
+        wraplength=300,
+        padx=10,
+        pady=8,
+    ).pack(fill="x")
+
+    ttk.Button(
+        action_panel,
+        text="Safety & Kill-Switch Evidence",
+        style="Secondary.TButton",
+        command=open_safety_evidence_center,
+    ).pack(fill="x", padx=18, pady=3)
+
+    root.after(1200, lambda: refresh_safety_evidence_center(False))
 
     root.mainloop()
     return 0

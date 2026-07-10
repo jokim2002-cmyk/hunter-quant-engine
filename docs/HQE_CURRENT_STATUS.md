@@ -385,3 +385,18 @@ Commit after PASS: `Add app-native session history and evidence browser`
 Next roadmap target: app-native safety and kill-switch evidence center.
 
 Real trading remains locked. This is not a profitability claim.
+
+## HQE App Completion Batch 9 — Safety and Kill-Switch Evidence
+
+- Permanent safety locks consolidated in the main app
+- Dynamic safety, guard, decision, status and kill-switch evidence discovery
+- App-native read-only safety evidence browser
+- One-click guard audit across app and daily-operation components
+- Hidden audit worker and responsive polling
+- Permanent execution locks preserved
+
+Commit after PASS: `Add app-native safety and kill-switch evidence center`
+
+Next roadmap target: app-native paper-watch session control and live-session operator center.
+
+Real trading remains locked. This is not a profitability claim.
