@@ -13,6 +13,11 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, Optional
 
+from hqe_app_session_history_center import (
+    filter_sessions,
+    session_history_snapshot,
+)
+
 from hqe_app_daily_close_center import (
     daily_close_snapshot,
     launch_daily_close_worker,
@@ -2282,6 +2287,281 @@ def run_gui(args: argparse.Namespace) -> int:
     ).pack(fill="x", padx=18, pady=3)
 
     root.after(900, lambda: refresh_daily_close_center(False))
+
+
+    session_history_status = tk.StringVar(
+        value="Session history will appear after refresh."
+    )
+
+    def refresh_session_history_center(show_dialog: bool = False) -> dict:
+        try:
+            snapshot = session_history_snapshot(workspace)
+            session_history_status.set(snapshot["display_text"])
+            footer_status.set(snapshot["display_text"])
+            if show_dialog:
+                messagebox.showinfo(
+                    "Session History & Evidence",
+                    snapshot["display_text"],
+                )
+            return snapshot
+        except Exception as exc:
+            session_history_status.set(
+                "Session history refresh failed safely."
+            )
+            footer_status.set(f"Session history error: {exc}")
+            if show_dialog:
+                messagebox.showerror(
+                    "Session History & Evidence",
+                    str(exc),
+                )
+            return {}
+
+    def open_session_history_center() -> None:
+        snapshot = refresh_session_history_center(False)
+        all_sessions = list(snapshot.get("sessions", []))
+
+        dialog = tk.Toplevel(root)
+        dialog.title("HQE — Session History & Evidence")
+        dialog.geometry("980x650")
+        dialog.minsize(860, 560)
+        dialog.configure(bg=palette["bg"])
+        dialog.transient(root)
+
+        outer = tk.Frame(dialog, bg=palette["panel"], padx=18, pady=16)
+        outer.pack(fill="both", expand=True, padx=16, pady=16)
+
+        tk.Label(
+            outer,
+            text="Session History & Evidence Browser",
+            bg=palette["panel"],
+            fg=palette["text"],
+            font=("Segoe UI Semibold", 17),
+            anchor="w",
+        ).pack(fill="x")
+
+        summary_var = tk.StringVar(
+            value=snapshot.get("display_text", "")
+        )
+        tk.Label(
+            outer,
+            textvariable=summary_var,
+            bg=palette["panel_alt"],
+            fg=palette["muted"],
+            anchor="w",
+            padx=10,
+            pady=8,
+        ).pack(fill="x", pady=(10, 10))
+
+        search_row = tk.Frame(outer, bg=palette["panel"])
+        search_row.pack(fill="x", pady=(0, 10))
+
+        search_var = tk.StringVar()
+        search_entry = ttk.Entry(
+            search_row,
+            textvariable=search_var,
+        )
+        search_entry.pack(side="left", fill="x", expand=True)
+
+        body = tk.Frame(outer, bg=palette["panel"])
+        body.pack(fill="both", expand=True)
+
+        left = tk.Frame(body, bg=palette["panel"])
+        left.pack(side="left", fill="both", expand=False)
+
+        right = tk.Frame(body, bg=palette["panel"])
+        right.pack(side="left", fill="both", expand=True, padx=(12, 0))
+
+        session_list = tk.Listbox(
+            left,
+            width=34,
+            exportselection=False,
+        )
+        session_list.pack(fill="both", expand=True)
+
+        artifact_list = tk.Listbox(
+            right,
+            exportselection=False,
+        )
+        artifact_list.pack(fill="both", expand=True)
+
+        visible_sessions: list[dict] = []
+        visible_artifacts: list[dict] = []
+
+        def selected_session() -> dict:
+            selection = session_list.curselection()
+            if not selection:
+                return {}
+            index = int(selection[0])
+            if index >= len(visible_sessions):
+                return {}
+            return visible_sessions[index]
+
+        def populate_artifacts(_event=None) -> None:
+            artifact_list.delete(0, "end")
+            visible_artifacts.clear()
+            session = selected_session()
+            for artifact in session.get("artifacts", []):
+                visible_artifacts.append(artifact)
+                artifact_list.insert(
+                    "end",
+                    f"[{artifact['category']}] {artifact['name']}",
+                )
+
+        def populate_sessions(query: str = "") -> None:
+            session_list.delete(0, "end")
+            artifact_list.delete(0, "end")
+            visible_sessions.clear()
+            visible_artifacts.clear()
+
+            for session in filter_sessions(all_sessions, query):
+                visible_sessions.append(session)
+                date_text = session.get("trading_date", "") or "date unknown"
+                session_list.insert(
+                    "end",
+                    f"{session['day_label']} | {date_text} | "
+                    f"{session['artifact_count']} files",
+                )
+
+            if visible_sessions:
+                session_list.selection_set(0)
+                populate_artifacts()
+
+        def search_sessions() -> None:
+            populate_sessions(search_var.get())
+
+        def refresh_browser() -> None:
+            nonlocal all_sessions
+            current = refresh_session_history_center(False)
+            all_sessions = list(current.get("sessions", []))
+            summary_var.set(current.get("display_text", ""))
+            populate_sessions(search_var.get())
+
+        def open_selected_artifact() -> None:
+            selection = artifact_list.curselection()
+            if not selection:
+                messagebox.showwarning(
+                    "Session History & Evidence",
+                    "Select an artifact first.",
+                )
+                return
+            index = int(selection[0])
+            if index >= len(visible_artifacts):
+                return
+            path = Path(visible_artifacts[index]["path"])
+            if not path.exists():
+                messagebox.showerror(
+                    "Session History & Evidence",
+                    f"Artifact is missing: {path}",
+                )
+                return
+            try:
+                os.startfile(path)
+            except Exception as exc:
+                messagebox.showerror(
+                    "Session History & Evidence",
+                    str(exc),
+                )
+
+        def open_day_folder() -> None:
+            session = selected_session()
+            raw_path = str(session.get("day_folder", "")).strip()
+            if not raw_path:
+                messagebox.showwarning(
+                    "Session History & Evidence",
+                    "Day folder is not available.",
+                )
+                return
+            path = Path(raw_path)
+            if not path.exists():
+                messagebox.showerror(
+                    "Session History & Evidence",
+                    f"Day folder is missing: {path}",
+                )
+                return
+            try:
+                os.startfile(path)
+            except Exception as exc:
+                messagebox.showerror(
+                    "Session History & Evidence",
+                    str(exc),
+                )
+
+        ttk.Button(
+            search_row,
+            text="Search Sessions",
+            command=search_sessions,
+        ).pack(side="left", padx=(8, 0))
+
+        session_list.bind("<<ListboxSelect>>", populate_artifacts)
+        artifact_list.bind(
+            "<Double-Button-1>",
+            lambda _event: open_selected_artifact(),
+        )
+
+        button_row = tk.Frame(outer, bg=palette["panel"])
+        button_row.pack(fill="x", pady=(12, 0))
+
+        ttk.Button(
+            button_row,
+            text="Refresh History",
+            command=refresh_browser,
+        ).pack(side="left", padx=(0, 6))
+
+        ttk.Button(
+            button_row,
+            text="Open Selected Artifact",
+            command=open_selected_artifact,
+        ).pack(side="left", padx=6)
+
+        ttk.Button(
+            button_row,
+            text="Open Day Folder",
+            command=open_day_folder,
+        ).pack(side="left", padx=6)
+
+        tk.Label(
+            outer,
+            text=(
+                "READ ONLY • PAPER/DATA EVIDENCE • "
+                "REAL ORDERS BLOCKED"
+            ),
+            bg=palette["panel"],
+            fg=palette["muted"],
+            anchor="w",
+            pady=10,
+        ).pack(fill="x")
+
+        populate_sessions()
+        search_entry.focus_set()
+
+    session_history_panel = tk.Frame(
+        action_panel,
+        bg=palette["panel_alt"],
+        highlightbackground=palette["border"],
+        highlightthickness=1,
+    )
+    session_history_panel.pack(fill="x", padx=18, pady=(4, 8))
+
+    tk.Label(
+        session_history_panel,
+        textvariable=session_history_status,
+        bg=palette["panel_alt"],
+        fg=palette["muted"],
+        justify="left",
+        anchor="w",
+        wraplength=300,
+        padx=10,
+        pady=8,
+    ).pack(fill="x")
+
+    ttk.Button(
+        action_panel,
+        text="Session History & Evidence",
+        style="Secondary.TButton",
+        command=open_session_history_center,
+    ).pack(fill="x", padx=18, pady=3)
+
+    root.after(1050, lambda: refresh_session_history_center(False))
 
     root.mainloop()
     return 0

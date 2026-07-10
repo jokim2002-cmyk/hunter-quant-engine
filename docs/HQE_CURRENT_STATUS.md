@@ -370,3 +370,18 @@ Commit after PASS: `Add app-native daily close and report center`
 Next roadmap target: app-native session history and evidence browser.
 
 Real trading remains locked. This is not a profitability claim.
+
+## HQE App Completion Batch 8 — Session History and Evidence Browser
+
+- Dynamic DAY-wise validation-session discovery
+- Search by day, date, category, filename or path
+- Reports, evidence, trade logs, checklists and statuses grouped per day
+- App-native artifact and day-folder open actions
+- Read-only browser with no hardcoded DAY_001 paths
+- Permanent safety locks preserved
+
+Commit after PASS: `Add app-native session history and evidence browser`
+
+Next roadmap target: app-native safety and kill-switch evidence center.
+
+Real trading remains locked. This is not a profitability claim.
