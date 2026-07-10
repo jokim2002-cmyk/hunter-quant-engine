@@ -125,3 +125,17 @@ the manual visual operator smoke.
 
 Real trading remains locked.
 
+## Manual smoke close and release freeze gate
+
+- Manual smoke result recorder
+- Release freeze evidence gate
+- Freeze requires manual smoke PASS
+- Safety locks remain mandatory
+
+## Current next action
+
+Complete the actual button-by-button App V2 smoke, record PASS/FAIL, then run
+the release freeze gate.
+
+Real trading remains locked.
+
