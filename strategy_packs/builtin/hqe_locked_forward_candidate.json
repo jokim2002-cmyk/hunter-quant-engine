@@ -1,0 +1,84 @@
+{
+  "category": "locked_validation_candidate",
+  "description": "Current locked paper-validation candidate. No tuning is allowed during validation.",
+  "fingerprint": "42b5dd10bc1f8d889dcb20598c0b304bb5dacedce986737fa1c2841482234cbc",
+  "instruments": [
+    {
+      "direction": "buy_only",
+      "instrument_type": "index_option",
+      "market": "NSE",
+      "option_sides": [
+        "PE"
+      ],
+      "symbol": "NIFTY"
+    }
+  ],
+  "name": "HQE Locked Forward Candidate",
+  "notes": [],
+  "risk": {
+    "capital_mode": "paper",
+    "cooldown_bars": 3,
+    "max_risk_per_trade_percent": 1.0,
+    "max_trades_per_day": 3,
+    "stop_loss_percent": 0.4,
+    "target_percent": 1.2
+  },
+  "rules": {
+    "entry": {
+      "all": [
+        {
+          "indicator": "efficiency_ratio",
+          "minimum": 0.3,
+          "period": 20
+        },
+        {
+          "indicator": "minimum_estimated_net_reward",
+          "value": 200
+        }
+      ]
+    },
+    "exit": {
+      "stop_loss_percent": 0.4,
+      "target_percent": 1.2,
+      "time_exit": "15:15"
+    },
+    "filters": [
+      {
+        "type": "minimum_dte",
+        "value": 1
+      },
+      {
+        "maximum": 200,
+        "minimum": 20,
+        "type": "option_ltp_range"
+      },
+      {
+        "type": "option_side",
+        "value": "PE"
+      }
+    ]
+  },
+  "safety": {
+    "no_auto_trading": true,
+    "no_broker_execution": true,
+    "no_candidate_tuning_during_validation": true,
+    "no_fake_trades": true,
+    "no_option_selling": true,
+    "no_profitability_claim": true,
+    "no_real_money": true,
+    "no_real_orders": true,
+    "paper_only": true
+  },
+  "schema_version": "1.0",
+  "status": "locked_validation",
+  "strategy_id": "hqe_locked_forward_candidate",
+  "timeframe": "5m",
+  "validation": {
+    "candidate_id": "ER20_GE_030_PE_DTE1_LTP20_200_REWARD200",
+    "locked_candidate": true,
+    "minimum_expiry_weeks": 4,
+    "minimum_observed_days": 20,
+    "minimum_observed_trades": 30
+  },
+  "version": "1.0.0"
+}

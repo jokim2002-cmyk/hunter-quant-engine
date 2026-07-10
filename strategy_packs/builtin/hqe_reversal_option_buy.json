@@ -1,0 +1,84 @@
+{
+  "category": "reversal",
+  "description": "Paper-only reversal research template with oversold/overbought confirmation.",
+  "fingerprint": "4423892a6d7e15200e01c3e6ba26652c5edf4b21b3896b234793c47bee465c27",
+  "instruments": [
+    {
+      "direction": "buy_only",
+      "instrument_type": "index_option",
+      "market": "NSE",
+      "option_sides": [
+        "CE",
+        "PE"
+      ],
+      "symbol": "NIFTY"
+    }
+  ],
+  "name": "HQE Reversal Option Buy",
+  "notes": [],
+  "risk": {
+    "capital_mode": "paper",
+    "cooldown_bars": 3,
+    "max_risk_per_trade_percent": 1.0,
+    "max_trades_per_day": 3,
+    "stop_loss_percent": 0.4,
+    "target_percent": 1.2
+  },
+  "rules": {
+    "entry": {
+      "all": [
+        {
+          "indicator": "rsi_reversal",
+          "period": 14
+        },
+        {
+          "bars": 3,
+          "indicator": "structure_confirmation"
+        }
+      ]
+    },
+    "exit": {
+      "stop_loss_percent": 0.35,
+      "target_percent": 0.9,
+      "time_exit": "15:10"
+    },
+    "filters": [
+      {
+        "end": "15:10",
+        "start": "09:20",
+        "type": "market_hours"
+      },
+      {
+        "type": "minimum_dte",
+        "value": 1
+      },
+      {
+        "type": "minimum_range_percent",
+        "value": 0.004
+      }
+    ]
+  },
+  "safety": {
+    "no_auto_trading": true,
+    "no_broker_execution": true,
+    "no_candidate_tuning_during_validation": true,
+    "no_fake_trades": true,
+    "no_option_selling": true,
+    "no_profitability_claim": true,
+    "no_real_money": true,
+    "no_real_orders": true,
+    "paper_only": true
+  },
+  "schema_version": "1.0",
+  "status": "draft",
+  "strategy_id": "hqe_reversal_option_buy",
+  "timeframe": "5m",
+  "validation": {
+    "candidate_id": "",
+    "locked_candidate": false,
+    "minimum_expiry_weeks": 4,
+    "minimum_observed_days": 20,
+    "minimum_observed_trades": 30
+  },
+  "version": "1.0.0"
+}

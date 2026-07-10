@@ -460,3 +460,23 @@ Next cohesive roadmap bunch: Strategy Pack foundation, strategy schema,
 versioning, selector and import/export.
 
 Real trading remains locked. This is not a profitability claim.
+
+## HQE Strategy Pack Foundation Bunch
+
+Combined roadmap work completed:
+
+1. Versioned strategy-pack JSON schema
+2. Strict paper-only safety validation
+3. Seven built-in strategy packs
+4. Current locked forward candidate as a protected pack
+5. Strategy registry and discovery
+6. JSON import/export
+7. Clone-as-draft versioning
+8. App-native Strategy Pack Center
+
+Commit after PASS: `Add strategy pack foundation bunch`
+
+Next cohesive roadmap bunch: visual strategy builder, editable rule
+forms, validation preview and strategy-selector workflow.
+
+Real trading remains locked. This is not a profitability claim.

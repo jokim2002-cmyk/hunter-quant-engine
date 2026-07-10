@@ -1,0 +1,73 @@
+{
+  "category": "carry_btst",
+  "description": "Research-only overnight template. It does not enable broker execution.",
+  "fingerprint": "a30cbf40549552b5aa048cdb85a15e1f9f24b843763ef76567f529a07d4d620b",
+  "instruments": [
+    {
+      "direction": "research_only",
+      "instrument_type": "index_research",
+      "market": "NSE",
+      "option_sides": [],
+      "symbol": "NIFTY"
+    }
+  ],
+  "name": "HQE Carry/BTST Research",
+  "notes": [],
+  "risk": {
+    "capital_mode": "paper",
+    "cooldown_bars": 0,
+    "max_risk_per_trade_percent": 0.0,
+    "max_trades_per_day": 0,
+    "stop_loss_percent": 0.0,
+    "target_percent": 0.0
+  },
+  "rules": {
+    "entry": {
+      "all": [
+        {
+          "indicator": "close_strength",
+          "minimum": 0.7
+        },
+        {
+          "fast": 20,
+          "indicator": "trend_alignment",
+          "slow": 50
+        }
+      ]
+    },
+    "exit": {
+      "mode": "next_session_research_review"
+    },
+    "filters": [
+      {
+        "type": "research_only"
+      },
+      {
+        "type": "event_risk_check"
+      }
+    ]
+  },
+  "safety": {
+    "no_auto_trading": true,
+    "no_broker_execution": true,
+    "no_candidate_tuning_during_validation": true,
+    "no_fake_trades": true,
+    "no_option_selling": true,
+    "no_profitability_claim": true,
+    "no_real_money": true,
+    "no_real_orders": true,
+    "paper_only": true
+  },
+  "schema_version": "1.0",
+  "status": "draft",
+  "strategy_id": "hqe_carry_btst_research",
+  "timeframe": "5m",
+  "validation": {
+    "candidate_id": "",
+    "locked_candidate": false,
+    "minimum_expiry_weeks": 4,
+    "minimum_observed_days": 20,
+    "minimum_observed_trades": 30
+  },
+  "version": "1.0.0"
+}

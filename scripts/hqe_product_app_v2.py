@@ -13,6 +13,13 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, Optional
 
+from hqe_app_strategy_pack_center import (
+    clone_pack as clone_strategy_pack,
+    export_pack as export_strategy_pack,
+    import_pack as import_strategy_pack,
+    strategy_pack_center_snapshot,
+)
+
 from hqe_app_market_data_quality_center import (
     center_snapshot as data_quality_center_snapshot,
     launch_cache_index_worker,
@@ -3647,6 +3654,379 @@ def run_gui(args: argparse.Namespace) -> int:
         1650,
         lambda: refresh_market_data_quality_center(False),
     )
+
+
+    strategy_pack_status = tk.StringVar(
+        value="Strategy-pack registry will appear after refresh."
+    )
+
+    def refresh_strategy_pack_center(
+        show_dialog: bool = False,
+    ) -> dict:
+        try:
+            snapshot = strategy_pack_center_snapshot(
+                repo_root(),
+                workspace,
+            )
+            strategy_pack_status.set(snapshot["display_text"])
+            footer_status.set(snapshot["display_text"])
+            if show_dialog:
+                messagebox.showinfo(
+                    "Strategy Pack Center",
+                    snapshot["display_text"],
+                )
+            return snapshot
+        except Exception as exc:
+            strategy_pack_status.set(
+                "Strategy-pack refresh failed safely."
+            )
+            footer_status.set(f"Strategy-pack error: {exc}")
+            if show_dialog:
+                messagebox.showerror(
+                    "Strategy Pack Center",
+                    str(exc),
+                )
+            return {}
+
+    def open_strategy_pack_center() -> None:
+        from tkinter import filedialog, simpledialog
+
+        snapshot = refresh_strategy_pack_center(False)
+        all_packs = list(snapshot.get("packs", []))
+
+        dialog = tk.Toplevel(root)
+        dialog.title("HQE — Strategy Pack Center")
+        dialog.geometry("1040x680")
+        dialog.minsize(900, 600)
+        dialog.configure(bg=palette["bg"])
+        dialog.transient(root)
+
+        outer = tk.Frame(
+            dialog,
+            bg=palette["panel"],
+            padx=18,
+            pady=16,
+        )
+        outer.pack(fill="both", expand=True, padx=16, pady=16)
+
+        tk.Label(
+            outer,
+            text="Strategy Pack Center",
+            bg=palette["panel"],
+            fg=palette["text"],
+            font=("Segoe UI Semibold", 18),
+            anchor="w",
+        ).pack(fill="x")
+
+        tk.Label(
+            outer,
+            text=(
+                "Built-ins • Versioning • Import/Export • "
+                "Locked Validation Candidate"
+            ),
+            bg=palette["panel"],
+            fg=palette["muted"],
+            anchor="w",
+            pady=4,
+        ).pack(fill="x")
+
+        summary_var = tk.StringVar(
+            value=snapshot.get("display_text", "")
+        )
+        tk.Label(
+            outer,
+            textvariable=summary_var,
+            bg=palette["panel_alt"],
+            fg=palette["muted"],
+            anchor="w",
+            padx=10,
+            pady=8,
+        ).pack(fill="x", pady=(8, 10))
+
+        body = tk.Frame(outer, bg=palette["panel"])
+        body.pack(fill="both", expand=True)
+
+        pack_list = tk.Listbox(
+            body,
+            width=45,
+            exportselection=False,
+        )
+        pack_list.pack(
+            side="left",
+            fill="both",
+            expand=False,
+        )
+
+        detail_var = tk.StringVar()
+        detail = tk.Label(
+            body,
+            textvariable=detail_var,
+            bg=palette["panel_alt"],
+            fg=palette["muted"],
+            justify="left",
+            anchor="nw",
+            wraplength=530,
+            padx=12,
+            pady=12,
+        )
+        detail.pack(
+            side="left",
+            fill="both",
+            expand=True,
+            padx=(12, 0),
+        )
+
+        visible_packs: list[dict] = []
+
+        def selected_pack() -> dict:
+            selection = pack_list.curselection()
+            if not selection:
+                return {}
+            index = int(selection[0])
+            if index >= len(visible_packs):
+                return {}
+            return visible_packs[index]
+
+        def show_selected(_event=None) -> None:
+            record = selected_pack()
+            if not record:
+                detail_var.set("Select a strategy pack.")
+                return
+            payload = record.get("payload", {})
+            safety = payload.get("safety", {})
+            validation = payload.get("validation", {})
+            detail_var.set(
+                f"Name: {record.get('name', '')}\n"
+                f"ID: {record.get('strategy_id', '')}\n"
+                f"Version: {record.get('version', '')}\n"
+                f"Category: {record.get('category', '')}\n"
+                f"Status: {record.get('status', '')}\n"
+                f"Source: {record.get('source', '')}\n"
+                f"Valid: {record.get('valid', False)}\n"
+                f"Locked candidate: "
+                f"{validation.get('locked_candidate', False)}\n"
+                f"Candidate ID: "
+                f"{validation.get('candidate_id', '')}\n"
+                f"Paper only: {safety.get('paper_only', False)}\n"
+                f"Option selling blocked: "
+                f"{safety.get('no_option_selling', False)}\n\n"
+                f"{payload.get('description', '')}\n\n"
+                f"Path:\n{record.get('path', '')}"
+            )
+
+        def populate(current: dict) -> None:
+            nonlocal all_packs
+            all_packs = list(current.get("packs", []))
+            visible_packs.clear()
+            pack_list.delete(0, "end")
+            for record in all_packs:
+                visible_packs.append(record)
+                validity = "VALID" if record.get("valid") else "INVALID"
+                pack_list.insert(
+                    "end",
+                    f"[{validity}] {record.get('name', '')} | "
+                    f"{record.get('version', '')} | "
+                    f"{record.get('source', '')}",
+                )
+            if visible_packs:
+                pack_list.selection_set(0)
+                show_selected()
+
+        def refresh_dialog() -> None:
+            current = refresh_strategy_pack_center(False)
+            summary_var.set(current.get("display_text", ""))
+            populate(current)
+
+        def import_from_file() -> None:
+            selected = filedialog.askopenfilename(
+                parent=dialog,
+                title="Import Strategy Pack",
+                filetypes=[("HQE Strategy Pack", "*.json")],
+            )
+            if not selected:
+                return
+            try:
+                target = import_strategy_pack(
+                    Path(selected),
+                    repo_root(),
+                    workspace,
+                )
+                messagebox.showinfo(
+                    "Strategy Pack Center",
+                    f"Imported:\n{target}",
+                )
+                refresh_dialog()
+            except Exception as exc:
+                messagebox.showerror(
+                    "Strategy Pack Center",
+                    str(exc),
+                )
+
+        def export_selected() -> None:
+            record = selected_pack()
+            if not record:
+                messagebox.showwarning(
+                    "Strategy Pack Center",
+                    "Select a strategy pack first.",
+                )
+                return
+            try:
+                target = export_strategy_pack(
+                    Path(record["path"]),
+                    repo_root(),
+                    workspace,
+                )
+                messagebox.showinfo(
+                    "Strategy Pack Center",
+                    f"Exported:\n{target}",
+                )
+            except Exception as exc:
+                messagebox.showerror(
+                    "Strategy Pack Center",
+                    str(exc),
+                )
+
+        def clone_selected() -> None:
+            record = selected_pack()
+            if not record:
+                messagebox.showwarning(
+                    "Strategy Pack Center",
+                    "Select a strategy pack first.",
+                )
+                return
+            new_id = simpledialog.askstring(
+                "Clone Strategy Pack",
+                "New strategy ID:",
+                parent=dialog,
+            )
+            if not new_id:
+                return
+            new_name = simpledialog.askstring(
+                "Clone Strategy Pack",
+                "New strategy name:",
+                parent=dialog,
+            )
+            if not new_name:
+                return
+            try:
+                target = clone_strategy_pack(
+                    Path(record["path"]),
+                    repo_root(),
+                    workspace,
+                    new_strategy_id=new_id,
+                    new_name=new_name,
+                )
+                messagebox.showinfo(
+                    "Strategy Pack Center",
+                    f"Draft created:\n{target}",
+                )
+                refresh_dialog()
+            except Exception as exc:
+                messagebox.showerror(
+                    "Strategy Pack Center",
+                    str(exc),
+                )
+
+        def open_selected_file() -> None:
+            record = selected_pack()
+            if not record:
+                return
+            path = Path(record["path"])
+            if not path.exists():
+                messagebox.showerror(
+                    "Strategy Pack Center",
+                    f"Pack file is missing: {path}",
+                )
+                return
+            try:
+                os.startfile(path)
+            except Exception as exc:
+                messagebox.showerror(
+                    "Strategy Pack Center",
+                    str(exc),
+                )
+
+        pack_list.bind("<<ListboxSelect>>", show_selected)
+        pack_list.bind(
+            "<Double-Button-1>",
+            lambda _event: open_selected_file(),
+        )
+
+        buttons = tk.Frame(outer, bg=palette["panel"])
+        buttons.pack(fill="x", pady=(12, 0))
+
+        ttk.Button(
+            buttons,
+            text="Refresh Packs",
+            command=refresh_dialog,
+        ).pack(side="left", padx=(0, 6))
+
+        ttk.Button(
+            buttons,
+            text="Import Strategy Pack",
+            command=import_from_file,
+        ).pack(side="left", padx=6)
+
+        ttk.Button(
+            buttons,
+            text="Export Selected Pack",
+            command=export_selected,
+        ).pack(side="left", padx=6)
+
+        ttk.Button(
+            buttons,
+            text="Clone Selected as Draft",
+            command=clone_selected,
+        ).pack(side="left", padx=6)
+
+        ttk.Button(
+            buttons,
+            text="Open Selected Pack File",
+            command=open_selected_file,
+        ).pack(side="left", padx=6)
+
+        tk.Label(
+            outer,
+            text=(
+                "PAPER/RESEARCH ONLY • REAL ORDERS BLOCKED • "
+                "OPTION SELLING BLOCKED"
+            ),
+            bg=palette["panel"],
+            fg=palette["muted"],
+            anchor="w",
+            pady=10,
+        ).pack(fill="x")
+
+        populate(snapshot)
+
+    strategy_pack_panel = tk.Frame(
+        action_panel,
+        bg=palette["panel_alt"],
+        highlightbackground=palette["border"],
+        highlightthickness=1,
+    )
+    strategy_pack_panel.pack(fill="x", padx=18, pady=(4, 8))
+
+    tk.Label(
+        strategy_pack_panel,
+        textvariable=strategy_pack_status,
+        bg=palette["panel_alt"],
+        fg=palette["muted"],
+        justify="left",
+        anchor="w",
+        wraplength=300,
+        padx=10,
+        pady=8,
+    ).pack(fill="x")
+
+    ttk.Button(
+        action_panel,
+        text="Strategy Pack Center",
+        style="Secondary.TButton",
+        command=open_strategy_pack_center,
+    ).pack(fill="x", padx=18, pady=3)
+
+    root.after(1800, lambda: refresh_strategy_pack_center(False))
 
     root.mainloop()
     return 0

@@ -1,0 +1,80 @@
+{
+  "category": "scalping",
+  "description": "Paper-only intraday scalping template with strict trade-count and cooldown controls.",
+  "fingerprint": "6b9ca86dada0cff244c510d398c97a5101762979b5fe4400c8d8b9a2704a382d",
+  "instruments": [
+    {
+      "direction": "buy_only",
+      "instrument_type": "index_option",
+      "market": "NSE",
+      "option_sides": [
+        "CE",
+        "PE"
+      ],
+      "symbol": "NIFTY"
+    }
+  ],
+  "name": "HQE Scalping Option Buy",
+  "notes": [],
+  "risk": {
+    "capital_mode": "paper",
+    "cooldown_bars": 5,
+    "max_risk_per_trade_percent": 0.5,
+    "max_trades_per_day": 5,
+    "stop_loss_percent": 0.25,
+    "target_percent": 0.5
+  },
+  "rules": {
+    "entry": {
+      "all": [
+        {
+          "bars": 3,
+          "indicator": "micro_momentum"
+        },
+        {
+          "indicator": "spread_quality",
+          "maximum_percent": 1.0
+        }
+      ]
+    },
+    "exit": {
+      "stop_loss_percent": 0.25,
+      "target_percent": 0.5,
+      "time_exit": "15:05"
+    },
+    "filters": [
+      {
+        "end": "15:10",
+        "start": "09:20",
+        "type": "market_hours"
+      },
+      {
+        "type": "minimum_dte",
+        "value": 1
+      }
+    ]
+  },
+  "safety": {
+    "no_auto_trading": true,
+    "no_broker_execution": true,
+    "no_candidate_tuning_during_validation": true,
+    "no_fake_trades": true,
+    "no_option_selling": true,
+    "no_profitability_claim": true,
+    "no_real_money": true,
+    "no_real_orders": true,
+    "paper_only": true
+  },
+  "schema_version": "1.0",
+  "status": "draft",
+  "strategy_id": "hqe_scalping_option_buy",
+  "timeframe": "5m",
+  "validation": {
+    "candidate_id": "",
+    "locked_candidate": false,
+    "minimum_expiry_weeks": 4,
+    "minimum_observed_days": 20,
+    "minimum_observed_trades": 30
+  },
+  "version": "1.0.0"
+}
