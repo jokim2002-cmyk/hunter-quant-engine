@@ -211,6 +211,16 @@ def build_status(
     }
     if run_revalidation and client["present"] and token["present"]:
         revalidation = run_fetch_revalidation(repo, workspace)
+        auth = latest_auth_evidence(workspace)
+        result = classify(client, token, auth)
+        if (
+            revalidation.get("returncode") == 0
+            and revalidation.get("decision") == "LIVE_FETCH_UPDATED_CANDLE_DATA"
+        ):
+            result = {
+                "auth_status": "AUTH_OK_CODE_200",
+                "recommendation": "START_OR_RESTART_PAPER_WATCH_WITH_CURRENT_TOKEN",
+            }
 
     return {
         "version": VERSION,

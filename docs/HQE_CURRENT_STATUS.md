@@ -254,3 +254,13 @@ Real trading remains locked.
 - Auth code -16 classification added
 - Dashboard auth panels added
 - Post-refresh fetch revalidation support added
+
+
+## Fyers Candle CSV Writer V1
+
+- FYERS candle response mapper added
+- IST datetime conversion added
+- Duplicate removal and chronological sorting added
+- Atomic CSV writer added
+- Returned/written row verification added
+- Credential status refresh after revalidation added

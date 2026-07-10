@@ -9,6 +9,10 @@ SCRIPT = REPO / "scripts" / "hqe_fyers_live_fetch_diagnostic.py"
 
 
 def load_module():
+    scripts_dir = str(SCRIPT.parent)
+    if scripts_dir not in sys.path:
+        sys.path.insert(0, scripts_dir)
+
     spec = importlib.util.spec_from_file_location("hqe_fyers_live_fetch_diagnostic_test", SCRIPT)
     module = importlib.util.module_from_spec(spec)
     sys.modules[spec.name] = module

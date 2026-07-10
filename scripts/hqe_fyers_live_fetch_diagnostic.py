@@ -11,6 +11,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional
 from zoneinfo import ZoneInfo
+from hqe_fyers_candle_csv_writer import write_from_fetch_status
 
 VERSION = "HQE_FYERS_LIVE_FETCH_DIAGNOSTIC_V2"
 OUTPUT_FILENAME = "HQE_FYERS_LIVE_FETCH_DIAGNOSTIC.json"
@@ -377,6 +378,12 @@ def execute_fetcher(
     stdout_path.write_text(stdout, encoding="utf-8", errors="replace")
     stderr_path.write_text(stderr, encoding="utf-8", errors="replace")
 
+    writer_result = write_from_fetch_status(status, sample)
+    (evidence_dir / "CANDLE_CSV_WRITER_RESULT.json").write_text(
+        json.dumps(writer_result, indent=2, sort_keys=True),
+        encoding="utf-8",
+    )
+
     after = {
         "sample_csv": csv_semantics(sample),
         "fetch_status": {
@@ -400,6 +407,7 @@ def execute_fetcher(
         "before": before,
         "after": after,
         "help_returncode": helper["returncode"],
+        "writer_result": writer_result,
     }
 
 
