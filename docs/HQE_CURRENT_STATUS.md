@@ -154,3 +154,11 @@ owner machine.
 
 Real trading remains locked.
 
+## App V2 release launcher path hardening
+
+- Release launcher locates the repository virtual environment
+- Release scripts run from the release directory
+- Owner-machine repository hint is stored in the generated launcher
+- Standalone compiled installer remains a future packaging stage
+
+Real trading remains locked.
