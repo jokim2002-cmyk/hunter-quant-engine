@@ -12,6 +12,7 @@ from tkinter import ttk
 from typing import Any, Dict, Optional
 
 from hqe_watch_health_monitor import collect_health
+from hqe_fyers_fetch_evidence_truth import build_truth
 
 VERSION = "HQE_OPERATOR_LIVE_STATUS_DASHBOARD_V2"
 REFRESH_MS = 5000
@@ -265,6 +266,7 @@ def derive_status(workspace: Path) -> Dict[str, Any]:
     process = watch_process_health()
     freshness = freshness_label(latest)
     health = collect_health(workspace, write=True)
+    fetch_truth = build_truth(workspace)
 
     return {
         "version": VERSION,
@@ -275,6 +277,12 @@ def derive_status(workspace: Path) -> Dict[str, Any]:
         "last_successful_data_update_ist": health["last_successful_data_update_ist"],
         "consecutive_stale_cycles": health["consecutive_stale_cycles"],
         "fetch_failure_reason": health["fetch_failure_reason"],
+        "fetch_truth": fetch_truth["fetch_truth"],
+        "latest_candle_ist": fetch_truth["latest_candle_ist"],
+        "latest_candle_age_minutes": fetch_truth["latest_candle_age_minutes"],
+        "canonical_watch_pid": fetch_truth["canonical_watch_pid"],
+        "watch_process_count": fetch_truth["watch_process_count"],
+        "operator_recommendation": fetch_truth["operator_recommendation"],
         "process_health": process["process_health"],
         "watch_pid": process["watch_pid"],
         "data_freshness": freshness,
@@ -318,8 +326,8 @@ class OperatorDashboard(tk.Tk):
         super().__init__()
         self.workspace = workspace
         self.title("Hunter Quant Engine — Operator Live Status")
-        self.geometry("1180x920")
-        self.minsize(1050, 800)
+        self.geometry("1220x980")
+        self.minsize(1080, 840)
 
         self.values: Dict[str, tk.StringVar] = {
             key: tk.StringVar(value="Loading...")
@@ -330,6 +338,12 @@ class OperatorDashboard(tk.Tk):
                 "last_successful_data_update_ist",
                 "consecutive_stale_cycles",
                 "fetch_failure_reason",
+                "fetch_truth",
+                "latest_candle_ist",
+                "latest_candle_age_minutes",
+                "canonical_watch_pid",
+                "watch_process_count",
+                "operator_recommendation",
                 "process_health",
                 "watch_pid",
                 "data_freshness",
@@ -378,6 +392,12 @@ class OperatorDashboard(tk.Tk):
             ("Last Successful Data Update", "last_successful_data_update_ist"),
             ("Consecutive Stale Cycles", "consecutive_stale_cycles"),
             ("Fetch Failure Reason", "fetch_failure_reason"),
+            ("Fyers Fetch Truth", "fetch_truth"),
+            ("Latest Candle (IST)", "latest_candle_ist"),
+            ("Latest Candle Age (Minutes)", "latest_candle_age_minutes"),
+            ("Canonical Watch PID", "canonical_watch_pid"),
+            ("Watch Process Count", "watch_process_count"),
+            ("Operator Recommendation", "operator_recommendation"),
             ("Watch Process", "process_health"),
             ("Watch PID", "watch_pid"),
             ("Data Freshness", "data_freshness"),

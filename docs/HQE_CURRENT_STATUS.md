@@ -226,3 +226,13 @@ Real trading remains locked.
 - Consecutive stale-cycle counter added
 - HEALTHY / DEGRADED / STOPPED / MARKET_CLOSED_IDLE states added
 - Dashboard health truth panels added
+
+
+## Fyers Fetch Evidence Truth V1
+
+- Reported fetch completion separated from actual candle freshness
+- Latest candle timestamp and age added
+- Canonical parent watch PID added
+- Watch process count added
+- Operator recommendation added
+- No automatic restart or broker execution
