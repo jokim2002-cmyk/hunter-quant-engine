@@ -400,3 +400,19 @@ Commit after PASS: `Add app-native safety and kill-switch evidence center`
 Next roadmap target: app-native paper-watch session control and live-session operator center.
 
 Real trading remains locked. This is not a profitability claim.
+
+## HQE App Completion Batch 10 — Paper-Watch Session Control
+
+- Existing forward paper runner discovered dynamically
+- Runner CLI capabilities inspected at runtime
+- Mandatory runner guard-check before app start
+- App-native paper-watch start, stop and status controls
+- PID tracking and latest log/evidence open actions
+- Hidden workers and responsive polling
+- Permanent execution locks preserved
+
+Commit after PASS: `Add app-native paper-watch session control center`
+
+Next roadmap target: app-native consolidated operator dashboard and workflow simplification.
+
+Real trading remains locked. This is not a profitability claim.

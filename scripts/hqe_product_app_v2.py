@@ -13,6 +13,11 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, Optional
 
+from hqe_app_paper_watch_control import (
+    launch_watch_control_worker,
+    session_snapshot as paper_watch_session_snapshot,
+)
+
 from hqe_app_safety_evidence_center import (
     launch_safety_audit_worker,
     safety_snapshot,
@@ -2827,6 +2832,237 @@ def run_gui(args: argparse.Namespace) -> int:
     ).pack(fill="x", padx=18, pady=3)
 
     root.after(1200, lambda: refresh_safety_evidence_center(False))
+
+
+    paper_watch_status = tk.StringVar(
+        value="Paper-watch session status will appear after refresh."
+    )
+
+    def refresh_paper_watch_center(
+        show_dialog: bool = False,
+    ) -> dict:
+        try:
+            snapshot = paper_watch_session_snapshot(
+                repo_root(),
+                workspace,
+            )
+            paper_watch_status.set(snapshot["display_text"])
+            footer_status.set(snapshot["display_text"])
+            if show_dialog:
+                messagebox.showinfo(
+                    "Paper-Watch Session Control",
+                    snapshot["display_text"],
+                )
+            return snapshot
+        except Exception as exc:
+            paper_watch_status.set(
+                "Paper-watch status refresh failed safely."
+            )
+            footer_status.set(f"Paper-watch status error: {exc}")
+            if show_dialog:
+                messagebox.showerror(
+                    "Paper-Watch Session Control",
+                    str(exc),
+                )
+            return {}
+
+    def poll_paper_watch_operation() -> None:
+        snapshot = refresh_paper_watch_center(False)
+        footer_status.set(snapshot.get("display_text", ""))
+        if snapshot.get("running"):
+            messagebox.showinfo(
+                "Paper-Watch Session Control",
+                "Paper-watch session is running.",
+            )
+
+    def run_paper_watch_operation(operation: str) -> None:
+        try:
+            launch_watch_control_worker(
+                repo_root(),
+                workspace,
+                operation,
+            )
+            paper_watch_status.set(
+                f"Paper-watch {operation} request is running safely..."
+            )
+            footer_status.set(
+                "Paper-only process control running. Real orders blocked."
+            )
+            root.after(1200, poll_paper_watch_operation)
+        except Exception as exc:
+            messagebox.showerror(
+                "Paper-Watch Session Control",
+                str(exc),
+            )
+
+    def open_paper_watch_path(kind: str) -> None:
+        snapshot = refresh_paper_watch_center(False)
+        key = (
+            "latest_log_path"
+            if kind == "log"
+            else "latest_evidence_path"
+        )
+        raw_path = str(snapshot.get(key, "")).strip()
+        if not raw_path:
+            messagebox.showwarning(
+                "Paper-Watch Session Control",
+                f"No latest {kind} is available yet.",
+            )
+            return
+        path = Path(raw_path)
+        if not path.exists():
+            messagebox.showerror(
+                "Paper-Watch Session Control",
+                f"Latest {kind} is missing: {path}",
+            )
+            return
+        try:
+            os.startfile(path)
+        except Exception as exc:
+            messagebox.showerror(
+                "Paper-Watch Session Control",
+                str(exc),
+            )
+
+    def open_paper_watch_center() -> None:
+        snapshot = refresh_paper_watch_center(False)
+
+        dialog = tk.Toplevel(root)
+        dialog.title("HQE — Paper-Watch Session Control")
+        dialog.geometry("760x560")
+        dialog.minsize(680, 500)
+        dialog.configure(bg=palette["bg"])
+        dialog.transient(root)
+
+        outer = tk.Frame(
+            dialog,
+            bg=palette["panel"],
+            padx=18,
+            pady=16,
+        )
+        outer.pack(fill="both", expand=True, padx=16, pady=16)
+
+        tk.Label(
+            outer,
+            text="Paper-Watch Session Control Center",
+            bg=palette["panel"],
+            fg=palette["text"],
+            font=("Segoe UI Semibold", 17),
+            anchor="w",
+        ).pack(fill="x")
+
+        summary_var = tk.StringVar(
+            value=snapshot.get("display_text", "")
+        )
+        tk.Label(
+            outer,
+            textvariable=summary_var,
+            bg=palette["panel_alt"],
+            fg=palette["muted"],
+            justify="left",
+            anchor="w",
+            wraplength=680,
+            padx=10,
+            pady=10,
+        ).pack(fill="x", pady=(10, 12))
+
+        detail_var = tk.StringVar(
+            value=(
+                f"Runner: {snapshot.get('runner_path', 'missing')}\n"
+                f"Guard: "
+                f"{snapshot.get('runner_guard', {}).get('status', 'unknown')}\n"
+                f"Last message: {snapshot.get('last_message', '')}"
+            )
+        )
+        tk.Label(
+            outer,
+            textvariable=detail_var,
+            bg=palette["panel"],
+            fg=palette["muted"],
+            justify="left",
+            anchor="nw",
+        ).pack(fill="x", pady=(0, 12))
+
+        def refresh_dialog() -> None:
+            current = refresh_paper_watch_center(False)
+            summary_var.set(current.get("display_text", ""))
+            detail_var.set(
+                f"Runner: {current.get('runner_path', 'missing')}\n"
+                f"Guard: "
+                f"{current.get('runner_guard', {}).get('status', 'unknown')}\n"
+                f"Last message: {current.get('last_message', '')}"
+            )
+
+        ttk.Button(
+            outer,
+            text="Refresh Paper-Watch Status",
+            command=refresh_dialog,
+        ).pack(fill="x", pady=3)
+
+        ttk.Button(
+            outer,
+            text="Start Paper Watch",
+            command=lambda: run_paper_watch_operation("start"),
+        ).pack(fill="x", pady=3)
+
+        ttk.Button(
+            outer,
+            text="Stop Paper Watch",
+            command=lambda: run_paper_watch_operation("stop"),
+        ).pack(fill="x", pady=3)
+
+        ttk.Button(
+            outer,
+            text="Open Latest Watch Log",
+            command=lambda: open_paper_watch_path("log"),
+        ).pack(fill="x", pady=3)
+
+        ttk.Button(
+            outer,
+            text="Open Latest Watch Evidence",
+            command=lambda: open_paper_watch_path("evidence"),
+        ).pack(fill="x", pady=3)
+
+        tk.Label(
+            outer,
+            text=(
+                "PAPER/DATA ONLY • REAL MONEY NO • REAL ORDERS NO • "
+                "BROKER EXECUTION NO • AUTO TRADING NO"
+            ),
+            bg=palette["panel"],
+            fg=palette["muted"],
+            anchor="w",
+            pady=10,
+        ).pack(fill="x")
+
+    paper_watch_panel = tk.Frame(
+        action_panel,
+        bg=palette["panel_alt"],
+        highlightbackground=palette["border"],
+        highlightthickness=1,
+    )
+    paper_watch_panel.pack(fill="x", padx=18, pady=(4, 8))
+
+    tk.Label(
+        paper_watch_panel,
+        textvariable=paper_watch_status,
+        bg=palette["panel_alt"],
+        fg=palette["muted"],
+        justify="left",
+        anchor="w",
+        wraplength=300,
+        padx=10,
+        pady=8,
+    ).pack(fill="x")
+
+    ttk.Button(
+        action_panel,
+        text="Paper-Watch Session Control",
+        style="Secondary.TButton",
+        command=open_paper_watch_center,
+    ).pack(fill="x", padx=18, pady=3)
+
+    root.after(1350, lambda: refresh_paper_watch_center(False))
 
     root.mainloop()
     return 0
