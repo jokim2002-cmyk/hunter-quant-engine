@@ -208,3 +208,12 @@ Real trading remains locked.
 - Workspace and evidence shortcuts added
 - Five-second refresh added
 - Safety locks remain mandatory
+
+
+## Operator Live Status Dashboard V2
+
+- Live IST clock added
+- Indian market session and next-event countdown added
+- Paper-watch PID and process health added
+- Data age and stale reason added
+- Latest fetch result added

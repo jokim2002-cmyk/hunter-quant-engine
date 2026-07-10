@@ -94,3 +94,27 @@ def test_missing_workspace_files_stays_safe(tmp_path):
     assert payload["real_orders_enabled"] is False
     assert payload["broker_execution_enabled"] is False
     assert payload["auto_trading_enabled"] is False
+
+def test_market_session_open():
+    module = load_module()
+    now = datetime(2026, 7, 10, 10, 0, tzinfo=module.INDIA_TZ)
+    payload = module.market_session(now)
+    assert payload["status"] == "OPEN"
+    assert "Market closes in" in payload["next_event"]
+
+
+def test_market_session_preopen():
+    module = load_module()
+    now = datetime(2026, 7, 10, 8, 0, tzinfo=module.INDIA_TZ)
+    payload = module.market_session(now)
+    assert payload["status"] == "PRE-OPEN"
+    assert "Market opens in" in payload["next_event"]
+
+
+def test_data_age_text(monkeypatch):
+    module = load_module()
+    fixed = datetime(2026, 7, 10, 5, 0, tzinfo=timezone.utc)
+    monkeypatch.setattr(module, "utc_now", lambda: fixed)
+    value = fixed - timedelta(minutes=3, seconds=5)
+    assert module.data_age_text(value) == "3m 5s"
+    assert module.data_age_text(None) == "UNKNOWN"

@@ -5,13 +5,13 @@ import json
 import os
 import subprocess
 import tkinter as tk
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from zoneinfo import ZoneInfo
 from tkinter import ttk
 from typing import Any, Dict, Optional
 
-VERSION = "HQE_OPERATOR_LIVE_STATUS_DASHBOARD_V1_IST"
+VERSION = "HQE_OPERATOR_LIVE_STATUS_DASHBOARD_V2"
 REFRESH_MS = 5000
 INDIA_TZ = ZoneInfo("Asia/Kolkata")
 
@@ -71,6 +71,129 @@ def format_ist(timestamp: Optional[datetime]) -> str:
     if timestamp is None:
         return "UNKNOWN"
     return timestamp.astimezone(INDIA_TZ).strftime("%d-%m-%Y %I:%M:%S %p IST")
+
+
+def ist_now() -> datetime:
+    return utc_now().astimezone(INDIA_TZ)
+
+
+def format_duration(delta) -> str:
+    total = max(0, int(delta.total_seconds()))
+    hours, remainder = divmod(total, 3600)
+    minutes, seconds = divmod(remainder, 60)
+    if hours:
+        return f"{hours}h {minutes}m"
+    if minutes:
+        return f"{minutes}m {seconds}s"
+    return f"{seconds}s"
+
+
+def market_session(now_ist: Optional[datetime] = None) -> Dict[str, str]:
+    now = now_ist or ist_now()
+    weekday = now.weekday()
+
+    if weekday >= 5:
+        days_ahead = 7 - weekday
+        next_open = (now + timedelta(days=days_ahead)).replace(
+            hour=9, minute=15, second=0, microsecond=0
+        )
+        return {
+            "status": "CLOSED - WEEKEND",
+            "next_event": f"Market opens in {format_duration(next_open - now)}",
+        }
+
+    open_time = now.replace(hour=9, minute=15, second=0, microsecond=0)
+    close_time = now.replace(hour=15, minute=30, second=0, microsecond=0)
+
+    if now < open_time:
+        return {
+            "status": "PRE-OPEN",
+            "next_event": f"Market opens in {format_duration(open_time - now)}",
+        }
+
+    if now <= close_time:
+        return {
+            "status": "OPEN",
+            "next_event": f"Market closes in {format_duration(close_time - now)}",
+        }
+
+    next_day = now + timedelta(days=1)
+    while next_day.weekday() >= 5:
+        next_day += timedelta(days=1)
+    next_open = next_day.replace(hour=9, minute=15, second=0, microsecond=0)
+    return {
+        "status": "CLOSED",
+        "next_event": f"Market opens in {format_duration(next_open - now)}",
+    }
+
+
+def data_age_text(timestamp: Optional[datetime]) -> str:
+    if timestamp is None:
+        return "UNKNOWN"
+    age = max(0, int((utc_now() - timestamp).total_seconds()))
+    if age < 60:
+        return f"{age}s"
+    minutes, seconds = divmod(age, 60)
+    if minutes < 60:
+        return f"{minutes}m {seconds}s"
+    hours, minutes = divmod(minutes, 60)
+    return f"{hours}h {minutes}m"
+
+
+def watch_process_health() -> Dict[str, Any]:
+    if os.name != "nt":
+        return {"process_health": "UNKNOWN", "watch_pid": "N/A"}
+
+    command = [
+        "powershell.exe",
+        "-NoProfile",
+        "-Command",
+        (
+            "Get-CimInstance Win32_Process | "
+            "Where-Object {$_.CommandLine -like "
+            "'*hqe_market_day_persistent_paper_watch_loop.py*'} | "
+            "Select-Object -First 1 ProcessId | ConvertTo-Json -Compress"
+        ),
+    ]
+
+    try:
+        completed = subprocess.run(
+            command,
+            capture_output=True,
+            text=True,
+            timeout=8,
+        )
+    except (OSError, subprocess.TimeoutExpired):
+        return {"process_health": "UNKNOWN", "watch_pid": "UNKNOWN"}
+
+    raw = completed.stdout.strip()
+    if not raw:
+        return {"process_health": "STOPPED", "watch_pid": "NONE"}
+
+    try:
+        payload = json.loads(raw)
+    except json.JSONDecodeError:
+        return {"process_health": "UNKNOWN", "watch_pid": "UNKNOWN"}
+
+    pid = payload.get("ProcessId")
+    return {
+        "process_health": "RUNNING" if pid else "STOPPED",
+        "watch_pid": str(pid or "NONE"),
+    }
+
+
+def latest_fetch_result(workspace: Path) -> str:
+    status_path = workspace / "MODULE_173_FYERS_HISTORICAL_5M_DATA_ONLY_FETCHER_STATUS.json"
+    payload = read_json(status_path)
+    return str(
+        first_present(
+            payload,
+            "status",
+            "decision",
+            "fetch_status",
+            default="UNKNOWN",
+        )
+    )
 
 
 def first_present(payload: Dict[str, Any], *keys: str, default: Any = None) -> Any:
@@ -136,13 +259,29 @@ def derive_status(workspace: Path) -> Dict[str, Any]:
 
     latest_evidence = str(dry_run_dir) if dry_run_dir else "NOT_FOUND"
 
+    session = market_session()
+    process = watch_process_health()
+    freshness = freshness_label(latest)
+
     return {
         "version": VERSION,
         "workspace": str(workspace),
         "watch_status": "RUNNING" if is_running else watch_text,
-        "data_freshness": freshness_label(latest),
+        "process_health": process["process_health"],
+        "watch_pid": process["watch_pid"],
+        "data_freshness": freshness,
+        "data_age": data_age_text(latest),
+        "stale_reason": (
+            "No recent market-data update"
+            if freshness == "STALE"
+            else "Data update timing acceptable"
+        ),
         "latest_update_utc": latest.isoformat() if latest else "UNKNOWN",
         "latest_update_ist": format_ist(latest),
+        "live_ist_clock": ist_now().strftime("%d-%m-%Y %I:%M:%S %p IST"),
+        "market_session": session["status"],
+        "next_market_event": session["next_event"],
+        "latest_fetch_result": latest_fetch_result(workspace),
         "broker": str(broker),
         "symbol": str(symbol),
         "latest_decision": str(decision),
@@ -171,15 +310,23 @@ class OperatorDashboard(tk.Tk):
         super().__init__()
         self.workspace = workspace
         self.title("Hunter Quant Engine — Operator Live Status")
-        self.geometry("980x620")
-        self.minsize(900, 560)
+        self.geometry("1100x820")
+        self.minsize(1000, 720)
 
         self.values: Dict[str, tk.StringVar] = {
             key: tk.StringVar(value="Loading...")
             for key in (
                 "watch_status",
+                "process_health",
+                "watch_pid",
                 "data_freshness",
+                "data_age",
+                "stale_reason",
                 "latest_update_ist",
+                "live_ist_clock",
+                "market_session",
+                "next_market_event",
+                "latest_fetch_result",
                 "broker",
                 "symbol",
                 "latest_decision",
@@ -213,8 +360,16 @@ class OperatorDashboard(tk.Tk):
 
         cards = [
             ("Paper Watch", "watch_status"),
+            ("Watch Process", "process_health"),
+            ("Watch PID", "watch_pid"),
             ("Data Freshness", "data_freshness"),
+            ("Data Age", "data_age"),
+            ("Stale Reason", "stale_reason"),
             ("Last Update (IST)", "latest_update_ist"),
+            ("Live IST Clock", "live_ist_clock"),
+            ("Market Session", "market_session"),
+            ("Next Market Event", "next_market_event"),
+            ("Latest Fetch Result", "latest_fetch_result"),
             ("Broker", "broker"),
             ("Symbol", "symbol"),
             ("Latest Decision", "latest_decision"),
