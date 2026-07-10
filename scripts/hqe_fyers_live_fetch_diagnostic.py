@@ -427,6 +427,16 @@ def classify(execution: Dict[str, Any], fetch_status: Dict[str, Any]) -> Dict[st
         or fetch_status.get("external_api_calls_executed_by_module_173")
     )
     history_result = fetch_status.get("history_result") or {}
+    response_redacted = history_result.get("response_redacted") or {}
+    response_code = response_redacted.get("code")
+    response_message = str(response_redacted.get("message") or "").lower()
+
+    if response_code == -16 or "authenticate" in response_message:
+        return {
+            "decision": "AUTH_FAILED_CODE_-16",
+            "recommendation": "REFRESH_FYERS_ACCESS_TOKEN_AND_REVALIDATE",
+        }
+
     history_executed = bool(history_result.get("executed"))
     returned_rows = int(history_result.get("rows") or 0)
     offline_sample = str(history_result.get("status") or "").upper() == "OFFLINE_SAMPLE_SCHEMA_BY_DEFAULT"

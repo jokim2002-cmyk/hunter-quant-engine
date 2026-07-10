@@ -245,3 +245,12 @@ Real trading remains locked.
 - SHA-256, row count and candle timestamp comparison added
 - Offline sample rewrite rejection added
 - Actual Python process filter repaired structurally
+
+
+## Fyers Credential Validation V1
+
+- Secret-safe fingerprints added
+- Credential hygiene checks added
+- Auth code -16 classification added
+- Dashboard auth panels added
+- Post-refresh fetch revalidation support added

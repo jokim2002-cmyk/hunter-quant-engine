@@ -13,6 +13,7 @@ from typing import Any, Dict, Optional
 
 from hqe_watch_health_monitor import collect_health
 from hqe_fyers_fetch_evidence_truth import build_truth
+from hqe_fyers_credential_validation import build_status as build_credential_status
 
 VERSION = "HQE_OPERATOR_LIVE_STATUS_DASHBOARD_V2"
 REFRESH_MS = 5000
@@ -267,6 +268,9 @@ def derive_status(workspace: Path) -> Dict[str, Any]:
     freshness = freshness_label(latest)
     health = collect_health(workspace, write=True)
     fetch_truth = build_truth(workspace)
+    credential_status = build_credential_status(
+        Path(__file__).resolve().parents[1], workspace, run_revalidation=False
+    )
 
     return {
         "version": VERSION,
@@ -283,6 +287,12 @@ def derive_status(workspace: Path) -> Dict[str, Any]:
         "canonical_watch_pid": fetch_truth["canonical_watch_pid"],
         "watch_process_count": fetch_truth["watch_process_count"],
         "operator_recommendation": fetch_truth["operator_recommendation"],
+        "fyers_auth_status": credential_status["auth_status"],
+        "credential_recommendation": credential_status["recommendation"],
+        "client_id_fingerprint": credential_status["client_id"]["fingerprint"],
+        "access_token_fingerprint": credential_status["access_token"]["fingerprint"],
+        "client_id_hygiene": credential_status["client_id"]["hygiene_status"],
+        "access_token_hygiene": credential_status["access_token"]["hygiene_status"],
         "process_health": process["process_health"],
         "watch_pid": process["watch_pid"],
         "data_freshness": freshness,
@@ -344,6 +354,12 @@ class OperatorDashboard(tk.Tk):
                 "canonical_watch_pid",
                 "watch_process_count",
                 "operator_recommendation",
+                "fyers_auth_status",
+                "credential_recommendation",
+                "client_id_fingerprint",
+                "access_token_fingerprint",
+                "client_id_hygiene",
+                "access_token_hygiene",
                 "process_health",
                 "watch_pid",
                 "data_freshness",
@@ -398,6 +414,12 @@ class OperatorDashboard(tk.Tk):
             ("Canonical Watch PID", "canonical_watch_pid"),
             ("Watch Process Count", "watch_process_count"),
             ("Operator Recommendation", "operator_recommendation"),
+            ("Fyers Auth Status", "fyers_auth_status"),
+            ("Credential Recommendation", "credential_recommendation"),
+            ("Client ID Fingerprint", "client_id_fingerprint"),
+            ("Access Token Fingerprint", "access_token_fingerprint"),
+            ("Client ID Hygiene", "client_id_hygiene"),
+            ("Access Token Hygiene", "access_token_hygiene"),
             ("Watch Process", "process_health"),
             ("Watch PID", "watch_pid"),
             ("Data Freshness", "data_freshness"),
