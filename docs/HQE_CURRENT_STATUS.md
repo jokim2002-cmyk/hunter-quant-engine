@@ -282,3 +282,15 @@ Real trading remains locked.
 - Failed cycles preserve the last known good CSV
 - Sample-schema overwrite during market watch is blocked
 - Dashboard auth state uses latest API result
+
+## HQE App Completion Batch 2 — Daily Operations Integration
+
+- Dynamic latest day/report/evidence detection added
+- Hardcoded DAY_001 report dependency removed
+- Next-day, rollover, and daily-close actions are app-native
+- Embedded live status added
+- Existing duplicate guards and safety locks preserved
+
+Commit after successful tests: `Add app-native daily operations and dynamic reports`
+
+Real trading remains locked.

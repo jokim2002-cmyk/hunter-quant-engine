@@ -13,6 +13,13 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, Optional
 
+from hqe_app_daily_operations import (
+    launch_operation_worker,
+    operations_snapshot,
+    resolve_latest_evidence,
+    resolve_latest_report,
+)
+
 from hqe_multi_broker_data_architecture import (
     BROKER_REGISTRY,
     SAFETY_LOCK,
@@ -128,34 +135,12 @@ def paper_watch_status(workspace: Path) -> Dict[str, Any]:
 
 
 def today_report_candidates(workspace: Path) -> list[Path]:
-    date_text = datetime.now().strftime("%Y-%m-%d")
-    names = [
-        f"HQE_DAILY_REPORT_{date_text}.html",
-        "DAY_001_DAILY_VALIDATION_REPORT.html",
-        "HQE_MASTER_SYSTEM_STATUS_DASHBOARD.html",
-        "HQE_MASTER_READINESS_FREEZE_FINAL.html",
-        "HQE_MASTER_EVIDENCE_INDEX.html",
-    ]
-
-    candidates = [workspace / name for name in names]
-    candidates.extend(
-        sorted(
-            workspace.glob("*.html"),
-            key=lambda item: item.stat().st_mtime,
-            reverse=True,
-        )[:10]
-    )
-
-    unique: list[Path] = []
-    seen: set[str] = set()
-
-    for path in candidates:
-        key = str(path).lower()
-        if key not in seen:
-            seen.add(key)
-            unique.append(path)
-
-    return unique
+    """Return dynamic latest report/evidence candidates; never a fixed validation day."""
+    candidates: list[Path] = []
+    for path in (resolve_latest_report(workspace), resolve_latest_evidence(workspace)):
+        if path is not None and path.exists() and path not in candidates:
+            candidates.append(path)
+    return candidates
 
 
 def app_status_payload(workspace: Path) -> Dict[str, Any]:
@@ -830,6 +815,89 @@ def run_gui(args: argparse.Namespace) -> int:
         footer_status.set(result["status"].replace("_", " ").title())
         refresh_status()
 
+    daily_ops_status = tk.StringVar(value="Embedded live status loading...")
+    daily_ops_refresh_job = {"id": None}
+    daily_ops_last_error = {"message": ""}
+
+    def refresh_daily_operations(show_errors: bool = False) -> None:
+        try:
+            snapshot = operations_snapshot(workspace)
+            latest_day = snapshot.get("latest_day_number")
+            latest_date = snapshot.get("latest_trading_date")
+            next_day = snapshot.get("next_day_number")
+            next_date = snapshot.get("next_trading_date")
+            op_status = str(snapshot.get("operation_status") or "IDLE")
+            op_message = str(snapshot.get("operation_message") or "")
+            watch_state = "RUNNING" if controller.is_running() else "STOPPED"
+            latest_text = (
+                f"Day {int(latest_day):03d} • {latest_date}"
+                if latest_day and latest_date else "No observed validation day"
+            )
+            report_state = "READY" if snapshot.get("latest_report") else "NOT READY"
+            evidence_state = "READY" if snapshot.get("latest_evidence") else "NOT READY"
+            daily_ops_status.set(
+                "Embedded Live Status\n"
+                f"Latest: {latest_text}\n"
+                f"Next: Day {int(next_day):03d} • {next_date}\n"
+                f"Paper Watch: {watch_state}\n"
+                f"Report: {report_state} • Evidence: {evidence_state}\n"
+                f"Daily operation: {op_status}"
+                + (f" • {op_message}" if op_message else "")
+            )
+            if op_status == "FAILED" and show_errors:
+                if daily_ops_last_error["message"] != op_message:
+                    daily_ops_last_error["message"] = op_message
+                    messagebox.showerror("HQE Daily Operations", op_message or "Operation failed safely.")
+            elif op_status == "PASS":
+                daily_ops_last_error["message"] = ""
+        except Exception as exc:
+            daily_ops_status.set("Embedded Live Status\nRefresh failed safely.")
+            if show_errors:
+                messagebox.showerror("HQE Daily Operations", str(exc))
+        finally:
+            previous = daily_ops_refresh_job.get("id")
+            if previous is not None:
+                try:
+                    root.after_cancel(previous)
+                except Exception:
+                    pass
+            daily_ops_refresh_job["id"] = root.after(2500, lambda: refresh_daily_operations(False))
+
+    def run_daily_operation(operation_name: str) -> None:
+        try:
+            result = launch_operation_worker(repo_root(), workspace, operation_name, user_id, symbol)
+            footer_status.set(str(result.get("message") or result.get("status")))
+            refresh_daily_operations(True)
+        except Exception as exc:
+            footer_status.set("Daily operation failed safely.")
+            messagebox.showerror("HQE Daily Operations", str(exc))
+
+    def prepare_next_market_day() -> None:
+        run_daily_operation("prepare_next_market_day")
+
+    def run_day_rollover_guard() -> None:
+        run_daily_operation("run_day_rollover_guard")
+
+    def generate_daily_close_report() -> None:
+        run_daily_operation("generate_daily_close_report")
+
+    def refresh_latest_report() -> None:
+        refresh_daily_operations(True)
+        open_report()
+
+    def open_latest_evidence() -> None:
+        try:
+            evidence = resolve_latest_evidence(workspace)
+            if evidence is None or not evidence.exists():
+                messagebox.showinfo("Latest Evidence", "No latest evidence file is available yet.")
+                footer_status.set("Latest evidence is not available yet.")
+                return
+            os.startfile(str(evidence))
+            footer_status.set(f"Opened latest evidence: {evidence.name}")
+        except Exception as exc:
+            footer_status.set("Latest evidence could not be opened.")
+            messagebox.showerror("Latest Evidence", str(exc))
+
     def open_broker_connect_center() -> None:
         script = repo_root() / "scripts" / "hqe_broker_connect_center.py"
         python_exe = repo_root() / ".venv" / "Scripts" / "pythonw.exe"
@@ -845,17 +913,21 @@ def run_gui(args: argparse.Namespace) -> int:
             messagebox.showerror("Broker Connect Center", str(exc))
 
     def open_report() -> None:
-        for path in today_report_candidates(workspace):
-            if path.exists():
-                webbrowser.open(path.resolve().as_uri())
-                footer_status.set(f"Opened report: {path.name}")
+        try:
+            report = resolve_latest_report(workspace)
+            if report is None or not report.exists():
+                messagebox.showinfo(
+                    "Today Report",
+                    "Latest daily report is not available yet. Generate the daily close report, then refresh.",
+                )
+                footer_status.set("Latest report is not available yet.")
                 return
-
-        messagebox.showinfo(
-            "Today Report",
-            "No HTML report is available yet. Run the paper workflow first.",
-        )
-        footer_status.set("No report available yet.")
+            os.startfile(str(report))
+            footer_status.set(f"Opened latest report: {report.name}")
+            refresh_daily_operations(False)
+        except Exception as exc:
+            footer_status.set("Latest report could not be opened.")
+            messagebox.showerror("Today Report", str(exc))
 
     def open_workspace() -> None:
         try:
@@ -1110,9 +1182,7 @@ def run_gui(args: argparse.Namespace) -> int:
         report_card.pack(fill="x", pady=(0, 12))
 
         close_evidence = (
-            workspace
-            / "DAY_001_MARKET_CLOSE_PACK"
-            / "DAY_001_MARKET_CLOSE_EVIDENCE.json"
+            resolve_latest_evidence(workspace)
         )
 
         evidence_text = (
@@ -1255,6 +1325,21 @@ def run_gui(args: argparse.Namespace) -> int:
         command=open_broker_connect_center,
     ).pack(fill="x", padx=18, pady=5)
 
+    tk.Label(
+        action_panel, text="Embedded Live Status", bg=palette["panel"],
+        fg=palette["accent"], font=("Segoe UI", 10, "bold"), anchor="w",
+    ).pack(fill="x", padx=18, pady=(10, 2))
+    tk.Label(
+        action_panel, textvariable=daily_ops_status, bg=palette["panel"],
+        fg=palette["muted"], justify="left", anchor="w", wraplength=255,
+        font=("Segoe UI", 9),
+    ).pack(fill="x", padx=18, pady=(0, 7))
+    ttk.Button(action_panel, text="Prepare Next Market Day", style="Secondary.TButton", command=prepare_next_market_day).pack(fill="x", padx=18, pady=3)
+    ttk.Button(action_panel, text="Run Day Rollover Guard", style="Secondary.TButton", command=run_day_rollover_guard).pack(fill="x", padx=18, pady=3)
+    ttk.Button(action_panel, text="Generate Daily Close Report", style="Secondary.TButton", command=generate_daily_close_report).pack(fill="x", padx=18, pady=3)
+    ttk.Button(action_panel, text="Refresh Latest Report", style="Secondary.TButton", command=refresh_latest_report).pack(fill="x", padx=18, pady=3)
+    ttk.Button(action_panel, text="Open Latest Evidence", style="Secondary.TButton", command=open_latest_evidence).pack(fill="x", padx=18, pady=3)
+
     ttk.Button(
         action_panel,
         text="Open Today Report",
@@ -1315,6 +1400,7 @@ def run_gui(args: argparse.Namespace) -> int:
     show_page("Overview")
     refresh_status()
     root.after(15000, refresh_status)
+    root.after(250, lambda: refresh_daily_operations(False))
     root.mainloop()
     return 0
 
