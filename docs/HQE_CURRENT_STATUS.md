@@ -1,4 +1,4 @@
-﻿# HQE Current Status
+# HQE Current Status
 
 ## Latest known status
 
@@ -67,3 +67,19 @@ This next bunch must preserve all current safety locks.
 - No profitability claim: YES
 
 This is not a profitability claim.
+
+## Bunch C+D completed
+
+- Broker Connect Center with six broker credential forms
+- In-memory credential validation with no plaintext secret persistence
+- Persistent hidden paper-watch supervisor with PID/status evidence
+- App V2 Broker Connect Center integration button
+- Combined App V2 integration evidence JSON and HTML
+- Safety, supervisor and integration regression tests
+
+## Next roadmap bunch
+
+**Public trader workflow polish + installer/shortcut integration + final dry runs**
+
+All real-trading and broker-execution locks remain active.
+

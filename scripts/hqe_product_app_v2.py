@@ -1,4 +1,4 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 import argparse
 import json
@@ -682,6 +682,18 @@ def run_gui(args: argparse.Namespace) -> int:
         footer_status.set(result["status"].replace("_", " ").title())
         refresh_status()
 
+    def open_broker_connect_center() -> None:
+        script = repo_root() / "scripts" / "hqe_broker_connect_center.py"
+        python_exe = repo_root() / ".venv" / "Scripts" / "python.exe"
+        try:
+            subprocess.Popen(
+                [str(python_exe), str(script), "--workspace", str(workspace), "--launch"],
+                cwd=str(repo_root()),
+            )
+            footer_status.set("Broker Connect Center opened.")
+        except Exception as exc:
+            messagebox.showerror("Broker Connect Center", str(exc))
+
     def open_report() -> None:
         for path in today_report_candidates(workspace):
             if path.exists():
@@ -721,6 +733,13 @@ def run_gui(args: argparse.Namespace) -> int:
         text="Stop Paper Watch",
         style="Secondary.TButton",
         command=stop_watch,
+    ).pack(fill="x", padx=18, pady=5)
+
+    ttk.Button(
+        action_panel,
+        text="Broker Connect Center",
+        style="Secondary.TButton",
+        command=open_broker_connect_center,
     ).pack(fill="x", padx=18, pady=5)
 
     ttk.Button(
