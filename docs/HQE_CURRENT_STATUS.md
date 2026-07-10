@@ -1,12 +1,13 @@
-# HQE Current Status
+﻿# HQE Current Status
 
 ## Latest known status
 
-HQE has completed a safe paper-validation foundation and started product app packaging.
+HQE has completed its safe paper-validation foundation and the first product
+app packaging layer.
 
 ## Current phase
 
-**Preparing for HQE App V2 Public Trader UI + Multi-Broker Architecture Pack**
+**HQE App V2 Public Trader UI + Multi-Broker Architecture Pack construction**
 
 ## Completed foundation
 
@@ -19,35 +20,41 @@ HQE has completed a safe paper-validation foundation and started product app pac
 - Owner license generator MVP
 - New-PC installation script MVP
 - Single desktop shortcut MVP
-- Master vision and roadmap files added
+- Product app icon assets
+- Master vision and roadmap files
+
+## Newly constructed
+
+- HQE App V2 public trader dashboard foundation
+- Six-broker data-only registry
+- Common execution-free broker adapter contract
+- Hidden background paper-watch controller
+- Internet, broker, market-data and paper-watch status cards
+- Today Report viewer
+- App V2 and multi-broker safety tests
+
+## Broker status
+
+- Fyers: existing data-only implementation path
+- Zerodha: architecture ready, adapter not implemented
+- Angel One: architecture ready, adapter not implemented
+- Upstox: architecture ready, adapter not implemented
+- Groww: architecture ready, adapter not implemented
+- Dhan: architecture ready, adapter not implemented
 
 ## Current limitations
 
-- App UI is still basic and developer-style
-- CMD is still visible for paper watch
-- Broker connection is not yet app-native for all brokers
-- Only Fyers path is meaningful today
+- Non-Fyers live market-data adapters are not implemented yet
+- Broker credential forms are architecture-only in this bunch
 - Strategy builder is not generalized yet
 - Backtest UI is not productized yet
-- Real-money execution is locked
+- Real-money execution remains locked
 
-## Next build
+## Next roadmap bunch
 
-**HQE App V2 Public Trader UI + Multi-Broker Architecture Pack**
+**App integration hardening + broker credential screens + hidden runner evidence**
 
-Must include:
-
-- Modern attractive UI
-- Hidden background runner
-- No CMD in daily usage
-- Broker cards: Fyers, Zerodha, Angel One, Upstox, Groww, Dhan
-- Internet status
-- Broker status
-- Market data status
-- Paper watch status
-- Today report viewer
-- Simple trader language
-- Safety locks preserved
+This next bunch must preserve all current safety locks.
 
 ## Safety status
 
@@ -58,3 +65,5 @@ Must include:
 - Paper/data safety: YES
 - No fake trades: YES
 - No profitability claim: YES
+
+This is not a profitability claim.
