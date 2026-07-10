@@ -527,3 +527,27 @@ Next cohesive roadmap bunch: paper-validation progress, no-trade reasons,
 strategy-drift warnings, weekly summaries and final report exports.
 
 Real trading remains locked. This is not a profitability claim.
+
+## HQE Paper Validation Intelligence and Report Export Bunch
+
+Combined roadmap work completed:
+
+1. Forward-validation progress and threshold tracking
+2. Valid trade-day and no-trade-day accounting
+3. No-trade reason classification
+4. Locked-candidate strategy-drift detection
+5. Weekly validation summaries
+6. Safety and kill-switch decision priority
+7. Formal validation decision status
+8. HTML, JSON, CSV and ZIP report exports
+9. App-native Paper Validation Intelligence Center
+
+READY_FOR_FORMAL_REVIEW means only that minimum evidence thresholds are
+complete. It does not approve real trading and is not a profitability claim.
+
+Commit after PASS: `Add paper validation intelligence and report export bunch`
+
+Next cohesive roadmap bunch: Windows release hardening, license lifecycle,
+backup/restore, diagnostics bundle and end-to-end release-candidate dry run.
+
+Real trading remains locked. This is not a profitability claim.

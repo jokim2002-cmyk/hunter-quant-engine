@@ -13,6 +13,11 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, Optional
 
+from hqe_app_paper_validation_report_center import (
+    launch_report_pack_worker,
+    paper_validation_center_snapshot,
+)
+
 from hqe_app_backtest_product_center import (
     backtest_center_snapshot,
     create_backtest_job,
@@ -4988,6 +4993,370 @@ def run_gui(args: argparse.Namespace) -> int:
     root.after(
         2100,
         lambda: refresh_backtest_product_center(False),
+    )
+
+
+    paper_validation_report_status = tk.StringVar(
+        value="Paper-validation intelligence will appear after refresh."
+    )
+
+    def refresh_paper_validation_report_center(
+        show_dialog: bool = False,
+    ) -> dict:
+        try:
+            snapshot = paper_validation_center_snapshot(
+                repo_root(),
+                workspace,
+            )
+            paper_validation_report_status.set(
+                snapshot["display_text"]
+            )
+            footer_status.set(snapshot["display_text"])
+            if show_dialog:
+                messagebox.showinfo(
+                    "Paper Validation Intelligence",
+                    snapshot["display_text"],
+                )
+            return snapshot
+        except Exception as exc:
+            paper_validation_report_status.set(
+                "Paper-validation refresh failed safely."
+            )
+            footer_status.set(
+                f"Paper-validation report error: {exc}"
+            )
+            if show_dialog:
+                messagebox.showerror(
+                    "Paper Validation Intelligence",
+                    str(exc),
+                )
+            return {}
+
+    def poll_validation_report_pack() -> None:
+        snapshot = refresh_paper_validation_report_center(False)
+        operation = snapshot.get("operation", {})
+        status = str(operation.get("status", ""))
+        if status == "RUNNING":
+            root.after(1000, poll_validation_report_pack)
+            return
+        message = str(
+            operation.get(
+                "message",
+                "Paper-validation report operation finished.",
+            )
+        )
+        footer_status.set(message)
+        if status == "PASS":
+            messagebox.showinfo(
+                "Paper Validation Intelligence",
+                message,
+            )
+        elif status in {"FAILED", "BLOCKED"}:
+            messagebox.showerror(
+                "Paper Validation Intelligence",
+                message,
+            )
+
+    def generate_validation_report_pack() -> None:
+        try:
+            launch_report_pack_worker(
+                repo_root(),
+                workspace,
+            )
+            paper_validation_report_status.set(
+                "Generating validation report pack safely..."
+            )
+            footer_status.set(
+                "Paper-validation report generation started."
+            )
+            root.after(1000, poll_validation_report_pack)
+        except Exception as exc:
+            messagebox.showerror(
+                "Paper Validation Intelligence",
+                str(exc),
+            )
+
+    def open_latest_validation_report(kind: str) -> None:
+        snapshot = refresh_paper_validation_report_center(False)
+        latest = snapshot.get("latest_report", {})
+        key = {
+            "html": "html_path",
+            "json": "json_path",
+            "zip": "zip_path",
+            "folder": "report_dir",
+        }.get(kind, "report_dir")
+        raw_path = str(latest.get(key, "")).strip()
+        if not raw_path:
+            messagebox.showwarning(
+                "Paper Validation Intelligence",
+                "No generated validation report is available yet.",
+            )
+            return
+        path = Path(raw_path)
+        if not path.exists():
+            messagebox.showerror(
+                "Paper Validation Intelligence",
+                f"Report path is missing: {path}",
+            )
+            return
+        try:
+            os.startfile(path)
+        except Exception as exc:
+            messagebox.showerror(
+                "Paper Validation Intelligence",
+                str(exc),
+            )
+
+    def open_paper_validation_report_center() -> None:
+        snapshot = refresh_paper_validation_report_center(False)
+
+        dialog = tk.Toplevel(root)
+        dialog.title("HQE — Paper Validation Intelligence")
+        dialog.geometry("1080x740")
+        dialog.minsize(940, 650)
+        dialog.configure(bg=palette["bg"])
+        dialog.transient(root)
+
+        outer = tk.Frame(
+            dialog,
+            bg=palette["panel"],
+            padx=16,
+            pady=14,
+        )
+        outer.pack(fill="both", expand=True, padx=14, pady=14)
+
+        tk.Label(
+            outer,
+            text="Paper Validation Intelligence & Reports",
+            bg=palette["panel"],
+            fg=palette["text"],
+            font=("Segoe UI Semibold", 18),
+            anchor="w",
+        ).pack(fill="x")
+
+        summary_var = tk.StringVar(
+            value=snapshot.get("display_text", "")
+        )
+        tk.Label(
+            outer,
+            textvariable=summary_var,
+            bg=palette["panel_alt"],
+            fg=palette["muted"],
+            anchor="w",
+            padx=10,
+            pady=8,
+        ).pack(fill="x", pady=(8, 10))
+
+        top = tk.Frame(outer, bg=palette["panel"])
+        top.pack(fill="x")
+
+        decision_var = tk.StringVar()
+        progress_var = tk.StringVar()
+        drift_var = tk.StringVar()
+
+        for title, variable in (
+            ("Decision", decision_var),
+            ("Progress", progress_var),
+            ("Strategy Drift", drift_var),
+        ):
+            card = tk.LabelFrame(
+                top,
+                text=title,
+                bg=palette["panel"],
+                fg=palette["text"],
+                padx=10,
+                pady=8,
+            )
+            card.pack(
+                side="left",
+                fill="both",
+                expand=True,
+                padx=4,
+            )
+            tk.Label(
+                card,
+                textvariable=variable,
+                bg=palette["panel"],
+                fg=palette["muted"],
+                justify="left",
+                anchor="nw",
+                wraplength=300,
+            ).pack(fill="both", expand=True)
+
+        body = tk.Frame(outer, bg=palette["panel"])
+        body.pack(fill="both", expand=True, pady=(12, 0))
+
+        weekly_frame = tk.LabelFrame(
+            body,
+            text="Weekly Summary",
+            bg=palette["panel"],
+            fg=palette["text"],
+            padx=8,
+            pady=8,
+        )
+        weekly_frame.pack(
+            side="left",
+            fill="both",
+            expand=True,
+        )
+
+        reason_frame = tk.LabelFrame(
+            body,
+            text="No-Trade Reasons",
+            bg=palette["panel"],
+            fg=palette["text"],
+            padx=8,
+            pady=8,
+        )
+        reason_frame.pack(
+            side="left",
+            fill="both",
+            expand=True,
+            padx=(12, 0),
+        )
+
+        weekly_list = tk.Listbox(
+            weekly_frame,
+            exportselection=False,
+        )
+        weekly_list.pack(fill="both", expand=True)
+
+        reason_list = tk.Listbox(
+            reason_frame,
+            exportselection=False,
+        )
+        reason_list.pack(fill="both", expand=True)
+
+        def render(current: dict) -> None:
+            summary_var.set(current.get("display_text", ""))
+            decision = current.get("decision", {})
+            progress = current.get("progress", {})
+            drift = current.get("strategy_drift", {})
+
+            decision_var.set(
+                f"{decision.get('status', '')}\n"
+                f"{decision.get('message', '')}"
+            )
+            progress_var.set(
+                f"Days: {progress.get('observed_days', 0)}/"
+                f"{progress.get('minimum_days', 20)}\n"
+                f"Trades: {progress.get('observed_trades', 0)}/"
+                f"{progress.get('minimum_trades', 30)}\n"
+                f"Expiry weeks: {progress.get('expiry_weeks', 0)}/"
+                f"{progress.get('minimum_expiry_weeks', 4)}\n"
+                f"Valid trade days: "
+                f"{progress.get('valid_trade_days', 0)}\n"
+                f"No-trade days: "
+                f"{progress.get('no_trade_days', 0)}"
+            )
+            drift_var.set(
+                f"{drift.get('status', '')}\n"
+                f"{drift.get('message', '')}"
+            )
+
+            weekly_list.delete(0, "end")
+            for item in current.get("weekly_summaries", []):
+                weekly_list.insert(
+                    "end",
+                    f"{item.get('iso_week', '')} | "
+                    f"days {item.get('observed_days', 0)} | "
+                    f"trades {item.get('trade_count', 0)} | "
+                    f"no-trade {item.get('no_trade_days', 0)}",
+                )
+
+            reason_list.delete(0, "end")
+            for item in current.get("no_trade_reasons", []):
+                reason_list.insert(
+                    "end",
+                    f"{item.get('reason', '')} | "
+                    f"{item.get('count', 0)} days | "
+                    f"{item.get('percent_of_no_trade_days', 0)}%",
+                )
+
+        def refresh_dialog() -> None:
+            render(refresh_paper_validation_report_center(False))
+
+        buttons = tk.Frame(outer, bg=palette["panel"])
+        buttons.pack(fill="x", pady=(12, 0))
+
+        ttk.Button(
+            buttons,
+            text="Refresh Validation Status",
+            command=refresh_dialog,
+        ).pack(side="left", padx=(0, 6))
+
+        ttk.Button(
+            buttons,
+            text="Generate Report Pack",
+            command=generate_validation_report_pack,
+        ).pack(side="left", padx=6)
+
+        ttk.Button(
+            buttons,
+            text="Open Latest HTML Report",
+            command=lambda: open_latest_validation_report("html"),
+        ).pack(side="left", padx=6)
+
+        ttk.Button(
+            buttons,
+            text="Open Latest JSON Report",
+            command=lambda: open_latest_validation_report("json"),
+        ).pack(side="left", padx=6)
+
+        ttk.Button(
+            buttons,
+            text="Open Latest ZIP Pack",
+            command=lambda: open_latest_validation_report("zip"),
+        ).pack(side="left", padx=6)
+
+        tk.Label(
+            outer,
+            text=(
+                "PAPER/DATA ONLY • FORMAL REVIEW IS NOT REAL-TRADING "
+                "APPROVAL • THIS IS NOT A PROFITABILITY CLAIM"
+            ),
+            bg=palette["panel"],
+            fg=palette["muted"],
+            anchor="w",
+            pady=10,
+        ).pack(fill="x")
+
+        render(snapshot)
+
+    paper_validation_report_panel = tk.Frame(
+        action_panel,
+        bg=palette["panel_alt"],
+        highlightbackground=palette["border"],
+        highlightthickness=1,
+    )
+    paper_validation_report_panel.pack(
+        fill="x",
+        padx=18,
+        pady=(4, 8),
+    )
+
+    tk.Label(
+        paper_validation_report_panel,
+        textvariable=paper_validation_report_status,
+        bg=palette["panel_alt"],
+        fg=palette["muted"],
+        justify="left",
+        anchor="w",
+        wraplength=300,
+        padx=10,
+        pady=8,
+    ).pack(fill="x")
+
+    ttk.Button(
+        action_panel,
+        text="Paper Validation Intelligence",
+        style="Secondary.TButton",
+        command=open_paper_validation_report_center,
+    ).pack(fill="x", padx=18, pady=3)
+
+    root.after(
+        2250,
+        lambda: refresh_paper_validation_report_center(False),
     )
 
     root.mainloop()
