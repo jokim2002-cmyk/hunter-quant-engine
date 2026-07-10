@@ -30,25 +30,35 @@ def test_public_workflow_guard(tmp_path):
 
 
 def test_launcher_written(tmp_path):
-    cp = subprocess.run(
-        [
-            sys.executable,
-            str(SCRIPTS / "hqe_app_v2_public_workflow.py"),
-            "--workspace",
-            str(tmp_path),
-            "--write-launcher",
-        ],
-        capture_output=True,
-        text=True,
-        check=True,
-    )
-    payload = json.loads(cp.stdout)
     launcher = REPO / "OPEN_HQE_APP_V2.cmd"
-    assert payload["launcher_exists"] is True
-    assert launcher.exists()
-    text = launcher.read_text(encoding="utf-8").lower()
-    assert "hqe_product_app_v2.py" in text
-    assert "place_order" not in text
+    original_bytes = launcher.read_bytes() if launcher.exists() else None
+
+    try:
+        cp = subprocess.run(
+            [
+                sys.executable,
+                str(SCRIPTS / "hqe_app_v2_public_workflow.py"),
+                "--workspace",
+                str(tmp_path),
+                "--write-launcher",
+            ],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        payload = json.loads(cp.stdout)
+
+        assert payload["launcher_exists"] is True
+        assert launcher.exists()
+
+        text = launcher.read_text(encoding="utf-8").lower()
+        assert "hqe_product_app_v2.py" in text
+        assert "place_order" not in text
+    finally:
+        if original_bytes is None:
+            launcher.unlink(missing_ok=True)
+        else:
+            launcher.write_bytes(original_bytes)
 
 
 def test_final_dry_run(tmp_path):
