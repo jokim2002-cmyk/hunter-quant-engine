@@ -264,3 +264,12 @@ Real trading remains locked.
 - Atomic CSV writer added
 - Returned/written row verification added
 - Credential status refresh after revalidation added
+
+
+## Current-Day Unified Health Repair V1
+
+- Current IST trading date forced into FYERS fetch
+- Current-day candle freshness required
+- Actual Python watch PID is the only PID truth
+- Stopped paper watch safely restarted with current environment
+- Dashboard old false-positive health fields overridden

@@ -137,6 +137,20 @@ def test_dashboard_health_payload(monkeypatch, tmp_path):
         },
     )
 
+    monkeypatch.setattr(
+        module,
+        "derive_unified_health",
+        lambda workspace: {
+            "overall_health": "DEGRADED_DATA_STALE",
+            "operator_recommendation": "CHECK_FETCH_CYCLE",
+            "latest_candle_ist": "10-07-2026T10:20:00+05:30",
+            "latest_candle_age_seconds": 2400,
+            "canonical_pid": 100,
+            "process_count": 2,
+            "running": True,
+        },
+    )
+
     payload = module.derive_status(tmp_path)
 
     assert payload["system_health"] == "DEGRADED_DATA_STALE"
@@ -166,6 +180,20 @@ def test_dashboard_fetch_truth_payload(monkeypatch, tmp_path):
             "canonical_watch_pid": 100,
             "watch_process_count": 2,
             "operator_recommendation": "RESTART_WATCH_ONLY_AFTER_FETCH_DIAGNOSTIC",
+        },
+    )
+
+    monkeypatch.setattr(
+        module,
+        "derive_unified_health",
+        lambda workspace: {
+            "overall_health": "FETCH_COMPLETED_BUT_CANDLE_STALE",
+            "operator_recommendation": "RESTART_WATCH_ONLY_AFTER_FETCH_DIAGNOSTIC",
+            "latest_candle_ist": "10-07-2026T10:20:00+05:30",
+            "latest_candle_age_seconds": 2400,
+            "canonical_pid": 100,
+            "process_count": 2,
+            "running": True,
         },
     )
 

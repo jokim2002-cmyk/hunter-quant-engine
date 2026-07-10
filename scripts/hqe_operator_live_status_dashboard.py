@@ -14,6 +14,7 @@ from typing import Any, Dict, Optional
 from hqe_watch_health_monitor import collect_health
 from hqe_fyers_fetch_evidence_truth import build_truth
 from hqe_fyers_credential_validation import build_status as build_credential_status
+from hqe_current_day_data_watch_repair import derive_unified_health
 
 VERSION = "HQE_OPERATOR_LIVE_STATUS_DASHBOARD_V2"
 REFRESH_MS = 5000
@@ -271,22 +272,23 @@ def derive_status(workspace: Path) -> Dict[str, Any]:
     credential_status = build_credential_status(
         Path(__file__).resolve().parents[1], workspace, run_revalidation=False
     )
+    unified_health = derive_unified_health(workspace)
 
     return {
         "version": VERSION,
         "workspace": str(workspace),
         "watch_status": "RUNNING" if is_running else watch_text,
-        "system_health": health["overall_health"],
+        "system_health": unified_health["overall_health"],
         "heartbeat_ist": health["heartbeat_ist"],
         "last_successful_data_update_ist": health["last_successful_data_update_ist"],
         "consecutive_stale_cycles": health["consecutive_stale_cycles"],
         "fetch_failure_reason": health["fetch_failure_reason"],
-        "fetch_truth": fetch_truth["fetch_truth"],
-        "latest_candle_ist": fetch_truth["latest_candle_ist"],
-        "latest_candle_age_minutes": fetch_truth["latest_candle_age_minutes"],
-        "canonical_watch_pid": fetch_truth["canonical_watch_pid"],
-        "watch_process_count": fetch_truth["watch_process_count"],
-        "operator_recommendation": fetch_truth["operator_recommendation"],
+        "fetch_truth": unified_health["overall_health"],
+        "latest_candle_ist": unified_health["latest_candle_ist"],
+        "latest_candle_age_minutes": (round(unified_health["latest_candle_age_seconds"] / 60, 2) if unified_health["latest_candle_age_seconds"] is not None else None),
+        "canonical_watch_pid": unified_health["canonical_pid"],
+        "watch_process_count": unified_health["process_count"],
+        "operator_recommendation": unified_health["operator_recommendation"],
         "fyers_auth_status": credential_status["auth_status"],
         "credential_recommendation": credential_status["recommendation"],
         "client_id_fingerprint": credential_status["client_id"]["fingerprint"],
