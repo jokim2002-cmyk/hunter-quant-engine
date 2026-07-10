@@ -663,18 +663,3 @@ Commit after PASS: `Fix Tkinter label padding startup crash`
 
 Product sign-off remains paper/data/research only.
 Real trading remains excluded. This is not a profitability claim.
-
-## HQE Responsive Right-Panel Scrolling
-
-Operator UX repair completed:
-
-1. Added a vertical scrollbar to the right action panel
-2. Scrollbar appears only when content exceeds the available height
-3. Scrollbar hides automatically when the maximized window fits content
-4. Added mouse-wheel scrolling while the pointer is over the right panel
-5. Preserved the fixed left navigation and existing product controls
-
-Commit after PASS: `Add responsive right-panel scrolling`
-
-Product remains paper/data/research only.
-Real trading remains excluded. This is not a profitability claim.
