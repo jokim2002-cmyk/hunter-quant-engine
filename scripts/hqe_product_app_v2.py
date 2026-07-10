@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import ctypes
 import json
 import os
 import socket
@@ -206,6 +207,111 @@ def guard_payload() -> Dict[str, Any]:
     }
 
 
+APP_INSTANCE_MUTEX_NAME = "Local\\HunterQuantEngineAppV2"
+_APP_INSTANCE_MUTEX_HANDLE = None
+
+
+def acquire_app_single_instance() -> bool:
+    global _APP_INSTANCE_MUTEX_HANDLE
+
+    if os.name != "nt":
+        return True
+
+    kernel32 = ctypes.windll.kernel32
+    handle = kernel32.CreateMutexW(None, False, APP_INSTANCE_MUTEX_NAME)
+    if not handle:
+        return True
+
+    error_code = kernel32.GetLastError()
+    if error_code == 183:
+        kernel32.CloseHandle(handle)
+        try:
+            ctypes.windll.user32.MessageBoxW(
+                None,
+                "Hunter Quant Engine is already running.",
+                "Hunter Quant Engine",
+                0x40,
+            )
+        except Exception:
+            pass
+        return False
+
+    _APP_INSTANCE_MUTEX_HANDLE = handle
+    return True
+
+
+def find_existing_paper_watch_processes() -> List[Dict[str, int]]:
+    if os.name != "nt":
+        return []
+
+    script_name = "hqe_market_day_persistent_paper_watch_loop.py"
+    command = [
+        "powershell.exe",
+        "-NoProfile",
+        "-Command",
+        (
+            "Get-CimInstance Win32_Process | "
+            "Where-Object { "
+            "$_.Name -match '^python(w)?\\.exe$' -and "
+            "$_.CommandLine -like '*" + script_name + "*' "
+            "} | "
+            "Select-Object ProcessId,ParentProcessId | "
+            "ConvertTo-Json -Compress"
+        ),
+    ]
+
+    try:
+        result = subprocess.run(
+            command,
+            capture_output=True,
+            text=True,
+            timeout=15,
+            creationflags=CREATE_NO_WINDOW,
+        )
+    except (OSError, subprocess.SubprocessError, TypeError):
+        # TypeError can occur in unit tests where subprocess.Popen is replaced
+        # with a minimal fake. Treat unavailable process discovery as no match.
+        return []
+
+    if result.returncode != 0 or not result.stdout.strip():
+        return []
+
+    try:
+        payload = json.loads(result.stdout)
+    except json.JSONDecodeError:
+        return []
+
+    if isinstance(payload, dict):
+        payload = [payload]
+
+    processes: List[Dict[str, int]] = []
+    for item in payload:
+        try:
+            processes.append(
+                {
+                    "pid": int(item["ProcessId"]),
+                    "parent_pid": int(item["ParentProcessId"]),
+                }
+            )
+        except (KeyError, TypeError, ValueError):
+            continue
+
+    return processes
+
+
+def canonical_watch_pid(processes: List[Dict[str, int]]) -> Optional[int]:
+    if not processes:
+        return None
+
+    process_ids = {item["pid"] for item in processes}
+    roots = [
+        item["pid"]
+        for item in processes
+        if item["parent_pid"] not in process_ids
+    ]
+    return min(roots) if roots else min(process_ids)
+
+
 class HiddenPaperWatchController:
     def __init__(
         self,
@@ -219,14 +325,28 @@ class HiddenPaperWatchController:
         self.process: Optional[subprocess.Popen[str]] = None
 
     def is_running(self) -> bool:
-        return self.process is not None and self.process.poll() is None
+        if self.process is not None and self.process.poll() is None:
+            return True
+        return bool(find_existing_paper_watch_processes())
 
     def start(self) -> Dict[str, Any]:
-        if self.is_running():
+        existing = find_existing_paper_watch_processes()
+        existing_pid = canonical_watch_pid(existing)
+
+        if existing_pid is not None:
             return {
                 "started": False,
-                "status": "ALREADY_RUNNING",
-                "pid": self.process.pid if self.process else None,
+                "status": "ALREADY_RUNNING_GLOBAL",
+                "pid": existing_pid,
+                "process_count": len(existing),
+            }
+
+        if self.process is not None and self.process.poll() is None:
+            return {
+                "started": False,
+                "status": "ALREADY_RUNNING_IN_APP",
+                "pid": self.process.pid,
+                "process_count": 1,
             }
 
         repo = repo_root()
@@ -830,6 +950,9 @@ def main() -> int:
             )
             payload["status_file"] = str(path)
         print(json.dumps(payload, indent=2, sort_keys=True))
+        return 0
+
+    if not acquire_app_single_instance():
         return 0
 
     if not args.skip_license_check:
