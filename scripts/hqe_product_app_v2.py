@@ -13,6 +13,11 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, Optional
 
+from hqe_app_operator_acceptance_center import (
+    launch_operator_acceptance,
+    operator_acceptance_center_snapshot,
+)
+
 from hqe_app_release_candidate_audit_center import (
     launch_rc_audit_worker,
     rc_audit_center_snapshot,
@@ -6055,6 +6060,291 @@ def run_gui(args: argparse.Namespace) -> int:
     root.after(
         2550,
         lambda: refresh_rc_audit_center(False),
+    )
+
+
+    operator_acceptance_status = tk.StringVar(
+        value="Operator acceptance has not been run."
+    )
+
+    def refresh_operator_acceptance_center(
+        show_dialog: bool = False,
+    ) -> dict:
+        try:
+            snapshot = operator_acceptance_center_snapshot(
+                repo_root(),
+                workspace,
+            )
+            operator_acceptance_status.set(
+                snapshot["display_text"]
+            )
+            footer_status.set(snapshot["display_text"])
+            if show_dialog:
+                messagebox.showinfo(
+                    "Operator Acceptance & RC Sign-Off",
+                    snapshot["display_text"],
+                )
+            return snapshot
+        except Exception as exc:
+            operator_acceptance_status.set(
+                "Operator acceptance refresh failed safely."
+            )
+            footer_status.set(
+                f"Operator acceptance error: {exc}"
+            )
+            if show_dialog:
+                messagebox.showerror(
+                    "Operator Acceptance & RC Sign-Off",
+                    str(exc),
+                )
+            return {}
+
+    def poll_operator_acceptance() -> None:
+        snapshot = refresh_operator_acceptance_center(False)
+        status = snapshot.get("latest", {}).get("status", {})
+        operation_status = str(status.get("status", ""))
+        if operation_status == "RUNNING":
+            root.after(1000, poll_operator_acceptance)
+            return
+        message = str(
+            status.get(
+                "message",
+                "Operator acceptance dry run completed.",
+            )
+        )
+        footer_status.set(message)
+        if operation_status == "FAILED":
+            messagebox.showerror(
+                "Operator Acceptance & RC Sign-Off",
+                message,
+            )
+        else:
+            messagebox.showinfo(
+                "Operator Acceptance & RC Sign-Off",
+                message,
+            )
+
+    def run_operator_acceptance() -> None:
+        try:
+            launch_operator_acceptance(
+                repo_root(),
+                workspace,
+            )
+            operator_acceptance_status.set(
+                "Operator acceptance dry run is running..."
+            )
+            footer_status.set(
+                "Read-only operator acceptance is running."
+            )
+            root.after(1200, poll_operator_acceptance)
+        except Exception as exc:
+            messagebox.showerror(
+                "Operator Acceptance & RC Sign-Off",
+                str(exc),
+            )
+
+    def open_operator_acceptance_path(kind: str) -> None:
+        snapshot = refresh_operator_acceptance_center(False)
+        latest = snapshot.get("latest", {})
+        raw_path = str(
+            {
+                "html": latest.get("html_path", ""),
+                "json": latest.get("json_path", ""),
+                "folder": latest.get("report_dir", ""),
+                "guide": snapshot.get("operator_guide", ""),
+            }.get(kind, "")
+        ).strip()
+        if not raw_path:
+            messagebox.showwarning(
+                "Operator Acceptance & RC Sign-Off",
+                f"No {kind} file is available yet.",
+            )
+            return
+        path = Path(raw_path)
+        if not path.exists():
+            messagebox.showerror(
+                "Operator Acceptance & RC Sign-Off",
+                f"File is missing: {path}",
+            )
+            return
+        try:
+            os.startfile(path)
+        except Exception as exc:
+            messagebox.showerror(
+                "Operator Acceptance & RC Sign-Off",
+                str(exc),
+            )
+
+    def open_operator_acceptance_center() -> None:
+        snapshot = refresh_operator_acceptance_center(False)
+
+        dialog = tk.Toplevel(root)
+        dialog.title("HQE — Operator Acceptance & RC Sign-Off")
+        dialog.geometry("980x650")
+        dialog.minsize(860, 570)
+        dialog.configure(bg=palette["bg"])
+        dialog.transient(root)
+
+        outer = tk.Frame(
+            dialog,
+            bg=palette["panel"],
+            padx=16,
+            pady=14,
+        )
+        outer.pack(fill="both", expand=True, padx=14, pady=14)
+
+        tk.Label(
+            outer,
+            text="Operator Acceptance & RC Sign-Off",
+            bg=palette["panel"],
+            fg=palette["text"],
+            font=("Segoe UI Semibold", 18),
+            anchor="w",
+        ).pack(fill="x")
+
+        summary_var = tk.StringVar(
+            value=snapshot.get("display_text", "")
+        )
+        tk.Label(
+            outer,
+            textvariable=summary_var,
+            bg=palette["panel_alt"],
+            fg=palette["muted"],
+            anchor="w",
+            padx=10,
+            pady=8,
+        ).pack(fill="x", pady=(8, 10))
+
+        decision_var = tk.StringVar()
+        check_list = tk.Listbox(
+            outer,
+            exportselection=False,
+        )
+        check_list.pack(fill="both", expand=True)
+
+        tk.Label(
+            outer,
+            textvariable=decision_var,
+            bg=palette["panel_alt"],
+            fg=palette["muted"],
+            justify="left",
+            anchor="w",
+            wraplength=900,
+            padx=10,
+            pady=8,
+        ).pack(fill="x", pady=(10, 0))
+
+        def render(current: dict) -> None:
+            summary_var.set(current.get("display_text", ""))
+            report = current.get("latest", {}).get("report", {})
+            decision = report.get("decision", {})
+            decision_var.set(
+                f"{decision.get('status', 'NOT_RUN')}\n"
+                f"{decision.get('message', '')}"
+            )
+            check_list.delete(0, "end")
+            for item in report.get("checks", []):
+                check_list.insert(
+                    "end",
+                    f"[{item.get('status', '')}] "
+                    f"{item.get('name', '')} — "
+                    f"{item.get('message', '')}",
+                )
+
+        def refresh_dialog() -> None:
+            render(refresh_operator_acceptance_center(False))
+
+        buttons = tk.Frame(outer, bg=palette["panel"])
+        buttons.pack(fill="x", pady=(12, 0))
+
+        ttk.Button(
+            buttons,
+            text="Run Operator Acceptance Dry Run",
+            command=run_operator_acceptance,
+        ).pack(side="left", padx=(0, 6))
+
+        ttk.Button(
+            buttons,
+            text="Open Acceptance HTML",
+            command=lambda: open_operator_acceptance_path("html"),
+        ).pack(side="left", padx=6)
+
+        ttk.Button(
+            buttons,
+            text="Open Acceptance JSON",
+            command=lambda: open_operator_acceptance_path("json"),
+        ).pack(side="left", padx=6)
+
+        ttk.Button(
+            buttons,
+            text="Open Operator Guide",
+            command=lambda: open_operator_acceptance_path("guide"),
+        ).pack(side="left", padx=6)
+
+        ttk.Button(
+            buttons,
+            text="Refresh Acceptance Status",
+            command=refresh_dialog,
+        ).pack(side="left", padx=6)
+
+        tk.Label(
+            outer,
+            text=(
+                "POST-FREEZE ACCEPTANCE ONLY • NO PRODUCT FEATURE CHANGE • "
+                "REAL ORDERS NO • THIS IS NOT A PROFITABILITY CLAIM"
+            ),
+            bg=palette["panel"],
+            fg=palette["muted"],
+            anchor="w",
+            pady=10,
+        ).pack(fill="x")
+
+        render(snapshot)
+
+    operator_acceptance_panel = tk.Frame(
+        action_panel,
+        bg=palette["panel_alt"],
+        highlightbackground=palette["border"],
+        highlightthickness=2,
+    )
+    operator_acceptance_panel.pack(
+        fill="x",
+        padx=18,
+        pady=(6, 10),
+    )
+
+    tk.Label(
+        operator_acceptance_panel,
+        text="FINAL OPERATOR ACCEPTANCE",
+        bg=palette["panel_alt"],
+        fg=palette["text"],
+        font=("Segoe UI Semibold", 11),
+        anchor="w",
+        padx=10,
+        pady=(8, 2),
+    ).pack(fill="x")
+
+    tk.Label(
+        operator_acceptance_panel,
+        textvariable=operator_acceptance_status,
+        bg=palette["panel_alt"],
+        fg=palette["muted"],
+        justify="left",
+        anchor="w",
+        wraplength=300,
+        padx=10,
+        pady=6,
+    ).pack(fill="x")
+
+    ttk.Button(
+        operator_acceptance_panel,
+        text="Operator Acceptance & RC Sign-Off",
+        command=open_operator_acceptance_center,
+    ).pack(fill="x", padx=10, pady=(2, 10))
+
+    root.after(
+        2700,
+        lambda: refresh_operator_acceptance_center(False),
     )
 
     root.mainloop()

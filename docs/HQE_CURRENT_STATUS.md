@@ -596,3 +596,26 @@ may change the frozen scope.
 Commit after PASS: `Add end-to-end RC audit and paper-only product freeze`
 
 Real trading remains outside the release. This is not a profitability claim.
+
+## HQE Operator Acceptance Dry-Run and RC Sign-Off
+
+Post-freeze acceptance completed:
+
+1. One-icon launcher and workspace acceptance
+2. App navigation and no-execution acceptance
+3. Read-only snapshots of all major product centers
+4. Cross-center safety-flag verification
+5. Final operator-journey decision
+6. JSON and HTML acceptance reports
+7. App-native Operator Acceptance & RC Sign-Off Center
+8. Release manifest and SHA-256 freeze refresh
+
+No new trading feature was added. Only release-candidate acceptance
+and evidence were added after the construction freeze.
+
+Commit after PASS: `Add operator acceptance dry-run and RC sign-off bunch`
+
+Next action after this bunch: review the generated acceptance decision.
+Only blocking findings may be repaired before paper-only RC sign-off.
+
+Real trading remains outside the release. This is not a profitability claim.
