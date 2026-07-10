@@ -217,3 +217,12 @@ Real trading remains locked.
 - Paper-watch PID and process health added
 - Data age and stale reason added
 - Latest fetch result added
+
+
+## Watch Heartbeat and Data Freshness Truth V1
+
+- Process liveness separated from data health
+- Heartbeat timestamp and last successful data update added
+- Consecutive stale-cycle counter added
+- HEALTHY / DEGRADED / STOPPED / MARKET_CLOSED_IDLE states added
+- Dashboard health truth panels added

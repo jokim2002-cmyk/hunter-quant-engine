@@ -11,6 +11,8 @@ from zoneinfo import ZoneInfo
 from tkinter import ttk
 from typing import Any, Dict, Optional
 
+from hqe_watch_health_monitor import collect_health
+
 VERSION = "HQE_OPERATOR_LIVE_STATUS_DASHBOARD_V2"
 REFRESH_MS = 5000
 INDIA_TZ = ZoneInfo("Asia/Kolkata")
@@ -262,11 +264,17 @@ def derive_status(workspace: Path) -> Dict[str, Any]:
     session = market_session()
     process = watch_process_health()
     freshness = freshness_label(latest)
+    health = collect_health(workspace, write=True)
 
     return {
         "version": VERSION,
         "workspace": str(workspace),
         "watch_status": "RUNNING" if is_running else watch_text,
+        "system_health": health["overall_health"],
+        "heartbeat_ist": health["heartbeat_ist"],
+        "last_successful_data_update_ist": health["last_successful_data_update_ist"],
+        "consecutive_stale_cycles": health["consecutive_stale_cycles"],
+        "fetch_failure_reason": health["fetch_failure_reason"],
         "process_health": process["process_health"],
         "watch_pid": process["watch_pid"],
         "data_freshness": freshness,
@@ -310,13 +318,18 @@ class OperatorDashboard(tk.Tk):
         super().__init__()
         self.workspace = workspace
         self.title("Hunter Quant Engine — Operator Live Status")
-        self.geometry("1100x820")
-        self.minsize(1000, 720)
+        self.geometry("1180x920")
+        self.minsize(1050, 800)
 
         self.values: Dict[str, tk.StringVar] = {
             key: tk.StringVar(value="Loading...")
             for key in (
                 "watch_status",
+                "system_health",
+                "heartbeat_ist",
+                "last_successful_data_update_ist",
+                "consecutive_stale_cycles",
+                "fetch_failure_reason",
                 "process_health",
                 "watch_pid",
                 "data_freshness",
@@ -360,6 +373,11 @@ class OperatorDashboard(tk.Tk):
 
         cards = [
             ("Paper Watch", "watch_status"),
+            ("System Health", "system_health"),
+            ("Heartbeat (IST)", "heartbeat_ist"),
+            ("Last Successful Data Update", "last_successful_data_update_ist"),
+            ("Consecutive Stale Cycles", "consecutive_stale_cycles"),
+            ("Fetch Failure Reason", "fetch_failure_reason"),
             ("Watch Process", "process_health"),
             ("Watch PID", "watch_pid"),
             ("Data Freshness", "data_freshness"),

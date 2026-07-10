@@ -11,6 +11,10 @@ SCRIPT = REPO / "scripts" / "hqe_operator_live_status_dashboard.py"
 
 
 def load_module():
+    scripts_dir = str(SCRIPT.parent)
+    if scripts_dir not in sys.path:
+        sys.path.insert(0, scripts_dir)
+
     spec = importlib.util.spec_from_file_location("hqe_operator_dashboard_test", SCRIPT)
     module = importlib.util.module_from_spec(spec)
     sys.modules[spec.name] = module
@@ -118,3 +122,23 @@ def test_data_age_text(monkeypatch):
     value = fixed - timedelta(minutes=3, seconds=5)
     assert module.data_age_text(value) == "3m 5s"
     assert module.data_age_text(None) == "UNKNOWN"
+
+def test_dashboard_health_payload(monkeypatch, tmp_path):
+    module = load_module()
+    monkeypatch.setattr(
+        module,
+        "collect_health",
+        lambda workspace, write=True: {
+            "overall_health": "DEGRADED_DATA_STALE",
+            "heartbeat_ist": "10-07-2026 11:00:00 AM IST",
+            "last_successful_data_update_ist": "10-07-2026 10:30:00 AM IST",
+            "consecutive_stale_cycles": 3,
+            "fetch_failure_reason": "NONE_REPORTED",
+        },
+    )
+
+    payload = module.derive_status(tmp_path)
+
+    assert payload["system_health"] == "DEGRADED_DATA_STALE"
+    assert payload["consecutive_stale_cycles"] == 3
+    assert payload["real_orders_enabled"] is False
