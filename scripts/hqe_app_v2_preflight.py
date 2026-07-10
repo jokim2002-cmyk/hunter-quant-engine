@@ -10,10 +10,13 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict
 
-VERSION = "HQE_APP_V2_PREFLIGHT_V1"
+VERSION = "HQE_APP_V2_PREFLIGHT_V2"
 
 
-def repo_root() -> Path:
+def default_repo_root() -> Path:
+    env_hint = os.environ.get("HQE_REPO_HINT", "").strip()
+    if env_hint:
+        return Path(env_hint)
     return Path(__file__).resolve().parents[1]
 
 
@@ -25,8 +28,8 @@ def check_internet(timeout: float = 2.0) -> bool:
         return False
 
 
-def build_payload(workspace: Path) -> Dict[str, Any]:
-    root = repo_root()
+def build_payload(workspace: Path, repo_root: Path | None = None) -> Dict[str, Any]:
+    root = Path(repo_root) if repo_root else default_repo_root()
     python_exe = root / ".venv" / "Scripts" / "python.exe"
 
     required = {
@@ -94,11 +97,13 @@ def build_payload(workspace: Path) -> Dict[str, Any]:
 def main() -> int:
     parser = argparse.ArgumentParser(description="HQE App V2 preflight")
     parser.add_argument("--workspace", required=True)
+    parser.add_argument("--repo-root", default="")
     parser.add_argument("--write", action="store_true")
     args = parser.parse_args()
 
     workspace = Path(args.workspace)
-    payload = build_payload(workspace)
+    repo = Path(args.repo_root) if args.repo_root.strip() else None
+    payload = build_payload(workspace, repo)
 
     if args.write:
         output = workspace / "HQE_APP_V2_PREFLIGHT.json"

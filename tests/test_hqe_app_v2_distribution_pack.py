@@ -19,9 +19,10 @@ def load(filename: str, name: str):
 
 def test_preflight_payload_locks_execution(monkeypatch, tmp_path):
     module = load("hqe_app_v2_preflight.py", "preflight_test")
-    monkeypatch.setattr(module, "repo_root", lambda: REPO)
     monkeypatch.setattr(module, "check_internet", lambda timeout=2.0: True)
-    payload = module.build_payload(tmp_path)
+
+    payload = module.build_payload(tmp_path, REPO)
+
     assert payload["real_orders_enabled"] is False
     assert payload["broker_execution_enabled"] is False
     assert payload["auto_trading_enabled"] is False
@@ -54,6 +55,7 @@ def test_release_launcher_uses_repo_hint(tmp_path):
     assert f'set "HQE_REPO_HINT={REPO}"' in text
     assert "%HQE_REPO_HINT%\\.venv\\Scripts\\python.exe" in text
     assert "%~dp0scripts\\hqe_product_app_v2.py" in text
+    assert "--repo-root" in text
 
 
 def test_release_manifest_has_hashes(tmp_path):

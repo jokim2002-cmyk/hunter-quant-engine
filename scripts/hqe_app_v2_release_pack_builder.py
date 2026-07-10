@@ -99,7 +99,7 @@ def build_pack(output_dir: Path, workspace_hint: str, repo_hint: str = "") -> Di
         "  pause\n"
         "  exit /b 1\n"
         ")\n"
-        "\"%HQE_PYTHON%\" \"%~dp0scripts\\hqe_app_v2_preflight.py\" --workspace \"%HQE_WORKSPACE%\"\n"
+        "\"%HQE_PYTHON%\" \"%~dp0scripts\\hqe_app_v2_preflight.py\" --workspace \"%HQE_WORKSPACE%\" --repo-root \"%HQE_REPO_HINT%\"\n"
         "if errorlevel 1 (\n"
         "  echo.\n"
         "  echo HQE preflight failed. Fix the displayed issue before launch.\n"
