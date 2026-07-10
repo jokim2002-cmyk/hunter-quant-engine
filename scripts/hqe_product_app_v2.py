@@ -13,6 +13,12 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, Optional
 
+from hqe_app_daily_startup_center import (
+    daily_readiness_snapshot,
+    launch_daily_startup_worker,
+    operation_status,
+)
+
 from hqe_app_market_data_center import (
     launch_market_data_worker,
     market_data_snapshot,
@@ -1931,6 +1937,172 @@ def run_gui(args: argparse.Namespace) -> int:
     root.after(300, refresh_fyers_auth_status)
     root.after(600, lambda: refresh_market_data_center(False))
     root.after(450, lambda: refresh_broker_data_health(False))
+
+    daily_startup_status = tk.StringVar(
+        value="Daily startup readiness will appear after refresh."
+    )
+
+    def refresh_daily_startup_center(show_dialog: bool = False) -> dict:
+        try:
+            snapshot = daily_readiness_snapshot(repo_root(), workspace)
+            daily_startup_status.set(snapshot["display_text"])
+            footer_status.set(
+                f"Daily readiness: {snapshot['overall_status']}"
+            )
+            if show_dialog:
+                messagebox.showinfo(
+                    "Daily Startup & Checklist",
+                    snapshot["display_text"],
+                )
+            return snapshot
+        except Exception as exc:
+            daily_startup_status.set("Daily readiness refresh failed safely.")
+            footer_status.set(f"Daily startup status error: {exc}")
+            if show_dialog:
+                messagebox.showerror("Daily Startup & Checklist", str(exc))
+            return {}
+
+    def poll_daily_startup_operation() -> None:
+        payload = operation_status(workspace)
+        if payload["status"] == "RUNNING":
+            root.after(900, poll_daily_startup_operation)
+            return
+        refresh_daily_startup_center(False)
+        footer_status.set(
+            payload["message"] or "Daily startup operation finished."
+        )
+        if payload["status"] == "PASS":
+            messagebox.showinfo("Daily Startup", payload["message"])
+        elif payload["status"] in {"FAILED", "BLOCKED"}:
+            messagebox.showerror("Daily Startup", payload["message"])
+
+    def prepare_next_market_day_from_app() -> None:
+        try:
+            launch_daily_startup_worker(repo_root(), workspace)
+            daily_startup_status.set("Preparing next market day safely...")
+            footer_status.set(
+                "Next-day preparation running. Real orders remain blocked."
+            )
+            root.after(900, poll_daily_startup_operation)
+        except Exception as exc:
+            messagebox.showerror("Daily Startup", str(exc))
+            footer_status.set(
+                f"Next-day preparation could not start: {exc}"
+            )
+
+    def open_daily_startup_center() -> None:
+        snapshot = refresh_daily_startup_center(False)
+        dialog = tk.Toplevel(root)
+        dialog.title("HQE — Daily Startup & Checklist")
+        dialog.geometry("700x560")
+        dialog.configure(bg=palette["bg"])
+        dialog.transient(root)
+
+        frame = tk.Frame(dialog, bg=palette["panel"], padx=20, pady=18)
+        frame.pack(fill="both", expand=True, padx=18, pady=18)
+
+        tk.Label(
+            frame,
+            text="Daily Startup & Operator Checklist",
+            bg=palette["panel"],
+            fg=palette["text"],
+            font=("Segoe UI Semibold", 17),
+            anchor="w",
+        ).pack(fill="x")
+
+        detail_var = tk.StringVar(value=snapshot.get("display_text", ""))
+        tk.Label(
+            frame,
+            textvariable=detail_var,
+            bg=palette["panel_alt"],
+            fg=palette["muted"],
+            justify="left",
+            anchor="nw",
+            wraplength=620,
+            padx=12,
+            pady=12,
+        ).pack(fill="x", pady=(12, 12))
+
+        checklist_var = tk.StringVar(
+            value="\n".join(
+                f"{'PASS' if passed else 'CHECK'} — "
+                f"{name.replace('_', ' ').title()}"
+                for name, passed in snapshot.get("checklist", {}).items()
+            )
+        )
+        tk.Label(
+            frame,
+            textvariable=checklist_var,
+            bg=palette["panel"],
+            fg=palette["muted"],
+            justify="left",
+            anchor="nw",
+        ).pack(fill="x", pady=(0, 14))
+
+        def refresh_dialog() -> None:
+            current = refresh_daily_startup_center(False)
+            detail_var.set(current.get("display_text", ""))
+            checklist_var.set(
+                "\n".join(
+                    f"{'PASS' if passed else 'CHECK'} — "
+                    f"{name.replace('_', ' ').title()}"
+                    for name, passed in current.get("checklist", {}).items()
+                )
+            )
+
+        ttk.Button(
+            frame,
+            text="Run Daily Readiness",
+            command=refresh_dialog,
+        ).pack(fill="x", pady=3)
+
+        ttk.Button(
+            frame,
+            text="Prepare Next Market Day",
+            command=prepare_next_market_day_from_app,
+        ).pack(fill="x", pady=3)
+
+        tk.Label(
+            frame,
+            text=(
+                "PAPER/DATA ONLY • REAL ORDERS BLOCKED • "
+                "NO AUTO TRADING • NO OPTION SELLING"
+            ),
+            bg=palette["panel"],
+            fg=palette["muted"],
+            anchor="w",
+            pady=12,
+        ).pack(fill="x")
+
+    daily_startup_panel = tk.Frame(
+        action_panel,
+        bg=palette["panel_alt"],
+        highlightbackground=palette["border"],
+        highlightthickness=1,
+    )
+    daily_startup_panel.pack(fill="x", padx=18, pady=(4, 8))
+
+    tk.Label(
+        daily_startup_panel,
+        textvariable=daily_startup_status,
+        bg=palette["panel_alt"],
+        fg=palette["muted"],
+        justify="left",
+        anchor="w",
+        wraplength=300,
+        padx=10,
+        pady=8,
+    ).pack(fill="x")
+
+    ttk.Button(
+        action_panel,
+        text="Daily Startup & Checklist",
+        style="Secondary.TButton",
+        command=open_daily_startup_center,
+    ).pack(fill="x", padx=18, pady=3)
+
+    root.after(750, lambda: refresh_daily_startup_center(False))
+
     root.mainloop()
     return 0
 

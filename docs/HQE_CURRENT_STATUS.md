@@ -339,3 +339,18 @@ Commit after PASS: `Add unified app-native market data center`
 Next roadmap target: app-native daily startup orchestration and automatic operator checklist consolidation.
 
 Real trading remains locked. This is not a profitability claim.
+
+## HQE App Completion Batch 6 — Daily Startup and Checklist
+
+- One-click daily readiness snapshot in the main app
+- Dynamic latest-day, next-day and next market-day detection
+- Broker login, market-data and safety-guard checklist
+- Safe app-native next-market-day preparation
+- Hidden worker and responsive polling
+- Permanent safety locks preserved
+
+Commit after PASS: `Add app-native daily startup and operator checklist`
+
+Next roadmap target: app-native end-of-day close orchestration.
+
+Real trading remains locked. This is not a profitability claim.
