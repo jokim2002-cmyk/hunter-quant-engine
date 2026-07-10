@@ -9,8 +9,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, Iterable, List
 
-VERSION = "HQE_APP_V2_INSTALLER_PACK_V1"
-DEFAULT_APP_VERSION = "2.0.0-owner-preview.1"
+VERSION = "HQE_APP_V2_INSTALLER_PACK_V2"
+DEFAULT_APP_VERSION = "2.0.0-owner-preview.2"
 
 
 def repo_root() -> Path:
@@ -51,6 +51,17 @@ def copy_release_tree(source: Path, target: Path) -> None:
     shutil.copytree(source, target, dirs_exist_ok=True, ignore=ignore)
 
 
+def silent_vbs() -> str:
+    return '''Option Explicit
+Dim shell, fso, root, command
+Set shell = CreateObject("WScript.Shell")
+Set fso = CreateObject("Scripting.FileSystemObject")
+root = fso.GetParentFolderName(WScript.ScriptFullName)
+command = Chr(34) & root & "\\LAUNCH_HQE_APP_V2.cmd" & Chr(34)
+shell.Run command, 0, False
+'''
+
+
 def installer_ps1(app_version: str, repo_hint: str, workspace_hint: str) -> str:
     return f'''$ErrorActionPreference = "Stop"
 
@@ -82,15 +93,21 @@ Get-ChildItem -LiteralPath $PackageRoot -Force |
     }}
 
 $LaunchCmd = Join-Path $InstallRoot "LAUNCH_HQE_APP_V2.cmd"
+$SilentVbs = Join-Path $InstallRoot "LAUNCH_HQE_APP_V2_SILENT.vbs"
+
 if (-not (Test-Path $LaunchCmd)) {{
     throw "Installed launcher missing: $LaunchCmd"
+}}
+if (-not (Test-Path $SilentVbs)) {{
+    throw "Installed silent launcher missing: $SilentVbs"
 }}
 
 Set-Content -Path $CurrentFile -Value "{app_version}" -Encoding UTF8
 
 $Shell = New-Object -ComObject WScript.Shell
 $Shortcut = $Shell.CreateShortcut($ShortcutPath)
-$Shortcut.TargetPath = $LaunchCmd
+$Shortcut.TargetPath = Join-Path $env:WINDIR "System32\wscript.exe"
+$Shortcut.Arguments = "`"$SilentVbs`""
 $Shortcut.WorkingDirectory = $InstallRoot
 $IconPath = Join-Path $InstallRoot "assets\HQE_PRODUCT_APP.ico"
 if (Test-Path $IconPath) {{
@@ -104,8 +121,11 @@ $InstallEvidence = @{{
     installed_at_utc = [DateTime]::UtcNow.ToString("o")
     install_root = $InstallRoot
     desktop_shortcut = $ShortcutPath
+    shortcut_target = $Shortcut.TargetPath
+    shortcut_arguments = $Shortcut.Arguments
     repo_hint = $RepoHint
     workspace_hint = $WorkspaceHint
+    silent_launch_enabled = $true
     real_money_enabled = $false
     real_orders_enabled = $false
     broker_execution_enabled = $false
@@ -117,6 +137,7 @@ Set-Content -Path (Join-Path $InstallRoot "HQE_APP_V2_INSTALL_EVIDENCE.json") -V
 Write-Host ""
 Write-Host "HQE APP V2 INSTALL: PASS" -ForegroundColor Green
 Write-Host "Desktop shortcut: $ShortcutPath"
+Write-Host "Silent launch: YES"
 Write-Host "Real money: NO"
 Write-Host "Real orders: NO"
 Write-Host "Broker execution: NO"
@@ -218,6 +239,7 @@ def build_installer_pack(
         "UNINSTALL_HQE_APP_V2.ps1": uninstall_ps1(app_version),
         "UNINSTALL_HQE_APP_V2.cmd": wrapper_cmd("UNINSTALL_HQE_APP_V2.ps1"),
         "LAUNCH_HQE_APP_V2.cmd": launch_cmd(repo_hint, workspace_hint),
+        "LAUNCH_HQE_APP_V2_SILENT.vbs": silent_vbs(),
     }
 
     for name, content in generated.items():
@@ -232,6 +254,7 @@ def build_installer_pack(
         "repo_hint": repo_hint,
         "workspace_hint": workspace_hint,
         "install_scope": "CURRENT_USER_NO_ADMIN",
+        "silent_launch_enabled": True,
         "real_money_enabled": False,
         "real_orders_enabled": False,
         "broker_execution_enabled": False,

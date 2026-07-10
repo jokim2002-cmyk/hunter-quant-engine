@@ -177,3 +177,17 @@ Real trading remains locked.
 Build the real owner installer package, install it on the owner machine, verify the desktop shortcut launch, then test uninstall/reinstall.
 
 Real trading remains locked.
+
+## App V2 silent launch and installer final freeze
+
+- Silent VBS launcher added
+- Desktop shortcut targets Windows Script Host
+- Uninstall/reinstall smoke requirements added
+- Installer final freeze gate added
+- Safety locks remain mandatory
+
+## Current next action
+
+Build version 2.0.0-owner-preview.2, install it, verify silent desktop launch, complete uninstall/reinstall smoke, then run the installer final freeze gate.
+
+Real trading remains locked.
