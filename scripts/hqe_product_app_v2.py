@@ -13,6 +13,11 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, Optional
 
+from hqe_app_market_data_quality_center import (
+    center_snapshot as data_quality_center_snapshot,
+    launch_cache_index_worker,
+)
+
 from hqe_app_operator_dashboard import (
     operator_dashboard_snapshot,
 )
@@ -3383,6 +3388,265 @@ def run_gui(args: argparse.Namespace) -> int:
     ).pack(fill="x", padx=10, pady=(2, 10))
 
     root.after(1500, lambda: refresh_operator_dashboard(False))
+
+
+    market_data_quality_status = tk.StringVar(
+        value="Market-data quality will appear after refresh."
+    )
+
+    def refresh_market_data_quality_center(
+        show_dialog: bool = False,
+    ) -> dict:
+        try:
+            snapshot = data_quality_center_snapshot(
+                repo_root(),
+                workspace,
+            )
+            market_data_quality_status.set(snapshot["display_text"])
+            footer_status.set(snapshot["display_text"])
+            if show_dialog:
+                messagebox.showinfo(
+                    "Market Data Quality Center",
+                    snapshot["display_text"],
+                )
+            return snapshot
+        except Exception as exc:
+            market_data_quality_status.set(
+                "Market-data quality refresh failed safely."
+            )
+            footer_status.set(f"Market-data quality error: {exc}")
+            if show_dialog:
+                messagebox.showerror(
+                    "Market Data Quality Center",
+                    str(exc),
+                )
+            return {}
+
+    def open_market_data_quality_path(kind: str) -> None:
+        snapshot = refresh_market_data_quality_center(False)
+        quality = snapshot.get("quality", {})
+        if kind == "best":
+            raw_path = str(
+                quality.get("best_source", {}).get("path", "")
+            ).strip()
+        else:
+            raw_path = str(
+                quality.get("cache_index_path", "")
+            ).strip()
+        if not raw_path:
+            messagebox.showwarning(
+                "Market Data Quality Center",
+                f"No {kind} data path is available.",
+            )
+            return
+        path = Path(raw_path)
+        if not path.exists():
+            messagebox.showerror(
+                "Market Data Quality Center",
+                f"Path is missing: {path}",
+            )
+            return
+        try:
+            os.startfile(path)
+        except Exception as exc:
+            messagebox.showerror(
+                "Market Data Quality Center",
+                str(exc),
+            )
+
+    def rebuild_market_data_cache_index() -> None:
+        try:
+            launch_cache_index_worker(repo_root(), workspace)
+            market_data_quality_status.set(
+                "Rebuilding data cache index safely..."
+            )
+            footer_status.set(
+                "Data-only cache index rebuild started."
+            )
+            root.after(
+                1200,
+                lambda: refresh_market_data_quality_center(False),
+            )
+        except Exception as exc:
+            messagebox.showerror(
+                "Market Data Quality Center",
+                str(exc),
+            )
+
+    def open_market_data_quality_center() -> None:
+        snapshot = refresh_market_data_quality_center(False)
+
+        dialog = tk.Toplevel(root)
+        dialog.title("HQE — Market Data Quality Center")
+        dialog.geometry("980x660")
+        dialog.minsize(860, 580)
+        dialog.configure(bg=palette["bg"])
+        dialog.transient(root)
+
+        outer = tk.Frame(
+            dialog,
+            bg=palette["panel"],
+            padx=18,
+            pady=16,
+        )
+        outer.pack(fill="both", expand=True, padx=16, pady=16)
+
+        tk.Label(
+            outer,
+            text="Market Data Abstraction & Quality Center",
+            bg=palette["panel"],
+            fg=palette["text"],
+            font=("Segoe UI Semibold", 17),
+            anchor="w",
+        ).pack(fill="x")
+
+        summary_var = tk.StringVar(
+            value=snapshot.get("display_text", "")
+        )
+        tk.Label(
+            outer,
+            textvariable=summary_var,
+            bg=palette["panel_alt"],
+            fg=palette["muted"],
+            justify="left",
+            anchor="w",
+            wraplength=880,
+            padx=10,
+            pady=10,
+        ).pack(fill="x", pady=(10, 12))
+
+        provider_frame = tk.LabelFrame(
+            outer,
+            text="Provider Registry",
+            bg=palette["panel"],
+            fg=palette["text"],
+            padx=10,
+            pady=8,
+        )
+        provider_frame.pack(fill="x", pady=(0, 12))
+
+        provider_var = tk.StringVar()
+        tk.Label(
+            provider_frame,
+            textvariable=provider_var,
+            bg=palette["panel"],
+            fg=palette["muted"],
+            justify="left",
+            anchor="w",
+        ).pack(fill="x")
+
+        quality_list = tk.Listbox(
+            outer,
+            exportselection=False,
+        )
+        quality_list.pack(fill="both", expand=True)
+
+        def render(current: dict) -> None:
+            summary_var.set(current.get("display_text", ""))
+
+            providers = current.get("providers", {}).get(
+                "providers",
+                [],
+            )
+            provider_var.set(
+                "\n".join(
+                    f"{item['display_name']}: "
+                    f"{item['effective_status']} | "
+                    f"Execution: NO"
+                    for item in providers
+                )
+            )
+
+            quality_list.delete(0, "end")
+            analyses = current.get("quality", {}).get(
+                "analyses",
+                [],
+            )
+            for item in analyses:
+                quality_list.insert(
+                    "end",
+                    f"[{item['status']}] score {item['score']} | "
+                    f"rows {item['row_count']} | "
+                    f"dup {item['duplicate_timestamps']} | "
+                    f"gaps {item['same_day_gaps']} | "
+                    f"{item['name']}",
+                )
+
+        def refresh_dialog() -> None:
+            render(refresh_market_data_quality_center(False))
+
+        button_row = tk.Frame(outer, bg=palette["panel"])
+        button_row.pack(fill="x", pady=(12, 0))
+
+        ttk.Button(
+            button_row,
+            text="Refresh Quality Scan",
+            command=refresh_dialog,
+        ).pack(side="left", padx=(0, 6))
+
+        ttk.Button(
+            button_row,
+            text="Rebuild Cache Index",
+            command=rebuild_market_data_cache_index,
+        ).pack(side="left", padx=6)
+
+        ttk.Button(
+            button_row,
+            text="Open Best Data File",
+            command=lambda: open_market_data_quality_path("best"),
+        ).pack(side="left", padx=6)
+
+        ttk.Button(
+            button_row,
+            text="Open Cache Index",
+            command=lambda: open_market_data_quality_path("index"),
+        ).pack(side="left", padx=6)
+
+        tk.Label(
+            outer,
+            text=(
+                "DATA ONLY • FYERS ACTIVE • OTHER PROVIDERS DISABLED • "
+                "REAL ORDERS NO"
+            ),
+            bg=palette["panel"],
+            fg=palette["muted"],
+            anchor="w",
+            pady=10,
+        ).pack(fill="x")
+
+        render(snapshot)
+
+    market_data_quality_panel = tk.Frame(
+        action_panel,
+        bg=palette["panel_alt"],
+        highlightbackground=palette["border"],
+        highlightthickness=1,
+    )
+    market_data_quality_panel.pack(fill="x", padx=18, pady=(4, 8))
+
+    tk.Label(
+        market_data_quality_panel,
+        textvariable=market_data_quality_status,
+        bg=palette["panel_alt"],
+        fg=palette["muted"],
+        justify="left",
+        anchor="w",
+        wraplength=300,
+        padx=10,
+        pady=8,
+    ).pack(fill="x")
+
+    ttk.Button(
+        action_panel,
+        text="Market Data Quality Center",
+        style="Secondary.TButton",
+        command=open_market_data_quality_center,
+    ).pack(fill="x", padx=18, pady=3)
+
+    root.after(
+        1650,
+        lambda: refresh_market_data_quality_center(False),
+    )
 
     root.mainloop()
     return 0

@@ -438,3 +438,25 @@ Next cohesive roadmap bunch: multi-broker data adapters and full
 market-data quality abstraction.
 
 Real trading remains locked. This is not a profitability claim.
+
+## HQE Market Data Abstraction and Quality Bunch
+
+Combined roadmap work completed:
+
+1. Multi-provider data-only registry
+2. Canonical symbol mapping
+3. Normalized OHLCV schema detection
+4. Duplicate, gap, timestamp, OHLC and volume quality checks
+5. Best-source selection and local cache index
+6. App-native Market Data Quality Center
+
+Fyers is the active data-only provider. Zerodha, Angel One, Upstox,
+Groww and Dhan remain clearly disabled adapter placeholders until
+their guarded data-only integrations are implemented.
+
+Commit after PASS: `Add market data abstraction and quality bunch`
+
+Next cohesive roadmap bunch: Strategy Pack foundation, strategy schema,
+versioning, selector and import/export.
+
+Real trading remains locked. This is not a profitability claim.
