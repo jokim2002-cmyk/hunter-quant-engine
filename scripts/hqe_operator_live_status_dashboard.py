@@ -7,11 +7,13 @@ import subprocess
 import tkinter as tk
 from datetime import datetime, timezone
 from pathlib import Path
+from zoneinfo import ZoneInfo
 from tkinter import ttk
 from typing import Any, Dict, Optional
 
-VERSION = "HQE_OPERATOR_LIVE_STATUS_DASHBOARD_V1"
+VERSION = "HQE_OPERATOR_LIVE_STATUS_DASHBOARD_V1_IST"
 REFRESH_MS = 5000
+INDIA_TZ = ZoneInfo("Asia/Kolkata")
 
 
 def utc_now() -> datetime:
@@ -63,6 +65,12 @@ def freshness_label(timestamp: Optional[datetime]) -> str:
     if age <= 600:
         return "RECENT"
     return "STALE"
+
+
+def format_ist(timestamp: Optional[datetime]) -> str:
+    if timestamp is None:
+        return "UNKNOWN"
+    return timestamp.astimezone(INDIA_TZ).strftime("%d-%m-%Y %I:%M:%S %p IST")
 
 
 def first_present(payload: Dict[str, Any], *keys: str, default: Any = None) -> Any:
@@ -134,6 +142,7 @@ def derive_status(workspace: Path) -> Dict[str, Any]:
         "watch_status": "RUNNING" if is_running else watch_text,
         "data_freshness": freshness_label(latest),
         "latest_update_utc": latest.isoformat() if latest else "UNKNOWN",
+        "latest_update_ist": format_ist(latest),
         "broker": str(broker),
         "symbol": str(symbol),
         "latest_decision": str(decision),
@@ -170,7 +179,7 @@ class OperatorDashboard(tk.Tk):
             for key in (
                 "watch_status",
                 "data_freshness",
-                "latest_update_utc",
+                "latest_update_ist",
                 "broker",
                 "symbol",
                 "latest_decision",
@@ -205,7 +214,7 @@ class OperatorDashboard(tk.Tk):
         cards = [
             ("Paper Watch", "watch_status"),
             ("Data Freshness", "data_freshness"),
-            ("Last Update (UTC)", "latest_update_utc"),
+            ("Last Update (IST)", "latest_update_ist"),
             ("Broker", "broker"),
             ("Symbol", "symbol"),
             ("Latest Decision", "latest_decision"),

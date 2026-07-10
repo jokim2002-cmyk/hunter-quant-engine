@@ -30,6 +30,14 @@ def test_freshness_labels(monkeypatch):
     assert module.freshness_label(None) == "UNKNOWN"
 
 
+def test_format_ist():
+    module = load_module()
+    value = datetime(2026, 7, 10, 4, 48, 34, tzinfo=timezone.utc)
+
+    assert module.format_ist(value) == "10-07-2026 10:18:34 AM IST"
+    assert module.format_ist(None) == "UNKNOWN"
+
+
 def test_derive_status_reads_workspace(tmp_path):
     module = load_module()
 
@@ -70,6 +78,7 @@ def test_derive_status_reads_workspace(tmp_path):
     assert payload["watch_status"] == "RUNNING"
     assert payload["broker"] == "Fyers"
     assert payload["symbol"] == "NSE:NIFTY50-INDEX"
+    assert payload["latest_update_ist"] == "10-07-2026 10:30:00 AM IST"
     assert payload["latest_decision"] == "APP_V2_CONTROLLED_DRY_RUNS_COMPLETE"
     assert payload["real_orders_enabled"] is False
     assert payload["broker_execution_enabled"] is False
