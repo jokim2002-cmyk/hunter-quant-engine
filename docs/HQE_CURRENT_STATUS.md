@@ -678,3 +678,20 @@ Commit after PASS: `Add visible Advanced Tools hub`
 
 Product remains paper/data/research only.
 Real trading remains excluded. This is not a profitability claim.
+
+## HQE Advanced Runtime and Startup Performance Repair
+
+Blocking desktop UX repair completed:
+
+1. Replaced the blank Advanced Tools callback with a runtime-tested hub
+2. Verified all 10 advanced centers in an actual GUI smoke test
+3. Disabled eager startup refreshes for maintenance centers
+4. Advanced centers now load only when opened
+5. Suppressed Windows child console flashes during normal desktop use
+6. Added visible callback errors and persistent UI error logs
+7. Kept the stable main Overview layout unchanged
+
+Commit after PASS: `Fix advanced tools runtime and startup performance`
+
+Product remains paper/data/research only.
+Real trading remains excluded. This is not a profitability claim.

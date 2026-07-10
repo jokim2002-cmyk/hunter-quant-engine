@@ -99,3 +99,13 @@ The scrollable hub provides direct access to:
 
 Daily market use normally requires Overview, Broker Connect, Paper Watch,
 Today Report and System Safety. Release/audit centers are maintenance tools.
+
+### Advanced-center loading behavior
+
+Advanced and maintenance centers are lazy-loaded. They do not run heavy
+status scans during normal HQE startup.
+
+Open **Advanced Tools & Product Centers**, then select the required center.
+This keeps desktop launch fast and prevents terminal-window flashes.
+A failed UI action displays an error dialog and writes a diagnostic log
+instead of leaving a blank window.

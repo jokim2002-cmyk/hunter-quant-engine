@@ -134,6 +134,30 @@ from hqe_product_license_common import (
 )
 from hqe_app_v2_license_activation import run_activation_gui
 
+# HQE desktop mode: hide child console windows on Windows.
+if (
+    os.name == "nt"
+    and not getattr(
+        subprocess,
+        "_hqe_hidden_popen_installed",
+        False,
+    )
+):
+    _HQEOriginalPopen = subprocess.Popen
+
+    class _HQEHiddenPopen(_HQEOriginalPopen):
+        def __init__(self, *args, **kwargs):
+            creationflags = int(
+                kwargs.get("creationflags", 0) or 0
+            )
+            creationflags |= subprocess.CREATE_NO_WINDOW
+            kwargs["creationflags"] = creationflags
+            super().__init__(*args, **kwargs)
+
+    subprocess.Popen = _HQEHiddenPopen
+    subprocess._hqe_hidden_popen_installed = True
+
+
 
 VERSION = "HQE_APP_V2_PUBLIC_TRADER_UI_V1"
 DEFAULT_WORKSPACE = Path(
@@ -769,435 +793,6 @@ def run_gui(args: argparse.Namespace) -> int:
     )
     action_panel.pack(side="left", fill="y", padx=(9, 0))
 
-    def open_advanced_tools_hub() -> None:
-        advanced_tools_dialog = tk.Toplevel(root)
-        advanced_tools_dialog.title("HQE - Advanced Tools & Product Centers")
-        advanced_tools_dialog.geometry("780x700")
-        advanced_tools_dialog.minsize(680, 540)
-        advanced_tools_dialog.configure(bg=palette["bg"])
-        advanced_tools_dialog.transient(root)
-
-        advanced_tools_shell = tk.Frame(
-            advanced_tools_dialog,
-            bg=palette["bg"],
-            padx=14,
-            pady=14,
-        )
-        advanced_tools_shell.pack(fill="both", expand=True)
-
-        tk.Label(
-            advanced_tools_shell,
-            text="Advanced Tools & Product Centers",
-            bg=palette["bg"],
-            fg=palette["text"],
-            font=("Segoe UI Semibold", 18),
-            anchor="w",
-        ).pack(fill="x")
-        tk.Label(
-            advanced_tools_shell,
-            text="All product, evidence and maintenance centers in one place.",
-            bg=palette["bg"],
-            fg=palette["muted"],
-            anchor="w",
-            pady=6,
-        ).pack(fill="x")
-
-        advanced_tools_body = tk.Frame(
-            advanced_tools_shell,
-            bg=palette["bg"],
-        )
-        advanced_tools_body.pack(fill="both", expand=True, pady=(8, 0))
-        advanced_tools_canvas = tk.Canvas(
-            advanced_tools_body,
-            bg=palette["bg"],
-            highlightthickness=0,
-            borderwidth=0,
-        )
-        advanced_tools_scrollbar = ttk.Scrollbar(
-            advanced_tools_body,
-            orient="vertical",
-            command=advanced_tools_canvas.yview,
-        )
-        advanced_tools_canvas.configure(
-            yscrollcommand=advanced_tools_scrollbar.set,
-        )
-        advanced_tools_scrollbar.pack(side="right", fill="y")
-        advanced_tools_canvas.pack(side="left", fill="both", expand=True)
-        advanced_tools_inner = tk.Frame(
-            advanced_tools_canvas,
-            bg=palette["bg"],
-        )
-        advanced_tools_window = (
-            advanced_tools_canvas.create_window(
-                (0, 0),
-                window=advanced_tools_inner,
-                anchor="nw",
-            )
-        )
-
-        def _sync_advanced_tools(_event=None):
-            advanced_tools_canvas.configure(
-                scrollregion=advanced_tools_canvas.bbox("all"),
-            )
-            advanced_tools_canvas.itemconfigure(
-                advanced_tools_window,
-                width=max(1, advanced_tools_canvas.winfo_width()),
-            )
-
-        def _advanced_tools_wheel(event):
-            advanced_tools_canvas.yview_scroll(-1 if event.delta > 0 else 1, "units")
-            return "break"
-
-        advanced_tools_inner.bind("<Configure>", _sync_advanced_tools)
-        advanced_tools_canvas.bind("<Configure>", _sync_advanced_tools)
-        advanced_tools_canvas.bind("<MouseWheel>", _advanced_tools_wheel)
-        advanced_tools_inner.bind("<MouseWheel>", _advanced_tools_wheel)
-
-        advanced_card_1 = tk.Frame(
-            advanced_tools_inner,
-            bg=palette["panel"],
-            highlightthickness=1,
-            highlightbackground=palette["border"],
-            padx=12,
-            pady=10,
-        )
-        advanced_card_1.pack(fill="x", padx=4, pady=5)
-        tk.Label(
-            advanced_card_1,
-            text='Operator Dashboard',
-            bg=palette["panel"],
-            fg=palette["text"],
-            font=("Segoe UI Semibold", 12),
-            anchor="w",
-        ).pack(fill="x")
-        tk.Label(
-            advanced_card_1,
-            text='Guided Connect -> Prepare -> Watch -> Close -> Review flow.',
-            bg=palette["panel"],
-            fg=palette["muted"],
-            anchor="w",
-            justify="left",
-            wraplength=610,
-            pady=5,
-        ).pack(fill="x")
-        ttk.Button(
-            advanced_card_1,
-            text="Open Operator Dashboard",
-            command=open_operator_dashboard,
-        ).pack(side="right", pady=(4, 0))
-
-        advanced_card_2 = tk.Frame(
-            advanced_tools_inner,
-            bg=palette["panel"],
-            highlightthickness=1,
-            highlightbackground=palette["border"],
-            padx=12,
-            pady=10,
-        )
-        advanced_card_2.pack(fill="x", padx=4, pady=5)
-        tk.Label(
-            advanced_card_2,
-            text='Market Data Quality Center',
-            bg=palette["panel"],
-            fg=palette["text"],
-            font=("Segoe UI Semibold", 12),
-            anchor="w",
-        ).pack(fill="x")
-        tk.Label(
-            advanced_card_2,
-            text='Inspect gaps, duplicates, timestamps, OHLCV quality and approved data sources.',
-            bg=palette["panel"],
-            fg=palette["muted"],
-            anchor="w",
-            justify="left",
-            wraplength=610,
-            pady=5,
-        ).pack(fill="x")
-        ttk.Button(
-            advanced_card_2,
-            text="Open Market Data Quality Center",
-            command=open_market_data_quality_center,
-        ).pack(side="right", pady=(4, 0))
-
-        advanced_card_3 = tk.Frame(
-            advanced_tools_inner,
-            bg=palette["panel"],
-            highlightthickness=1,
-            highlightbackground=palette["border"],
-            padx=12,
-            pady=10,
-        )
-        advanced_card_3.pack(fill="x", padx=4, pady=5)
-        tk.Label(
-            advanced_card_3,
-            text='Strategy Pack Center',
-            bg=palette["panel"],
-            fg=palette["text"],
-            font=("Segoe UI Semibold", 12),
-            anchor="w",
-        ).pack(fill="x")
-        tk.Label(
-            advanced_card_3,
-            text='Review built-in and draft strategy packs; clone, import or export paper-only packs.',
-            bg=palette["panel"],
-            fg=palette["muted"],
-            anchor="w",
-            justify="left",
-            wraplength=610,
-            pady=5,
-        ).pack(fill="x")
-        ttk.Button(
-            advanced_card_3,
-            text="Open Strategy Pack Center",
-            command=open_strategy_pack_center,
-        ).pack(side="right", pady=(4, 0))
-
-        advanced_card_4 = tk.Frame(
-            advanced_tools_inner,
-            bg=palette["panel"],
-            highlightthickness=1,
-            highlightbackground=palette["border"],
-            padx=12,
-            pady=10,
-        )
-        advanced_card_4.pack(fill="x", padx=4, pady=5)
-        tk.Label(
-            advanced_card_4,
-            text='Strategy Builder & Selector',
-            bg=palette["panel"],
-            fg=palette["text"],
-            font=("Segoe UI Semibold", 12),
-            anchor="w",
-        ).pack(fill="x")
-        tk.Label(
-            advanced_card_4,
-            text='Build, validate and select a paper-only strategy draft.',
-            bg=palette["panel"],
-            fg=palette["muted"],
-            anchor="w",
-            justify="left",
-            wraplength=610,
-            pady=5,
-        ).pack(fill="x")
-        ttk.Button(
-            advanced_card_4,
-            text="Open Strategy Builder & Selector",
-            command=open_strategy_builder_center,
-        ).pack(side="right", pady=(4, 0))
-
-        advanced_card_5 = tk.Frame(
-            advanced_tools_inner,
-            bg=palette["panel"],
-            highlightthickness=1,
-            highlightbackground=palette["border"],
-            padx=12,
-            pady=10,
-        )
-        advanced_card_5.pack(fill="x", padx=4, pady=5)
-        tk.Label(
-            advanced_card_5,
-            text='Backtest Product Center',
-            bg=palette["panel"],
-            fg=palette["text"],
-            font=("Segoe UI Semibold", 12),
-            anchor="w",
-        ).pack(fill="x")
-        tk.Label(
-            advanced_card_5,
-            text='Create guarded recorded-data research backtest jobs and review evidence.',
-            bg=palette["panel"],
-            fg=palette["muted"],
-            anchor="w",
-            justify="left",
-            wraplength=610,
-            pady=5,
-        ).pack(fill="x")
-        ttk.Button(
-            advanced_card_5,
-            text="Open Backtest Product Center",
-            command=open_backtest_product_center,
-        ).pack(side="right", pady=(4, 0))
-
-        advanced_card_6 = tk.Frame(
-            advanced_tools_inner,
-            bg=palette["panel"],
-            highlightthickness=1,
-            highlightbackground=palette["border"],
-            padx=12,
-            pady=10,
-        )
-        advanced_card_6.pack(fill="x", padx=4, pady=5)
-        tk.Label(
-            advanced_card_6,
-            text='Session History',
-            bg=palette["panel"],
-            fg=palette["text"],
-            font=("Segoe UI Semibold", 12),
-            anchor="w",
-        ).pack(fill="x")
-        tk.Label(
-            advanced_card_6,
-            text='Browse earlier paper sessions, reports and evidence files.',
-            bg=palette["panel"],
-            fg=palette["muted"],
-            anchor="w",
-            justify="left",
-            wraplength=610,
-            pady=5,
-        ).pack(fill="x")
-        ttk.Button(
-            advanced_card_6,
-            text="Open Session History",
-            command=open_session_history_center,
-        ).pack(side="right", pady=(4, 0))
-
-        advanced_card_7 = tk.Frame(
-            advanced_tools_inner,
-            bg=palette["panel"],
-            highlightthickness=1,
-            highlightbackground=palette["border"],
-            padx=12,
-            pady=10,
-        )
-        advanced_card_7.pack(fill="x", padx=4, pady=5)
-        tk.Label(
-            advanced_card_7,
-            text='Paper Validation Intelligence',
-            bg=palette["panel"],
-            fg=palette["text"],
-            font=("Segoe UI Semibold", 12),
-            anchor="w",
-        ).pack(fill="x")
-        tk.Label(
-            advanced_card_7,
-            text='Track days, genuine paper trades, expiry weeks, no-trade reasons and drift.',
-            bg=palette["panel"],
-            fg=palette["muted"],
-            anchor="w",
-            justify="left",
-            wraplength=610,
-            pady=5,
-        ).pack(fill="x")
-        ttk.Button(
-            advanced_card_7,
-            text="Open Paper Validation Intelligence",
-            command=open_paper_validation_report_center,
-        ).pack(side="right", pady=(4, 0))
-
-        advanced_card_8 = tk.Frame(
-            advanced_tools_inner,
-            bg=palette["panel"],
-            highlightthickness=1,
-            highlightbackground=palette["border"],
-            padx=12,
-            pady=10,
-        )
-        advanced_card_8.pack(fill="x", padx=4, pady=5)
-        tk.Label(
-            advanced_card_8,
-            text='Windows Release Center',
-            bg=palette["panel"],
-            fg=palette["text"],
-            font=("Segoe UI Semibold", 12),
-            anchor="w",
-        ).pack(fill="x")
-        tk.Label(
-            advanced_card_8,
-            text='Desktop shortcut, backup, restore staging, diagnostics and release dry run.',
-            bg=palette["panel"],
-            fg=palette["muted"],
-            anchor="w",
-            justify="left",
-            wraplength=610,
-            pady=5,
-        ).pack(fill="x")
-        ttk.Button(
-            advanced_card_8,
-            text="Open Windows Release Center",
-            command=open_release_center,
-        ).pack(side="right", pady=(4, 0))
-
-        advanced_card_9 = tk.Frame(
-            advanced_tools_inner,
-            bg=palette["panel"],
-            highlightthickness=1,
-            highlightbackground=palette["border"],
-            padx=12,
-            pady=10,
-        )
-        advanced_card_9.pack(fill="x", padx=4, pady=5)
-        tk.Label(
-            advanced_card_9,
-            text='Final RC Audit & Freeze',
-            bg=palette["panel"],
-            fg=palette["text"],
-            font=("Segoe UI Semibold", 12),
-            anchor="w",
-        ).pack(fill="x")
-        tk.Label(
-            advanced_card_9,
-            text='Verify release safety, required files and freeze hashes.',
-            bg=palette["panel"],
-            fg=palette["muted"],
-            anchor="w",
-            justify="left",
-            wraplength=610,
-            pady=5,
-        ).pack(fill="x")
-        ttk.Button(
-            advanced_card_9,
-            text="Open Final RC Audit & Freeze",
-            command=open_rc_audit_center,
-        ).pack(side="right", pady=(4, 0))
-
-        advanced_card_10 = tk.Frame(
-            advanced_tools_inner,
-            bg=palette["panel"],
-            highlightthickness=1,
-            highlightbackground=palette["border"],
-            padx=12,
-            pady=10,
-        )
-        advanced_card_10.pack(fill="x", padx=4, pady=5)
-        tk.Label(
-            advanced_card_10,
-            text='Operator Acceptance & RC Sign-Off',
-            bg=palette["panel"],
-            fg=palette["text"],
-            font=("Segoe UI Semibold", 12),
-            anchor="w",
-        ).pack(fill="x")
-        tk.Label(
-            advanced_card_10,
-            text='Review the final app journey and paper-only release acceptance evidence.',
-            bg=palette["panel"],
-            fg=palette["muted"],
-            anchor="w",
-            justify="left",
-            wraplength=610,
-            pady=5,
-        ).pack(fill="x")
-        ttk.Button(
-            advanced_card_10,
-            text="Open Operator Acceptance & RC Sign-Off",
-            command=open_operator_acceptance_center,
-        ).pack(side="right", pady=(4, 0))
-
-        tk.Label(
-            advanced_tools_inner,
-            text="Maintenance and audit centers are not required for normal daily market use.",
-            bg=palette["bg"],
-            fg=palette["muted"],
-            anchor="w",
-            pady=10,
-        ).pack(fill="x", padx=4)
-
-    ttk.Button(
-        action_panel,
-        text="Advanced Tools & Product Centers",
-        style="Secondary.TButton",
-        command=open_advanced_tools_hub,
-    ).pack(fill="x", padx=18, pady=(8, 4))
 
     action_panel.pack_propagate(False)
 
@@ -3054,7 +2649,6 @@ def run_gui(args: argparse.Namespace) -> int:
         command=open_session_history_center,
     ).pack(fill="x", padx=18, pady=3)
 
-    root.after(1050, lambda: refresh_session_history_center(False))
 
 
     safety_evidence_status = tk.StringVar(
@@ -3861,7 +3455,6 @@ def run_gui(args: argparse.Namespace) -> int:
         command=open_operator_dashboard,
     ).pack(fill="x", padx=10, pady=(2, 10))
 
-    root.after(1500, lambda: refresh_operator_dashboard(False))
 
 
     market_data_quality_status = tk.StringVar(
@@ -3928,24 +3521,6 @@ def run_gui(args: argparse.Namespace) -> int:
                 str(exc),
             )
 
-    def rebuild_market_data_cache_index() -> None:
-        try:
-            launch_cache_index_worker(repo_root(), workspace)
-            market_data_quality_status.set(
-                "Rebuilding data cache index safely..."
-            )
-            footer_status.set(
-                "Data-only cache index rebuild started."
-            )
-            root.after(
-                1200,
-                lambda: refresh_market_data_quality_center(False),
-            )
-        except Exception as exc:
-            messagebox.showerror(
-                "Market Data Quality Center",
-                str(exc),
-            )
 
     def open_market_data_quality_center() -> None:
         snapshot = refresh_market_data_quality_center(False)
@@ -4117,10 +3692,6 @@ def run_gui(args: argparse.Namespace) -> int:
         command=open_market_data_quality_center,
     ).pack(fill="x", padx=18, pady=3)
 
-    root.after(
-        1650,
-        lambda: refresh_market_data_quality_center(False),
-    )
 
 
     strategy_pack_status = tk.StringVar(
@@ -4493,7 +4064,6 @@ def run_gui(args: argparse.Namespace) -> int:
         command=open_strategy_pack_center,
     ).pack(fill="x", padx=18, pady=3)
 
-    root.after(1800, lambda: refresh_strategy_pack_center(False))
 
 
     strategy_builder_status = tk.StringVar(
@@ -4932,10 +4502,6 @@ def run_gui(args: argparse.Namespace) -> int:
         command=open_strategy_builder_center,
     ).pack(fill="x", padx=18, pady=3)
 
-    root.after(
-        1950,
-        lambda: refresh_strategy_builder_center(False),
-    )
 
 
     backtest_product_status = tk.StringVar(
@@ -4970,11 +4536,1306 @@ def run_gui(args: argparse.Namespace) -> int:
                 )
             return {}
 
+
+    backtest_product_panel = tk.Frame(
+        action_panel,
+        bg=palette["panel_alt"],
+        highlightbackground=palette["border"],
+        highlightthickness=1,
+    )
+    backtest_product_panel.pack(fill="x", padx=18, pady=(4, 8))
+
+    tk.Label(
+        backtest_product_panel,
+        textvariable=backtest_product_status,
+        bg=palette["panel_alt"],
+        fg=palette["muted"],
+        justify="left",
+        anchor="w",
+        wraplength=300,
+        padx=10,
+        pady=8,
+    ).pack(fill="x")
+
+    ttk.Button(
+        action_panel,
+        text="Backtest Product Center",
+        style="Secondary.TButton",
+        command=lambda: open_backtest_product_center(),
+    ).pack(fill="x", padx=18, pady=3)
+
+
+
+    paper_validation_report_status = tk.StringVar(
+        value="Paper-validation intelligence will appear after refresh."
+    )
+
+    def refresh_paper_validation_report_center(
+        show_dialog: bool = False,
+    ) -> dict:
+        try:
+            snapshot = paper_validation_center_snapshot(
+                repo_root(),
+                workspace,
+            )
+            paper_validation_report_status.set(
+                snapshot["display_text"]
+            )
+            footer_status.set(snapshot["display_text"])
+            if show_dialog:
+                messagebox.showinfo(
+                    "Paper Validation Intelligence",
+                    snapshot["display_text"],
+                )
+            return snapshot
+        except Exception as exc:
+            paper_validation_report_status.set(
+                "Paper-validation refresh failed safely."
+            )
+            footer_status.set(
+                f"Paper-validation report error: {exc}"
+            )
+            if show_dialog:
+                messagebox.showerror(
+                    "Paper Validation Intelligence",
+                    str(exc),
+                )
+            return {}
+
+
+    def generate_validation_report_pack() -> None:
+        try:
+            launch_report_pack_worker(
+                repo_root(),
+                workspace,
+            )
+            paper_validation_report_status.set(
+                "Generating validation report pack safely..."
+            )
+            footer_status.set(
+                "Paper-validation report generation started."
+            )
+            root.after(1000, poll_validation_report_pack)
+        except Exception as exc:
+            messagebox.showerror(
+                "Paper Validation Intelligence",
+                str(exc),
+            )
+
+    def open_latest_validation_report(kind: str) -> None:
+        snapshot = refresh_paper_validation_report_center(False)
+        latest = snapshot.get("latest_report", {})
+        key = {
+            "html": "html_path",
+            "json": "json_path",
+            "zip": "zip_path",
+            "folder": "report_dir",
+        }.get(kind, "report_dir")
+        raw_path = str(latest.get(key, "")).strip()
+        if not raw_path:
+            messagebox.showwarning(
+                "Paper Validation Intelligence",
+                "No generated validation report is available yet.",
+            )
+            return
+        path = Path(raw_path)
+        if not path.exists():
+            messagebox.showerror(
+                "Paper Validation Intelligence",
+                f"Report path is missing: {path}",
+            )
+            return
+        try:
+            os.startfile(path)
+        except Exception as exc:
+            messagebox.showerror(
+                "Paper Validation Intelligence",
+                str(exc),
+            )
+
+    def open_paper_validation_report_center() -> None:
+        snapshot = refresh_paper_validation_report_center(False)
+
+        dialog = tk.Toplevel(root)
+        dialog.title("HQE — Paper Validation Intelligence")
+        dialog.geometry("1080x740")
+        dialog.minsize(940, 650)
+        dialog.configure(bg=palette["bg"])
+        dialog.transient(root)
+
+        outer = tk.Frame(
+            dialog,
+            bg=palette["panel"],
+            padx=16,
+            pady=14,
+        )
+        outer.pack(fill="both", expand=True, padx=14, pady=14)
+
+        tk.Label(
+            outer,
+            text="Paper Validation Intelligence & Reports",
+            bg=palette["panel"],
+            fg=palette["text"],
+            font=("Segoe UI Semibold", 18),
+            anchor="w",
+        ).pack(fill="x")
+
+        summary_var = tk.StringVar(
+            value=snapshot.get("display_text", "")
+        )
+        tk.Label(
+            outer,
+            textvariable=summary_var,
+            bg=palette["panel_alt"],
+            fg=palette["muted"],
+            anchor="w",
+            padx=10,
+            pady=8,
+        ).pack(fill="x", pady=(8, 10))
+
+        top = tk.Frame(outer, bg=palette["panel"])
+        top.pack(fill="x")
+
+        decision_var = tk.StringVar()
+        progress_var = tk.StringVar()
+        drift_var = tk.StringVar()
+
+        for title, variable in (
+            ("Decision", decision_var),
+            ("Progress", progress_var),
+            ("Strategy Drift", drift_var),
+        ):
+            card = tk.LabelFrame(
+                top,
+                text=title,
+                bg=palette["panel"],
+                fg=palette["text"],
+                padx=10,
+                pady=8,
+            )
+            card.pack(
+                side="left",
+                fill="both",
+                expand=True,
+                padx=4,
+            )
+            tk.Label(
+                card,
+                textvariable=variable,
+                bg=palette["panel"],
+                fg=palette["muted"],
+                justify="left",
+                anchor="nw",
+                wraplength=300,
+            ).pack(fill="both", expand=True)
+
+        body = tk.Frame(outer, bg=palette["panel"])
+        body.pack(fill="both", expand=True, pady=(12, 0))
+
+        weekly_frame = tk.LabelFrame(
+            body,
+            text="Weekly Summary",
+            bg=palette["panel"],
+            fg=palette["text"],
+            padx=8,
+            pady=8,
+        )
+        weekly_frame.pack(
+            side="left",
+            fill="both",
+            expand=True,
+        )
+
+        reason_frame = tk.LabelFrame(
+            body,
+            text="No-Trade Reasons",
+            bg=palette["panel"],
+            fg=palette["text"],
+            padx=8,
+            pady=8,
+        )
+        reason_frame.pack(
+            side="left",
+            fill="both",
+            expand=True,
+            padx=(12, 0),
+        )
+
+        weekly_list = tk.Listbox(
+            weekly_frame,
+            exportselection=False,
+        )
+        weekly_list.pack(fill="both", expand=True)
+
+        reason_list = tk.Listbox(
+            reason_frame,
+            exportselection=False,
+        )
+        reason_list.pack(fill="both", expand=True)
+
+        def render(current: dict) -> None:
+            summary_var.set(current.get("display_text", ""))
+            decision = current.get("decision", {})
+            progress = current.get("progress", {})
+            drift = current.get("strategy_drift", {})
+
+            decision_var.set(
+                f"{decision.get('status', '')}\n"
+                f"{decision.get('message', '')}"
+            )
+            progress_var.set(
+                f"Days: {progress.get('observed_days', 0)}/"
+                f"{progress.get('minimum_days', 20)}\n"
+                f"Trades: {progress.get('observed_trades', 0)}/"
+                f"{progress.get('minimum_trades', 30)}\n"
+                f"Expiry weeks: {progress.get('expiry_weeks', 0)}/"
+                f"{progress.get('minimum_expiry_weeks', 4)}\n"
+                f"Valid trade days: "
+                f"{progress.get('valid_trade_days', 0)}\n"
+                f"No-trade days: "
+                f"{progress.get('no_trade_days', 0)}"
+            )
+            drift_var.set(
+                f"{drift.get('status', '')}\n"
+                f"{drift.get('message', '')}"
+            )
+
+            weekly_list.delete(0, "end")
+            for item in current.get("weekly_summaries", []):
+                weekly_list.insert(
+                    "end",
+                    f"{item.get('iso_week', '')} | "
+                    f"days {item.get('observed_days', 0)} | "
+                    f"trades {item.get('trade_count', 0)} | "
+                    f"no-trade {item.get('no_trade_days', 0)}",
+                )
+
+            reason_list.delete(0, "end")
+            for item in current.get("no_trade_reasons", []):
+                reason_list.insert(
+                    "end",
+                    f"{item.get('reason', '')} | "
+                    f"{item.get('count', 0)} days | "
+                    f"{item.get('percent_of_no_trade_days', 0)}%",
+                )
+
+        def refresh_dialog() -> None:
+            render(refresh_paper_validation_report_center(False))
+
+        buttons = tk.Frame(outer, bg=palette["panel"])
+        buttons.pack(fill="x", pady=(12, 0))
+
+        ttk.Button(
+            buttons,
+            text="Refresh Validation Status",
+            command=refresh_dialog,
+        ).pack(side="left", padx=(0, 6))
+
+        ttk.Button(
+            buttons,
+            text="Generate Report Pack",
+            command=generate_validation_report_pack,
+        ).pack(side="left", padx=6)
+
+        ttk.Button(
+            buttons,
+            text="Open Latest HTML Report",
+            command=lambda: open_latest_validation_report("html"),
+        ).pack(side="left", padx=6)
+
+        ttk.Button(
+            buttons,
+            text="Open Latest JSON Report",
+            command=lambda: open_latest_validation_report("json"),
+        ).pack(side="left", padx=6)
+
+        ttk.Button(
+            buttons,
+            text="Open Latest ZIP Pack",
+            command=lambda: open_latest_validation_report("zip"),
+        ).pack(side="left", padx=6)
+
+        tk.Label(
+            outer,
+            text=(
+                "PAPER/DATA ONLY • FORMAL REVIEW IS NOT REAL-TRADING "
+                "APPROVAL • THIS IS NOT A PROFITABILITY CLAIM"
+            ),
+            bg=palette["panel"],
+            fg=palette["muted"],
+            anchor="w",
+            pady=10,
+        ).pack(fill="x")
+
+        render(snapshot)
+
+    paper_validation_report_panel = tk.Frame(
+        action_panel,
+        bg=palette["panel_alt"],
+        highlightbackground=palette["border"],
+        highlightthickness=1,
+    )
+    paper_validation_report_panel.pack(
+        fill="x",
+        padx=18,
+        pady=(4, 8),
+    )
+
+    tk.Label(
+        paper_validation_report_panel,
+        textvariable=paper_validation_report_status,
+        bg=palette["panel_alt"],
+        fg=palette["muted"],
+        justify="left",
+        anchor="w",
+        wraplength=300,
+        padx=10,
+        pady=8,
+    ).pack(fill="x")
+
+    ttk.Button(
+        action_panel,
+        text="Paper Validation Intelligence",
+        style="Secondary.TButton",
+        command=open_paper_validation_report_center,
+    ).pack(fill="x", padx=18, pady=3)
+
+
+
+    release_center_status = tk.StringVar(
+        value="Windows Release Center will appear after refresh."
+    )
+
+    def refresh_release_center(
+        show_dialog: bool = False,
+    ) -> dict:
+        try:
+            snapshot = release_center_snapshot(
+                repo_root(),
+                workspace,
+            )
+            release_center_status.set(snapshot["display_text"])
+            footer_status.set(snapshot["display_text"])
+            if show_dialog:
+                messagebox.showinfo(
+                    "Windows Release Center",
+                    snapshot["display_text"],
+                )
+            return snapshot
+        except Exception as exc:
+            release_center_status.set(
+                "Release Center refresh failed safely."
+            )
+            footer_status.set(f"Release Center error: {exc}")
+            if show_dialog:
+                messagebox.showerror(
+                    "Windows Release Center",
+                    str(exc),
+                )
+            return {}
+
+
+    def run_release_operation(
+        operation: str,
+        source_zip: str = "",
+    ) -> None:
+        try:
+            launch_release_operation(
+                repo_root(),
+                workspace,
+                operation,
+                source_zip,
+            )
+            release_center_status.set(
+                f"Release operation {operation} is running safely..."
+            )
+            footer_status.set(
+                "Release operation running. Trading remains locked."
+            )
+            root.after(1000, poll_release_operation)
+        except Exception as exc:
+            messagebox.showerror(
+                "Windows Release Center",
+                str(exc),
+            )
+
+    def install_desktop_shortcut() -> None:
+        try:
+            launch_desktop_shortcut_install(repo_root())
+            messagebox.showinfo(
+                "Windows Release Center",
+                "Desktop shortcut installation started.",
+            )
+        except Exception as exc:
+            messagebox.showerror(
+                "Windows Release Center",
+                str(exc),
+            )
+
+    def open_release_output(kind: str) -> None:
+        snapshot = refresh_release_center(False)
+        latest = snapshot.get("latest_outputs", {})
+        key = {
+            "backup": "latest_backup",
+            "restore": "latest_restore_staging",
+            "diagnostics": "latest_diagnostics",
+            "rc": "latest_rc_report",
+        }.get(kind, "latest_rc_report")
+        raw_path = str(latest.get(key, "")).strip()
+        if not raw_path:
+            messagebox.showwarning(
+                "Windows Release Center",
+                f"No {kind} output is available yet.",
+            )
+            return
+        path = Path(raw_path)
+        if not path.exists():
+            messagebox.showerror(
+                "Windows Release Center",
+                f"Output path is missing: {path}",
+            )
+            return
+        try:
+            os.startfile(path)
+        except Exception as exc:
+            messagebox.showerror(
+                "Windows Release Center",
+                str(exc),
+            )
+
+    def open_release_center() -> None:
+        from tkinter import filedialog
+
+        snapshot = refresh_release_center(False)
+
+        dialog = tk.Toplevel(root)
+        dialog.title("HQE — Windows Release Center")
+        dialog.geometry("1040x720")
+        dialog.minsize(900, 620)
+        dialog.configure(bg=palette["bg"])
+        dialog.transient(root)
+
+        outer = tk.Frame(
+            dialog,
+            bg=palette["panel"],
+            padx=16,
+            pady=14,
+        )
+        outer.pack(fill="both", expand=True, padx=14, pady=14)
+
+        tk.Label(
+            outer,
+            text="Windows Release Center",
+            bg=palette["panel"],
+            fg=palette["text"],
+            font=("Segoe UI Semibold", 18),
+            anchor="w",
+        ).pack(fill="x")
+
+        tk.Label(
+            outer,
+            text=(
+                "One Icon • License • Backup/Restore • Diagnostics • "
+                "Release-Candidate Dry Run"
+            ),
+            bg=palette["panel"],
+            fg=palette["muted"],
+            anchor="w",
+            pady=4,
+        ).pack(fill="x")
+
+        summary_var = tk.StringVar(
+            value=snapshot.get("display_text", "")
+        )
+        tk.Label(
+            outer,
+            textvariable=summary_var,
+            bg=palette["panel_alt"],
+            fg=palette["muted"],
+            anchor="w",
+            padx=10,
+            pady=8,
+        ).pack(fill="x", pady=(8, 10))
+
+        license_var = tk.StringVar()
+        operation_var = tk.StringVar()
+
+        top = tk.Frame(outer, bg=palette["panel"])
+        top.pack(fill="x")
+
+        for title, variable in (
+            ("License Lifecycle", license_var),
+            ("Latest Operation", operation_var),
+        ):
+            card = tk.LabelFrame(
+                top,
+                text=title,
+                bg=palette["panel"],
+                fg=palette["text"],
+                padx=10,
+                pady=8,
+            )
+            card.pack(
+                side="left",
+                fill="both",
+                expand=True,
+                padx=4,
+            )
+            tk.Label(
+                card,
+                textvariable=variable,
+                bg=palette["panel"],
+                fg=palette["muted"],
+                justify="left",
+                anchor="nw",
+                wraplength=460,
+            ).pack(fill="both", expand=True)
+
+        checks_list = tk.Listbox(
+            outer,
+            exportselection=False,
+        )
+        checks_list.pack(
+            fill="both",
+            expand=True,
+            pady=(12, 0),
+        )
+
+        def render(current: dict) -> None:
+            summary_var.set(current.get("display_text", ""))
+            license_data = current.get("license", {})
+            details = license_data.get("details", {})
+            license_var.set(
+                f"Check: {license_data.get('status', '')}\n"
+                f"Lifecycle: {details.get('status', '')}\n"
+                f"{license_data.get('message', '')}"
+            )
+            operation = current.get("operation", {})
+            operation_var.set(
+                f"Status: {operation.get('status', 'IDLE')}\n"
+                f"Operation: {operation.get('operation', '')}\n"
+                f"{operation.get('message', '')}"
+            )
+            checks_list.delete(0, "end")
+            for item in current.get("required_checks", []):
+                checks_list.insert(
+                    "end",
+                    f"[{item.get('status', '')}] "
+                    f"{item.get('name', '')} — "
+                    f"{item.get('message', '')}",
+                )
+
+        def refresh_dialog() -> None:
+            render(refresh_release_center(False))
+
+        def choose_restore_backup() -> None:
+            selected = filedialog.askopenfilename(
+                parent=dialog,
+                title="Select HQE Backup ZIP",
+                filetypes=[("HQE Backup ZIP", "*.zip")],
+            )
+            if selected:
+                run_release_operation(
+                    "restore_stage",
+                    selected,
+                )
+
+        buttons = tk.Frame(outer, bg=palette["panel"])
+        buttons.pack(fill="x", pady=(12, 0))
+
+        ttk.Button(
+            buttons,
+            text="Run RC Dry Run",
+            command=lambda: run_release_operation("rc_dry_run"),
+        ).pack(side="left", padx=(0, 5))
+
+        ttk.Button(
+            buttons,
+            text="Create User Backup",
+            command=lambda: run_release_operation("backup"),
+        ).pack(side="left", padx=5)
+
+        ttk.Button(
+            buttons,
+            text="Stage Restore from Backup",
+            command=choose_restore_backup,
+        ).pack(side="left", padx=5)
+
+        ttk.Button(
+            buttons,
+            text="Create Diagnostics Bundle",
+            command=lambda: run_release_operation("diagnostics"),
+        ).pack(side="left", padx=5)
+
+        ttk.Button(
+            buttons,
+            text="Install Desktop Shortcut",
+            command=install_desktop_shortcut,
+        ).pack(side="left", padx=5)
+
+        second_buttons = tk.Frame(outer, bg=palette["panel"])
+        second_buttons.pack(fill="x", pady=(8, 0))
+
+        ttk.Button(
+            second_buttons,
+            text="Refresh Release Status",
+            command=refresh_dialog,
+        ).pack(side="left", padx=(0, 5))
+
+        ttk.Button(
+            second_buttons,
+            text="Open Latest RC Report",
+            command=lambda: open_release_output("rc"),
+        ).pack(side="left", padx=5)
+
+        ttk.Button(
+            second_buttons,
+            text="Open Latest Backup",
+            command=lambda: open_release_output("backup"),
+        ).pack(side="left", padx=5)
+
+        ttk.Button(
+            second_buttons,
+            text="Open Latest Diagnostics",
+            command=lambda: open_release_output("diagnostics"),
+        ).pack(side="left", padx=5)
+
+        ttk.Button(
+            second_buttons,
+            text="Open Restore Staging",
+            command=lambda: open_release_output("restore"),
+        ).pack(side="left", padx=5)
+
+        tk.Label(
+            outer,
+            text=(
+                "RC DRY RUN ONLY • RESTORE STAGING DOES NOT OVERWRITE • "
+                "REAL ORDERS NO • BROKER EXECUTION NO"
+            ),
+            bg=palette["panel"],
+            fg=palette["muted"],
+            anchor="w",
+            pady=10,
+        ).pack(fill="x")
+
+        render(snapshot)
+
+    release_center_panel = tk.Frame(
+        action_panel,
+        bg=palette["panel_alt"],
+        highlightbackground=palette["border"],
+        highlightthickness=1,
+    )
+    release_center_panel.pack(
+        fill="x",
+        padx=18,
+        pady=(4, 8),
+    )
+
+    tk.Label(
+        release_center_panel,
+        textvariable=release_center_status,
+        bg=palette["panel_alt"],
+        fg=palette["muted"],
+        justify="left",
+        anchor="w",
+        wraplength=300,
+        padx=10,
+        pady=8,
+    ).pack(fill="x")
+
+    ttk.Button(
+        action_panel,
+        text="Windows Release Center",
+        style="Secondary.TButton",
+        command=open_release_center,
+    ).pack(fill="x", padx=18, pady=3)
+
+
+
+    rc_audit_status = tk.StringVar(
+        value="Final RC audit status will appear after refresh."
+    )
+
+    def refresh_rc_audit_center(
+        show_dialog: bool = False,
+    ) -> dict:
+        try:
+            snapshot = rc_audit_center_snapshot(
+                repo_root(),
+                workspace,
+            )
+            rc_audit_status.set(snapshot["display_text"])
+            footer_status.set(snapshot["display_text"])
+            if show_dialog:
+                messagebox.showinfo(
+                    "Final RC Audit & Freeze",
+                    snapshot["display_text"],
+                )
+            return snapshot
+        except Exception as exc:
+            rc_audit_status.set(
+                "Final RC audit refresh failed safely."
+            )
+            footer_status.set(f"Final RC audit error: {exc}")
+            if show_dialog:
+                messagebox.showerror(
+                    "Final RC Audit & Freeze",
+                    str(exc),
+                )
+            return {}
+
+
+    def run_final_rc_audit() -> None:
+        try:
+            launch_rc_audit_worker(
+                repo_root(),
+                workspace,
+            )
+            rc_audit_status.set(
+                "End-to-end RC audit is running safely..."
+            )
+            footer_status.set(
+                "RC audit running; no trading operation started."
+            )
+            root.after(1400, poll_rc_audit)
+        except Exception as exc:
+            messagebox.showerror(
+                "Final RC Audit & Freeze",
+                str(exc),
+            )
+
+    def open_rc_audit_path(kind: str) -> None:
+        snapshot = refresh_rc_audit_center(False)
+        raw_path = str(
+            {
+                "report": snapshot.get("latest_report", ""),
+                "freeze": snapshot.get("freeze_manifest", ""),
+                "guide": snapshot.get("operator_guide", ""),
+            }.get(kind, "")
+        ).strip()
+        if not raw_path:
+            messagebox.showwarning(
+                "Final RC Audit & Freeze",
+                f"No {kind} file is available yet.",
+            )
+            return
+        path = Path(raw_path)
+        if not path.exists():
+            messagebox.showerror(
+                "Final RC Audit & Freeze",
+                f"File is missing: {path}",
+            )
+            return
+        try:
+            os.startfile(path)
+        except Exception as exc:
+            messagebox.showerror(
+                "Final RC Audit & Freeze",
+                str(exc),
+            )
+
+    def open_rc_audit_center() -> None:
+        snapshot = refresh_rc_audit_center(False)
+
+        dialog = tk.Toplevel(root)
+        dialog.title("HQE — Final RC Audit & Freeze")
+        dialog.geometry("980x650")
+        dialog.minsize(860, 570)
+        dialog.configure(bg=palette["bg"])
+        dialog.transient(root)
+
+        outer = tk.Frame(
+            dialog,
+            bg=palette["panel"],
+            padx=16,
+            pady=14,
+        )
+        outer.pack(fill="both", expand=True, padx=14, pady=14)
+
+        tk.Label(
+            outer,
+            text="Final RC Audit & Freeze",
+            bg=palette["panel"],
+            fg=palette["text"],
+            font=("Segoe UI Semibold", 18),
+            anchor="w",
+        ).pack(fill="x")
+
+        summary_var = tk.StringVar(
+            value=snapshot.get("display_text", "")
+        )
+        tk.Label(
+            outer,
+            textvariable=summary_var,
+            bg=palette["panel_alt"],
+            fg=palette["muted"],
+            anchor="w",
+            padx=10,
+            pady=8,
+        ).pack(fill="x", pady=(8, 10))
+
+        freeze_var = tk.StringVar()
+        audit_var = tk.StringVar()
+
+        top = tk.Frame(outer, bg=palette["panel"])
+        top.pack(fill="x")
+
+        for title, variable in (
+            ("Paper-Only Freeze", freeze_var),
+            ("Latest End-to-End Audit", audit_var),
+        ):
+            card = tk.LabelFrame(
+                top,
+                text=title,
+                bg=palette["panel"],
+                fg=palette["text"],
+                padx=10,
+                pady=8,
+            )
+            card.pack(
+                side="left",
+                fill="both",
+                expand=True,
+                padx=4,
+            )
+            tk.Label(
+                card,
+                textvariable=variable,
+                bg=palette["panel"],
+                fg=palette["muted"],
+                justify="left",
+                anchor="nw",
+                wraplength=430,
+            ).pack(fill="both", expand=True)
+
+        check_list = tk.Listbox(
+            outer,
+            exportselection=False,
+        )
+        check_list.pack(
+            fill="both",
+            expand=True,
+            pady=(12, 0),
+        )
+
+        def render(current: dict) -> None:
+            summary_var.set(current.get("display_text", ""))
+            freeze = current.get("freeze", {})
+            latest = current.get("latest_audit", {})
+            freeze_var.set(
+                f"Status: {freeze.get('status', '')}\n"
+                f"Files: {freeze.get('file_count', 0)}\n"
+                f"{freeze.get('message', '')}"
+            )
+            audit_var.set(
+                f"Status: {latest.get('status', 'NOT_RUN')}\n"
+                f"Passed: {latest.get('passed_count', 0)} | "
+                f"Review: {latest.get('review_count', 0)} | "
+                f"Failed: {latest.get('failed_count', 0)}\n"
+                f"{latest.get('message', '')}"
+            )
+            check_list.delete(0, "end")
+            for item in latest.get("checks", []):
+                check_list.insert(
+                    "end",
+                    f"[{item.get('status', '')}] "
+                    f"{item.get('name', '')} — "
+                    f"{item.get('message', '')}",
+                )
+
+        def refresh_dialog() -> None:
+            render(refresh_rc_audit_center(False))
+
+        buttons = tk.Frame(outer, bg=palette["panel"])
+        buttons.pack(fill="x", pady=(12, 0))
+
+        ttk.Button(
+            buttons,
+            text="Run End-to-End RC Audit",
+            command=run_final_rc_audit,
+        ).pack(side="left", padx=(0, 6))
+
+        ttk.Button(
+            buttons,
+            text="Open Latest Audit Report",
+            command=lambda: open_rc_audit_path("report"),
+        ).pack(side="left", padx=6)
+
+        ttk.Button(
+            buttons,
+            text="Open Freeze Manifest",
+            command=lambda: open_rc_audit_path("freeze"),
+        ).pack(side="left", padx=6)
+
+        ttk.Button(
+            buttons,
+            text="Open Operator Guide",
+            command=lambda: open_rc_audit_path("guide"),
+        ).pack(side="left", padx=6)
+
+        ttk.Button(
+            buttons,
+            text="Refresh Audit Status",
+            command=refresh_dialog,
+        ).pack(side="left", padx=6)
+
+        tk.Label(
+            outer,
+            text=(
+                "PAPER/DATA/RESEARCH RC ONLY • NO TRADING OPERATION • "
+                "THIS IS NOT A PROFITABILITY CLAIM"
+            ),
+            bg=palette["panel"],
+            fg=palette["muted"],
+            anchor="w",
+            pady=10,
+        ).pack(fill="x")
+
+        render(snapshot)
+
+    rc_audit_panel = tk.Frame(
+        action_panel,
+        bg=palette["panel_alt"],
+        highlightbackground=palette["border"],
+        highlightthickness=2,
+    )
+    rc_audit_panel.pack(fill="x", padx=18, pady=(6, 10))
+
+    tk.Label(
+        rc_audit_panel,
+        text="FINAL PAPER-ONLY RELEASE CANDIDATE",
+        bg=palette["panel_alt"],
+        fg=palette["text"],
+        font=("Segoe UI Semibold", 11),
+        anchor="w",
+        padx=10,
+        pady=8,
+    ).pack(fill="x")
+
+    tk.Label(
+        rc_audit_panel,
+        textvariable=rc_audit_status,
+        bg=palette["panel_alt"],
+        fg=palette["muted"],
+        justify="left",
+        anchor="w",
+        wraplength=300,
+        padx=10,
+        pady=6,
+    ).pack(fill="x")
+
+    ttk.Button(
+        rc_audit_panel,
+        text="Final RC Audit & Freeze",
+        command=open_rc_audit_center,
+    ).pack(fill="x", padx=10, pady=(2, 10))
+
+
+
+    operator_acceptance_status = tk.StringVar(
+        value="Operator acceptance has not been run."
+    )
+
+    def refresh_operator_acceptance_center(
+        show_dialog: bool = False,
+    ) -> dict:
+        try:
+            snapshot = operator_acceptance_center_snapshot(
+                repo_root(),
+                workspace,
+            )
+            operator_acceptance_status.set(
+                snapshot["display_text"]
+            )
+            footer_status.set(snapshot["display_text"])
+            if show_dialog:
+                messagebox.showinfo(
+                    "Operator Acceptance & RC Sign-Off",
+                    snapshot["display_text"],
+                )
+            return snapshot
+        except Exception as exc:
+            operator_acceptance_status.set(
+                "Operator acceptance refresh failed safely."
+            )
+            footer_status.set(
+                f"Operator acceptance error: {exc}"
+            )
+            if show_dialog:
+                messagebox.showerror(
+                    "Operator Acceptance & RC Sign-Off",
+                    str(exc),
+                )
+            return {}
+
+
+    def run_operator_acceptance() -> None:
+        try:
+            launch_operator_acceptance(
+                repo_root(),
+                workspace,
+            )
+            operator_acceptance_status.set(
+                "Operator acceptance dry run is running..."
+            )
+            footer_status.set(
+                "Read-only operator acceptance is running."
+            )
+            root.after(1200, poll_operator_acceptance)
+        except Exception as exc:
+            messagebox.showerror(
+                "Operator Acceptance & RC Sign-Off",
+                str(exc),
+            )
+
+    def open_operator_acceptance_path(kind: str) -> None:
+        snapshot = refresh_operator_acceptance_center(False)
+        latest = snapshot.get("latest", {})
+        raw_path = str(
+            {
+                "html": latest.get("html_path", ""),
+                "json": latest.get("json_path", ""),
+                "folder": latest.get("report_dir", ""),
+                "guide": snapshot.get("operator_guide", ""),
+            }.get(kind, "")
+        ).strip()
+        if not raw_path:
+            messagebox.showwarning(
+                "Operator Acceptance & RC Sign-Off",
+                f"No {kind} file is available yet.",
+            )
+            return
+        path = Path(raw_path)
+        if not path.exists():
+            messagebox.showerror(
+                "Operator Acceptance & RC Sign-Off",
+                f"File is missing: {path}",
+            )
+            return
+        try:
+            os.startfile(path)
+        except Exception as exc:
+            messagebox.showerror(
+                "Operator Acceptance & RC Sign-Off",
+                str(exc),
+            )
+
+    def open_operator_acceptance_center() -> None:
+        snapshot = refresh_operator_acceptance_center(False)
+
+        dialog = tk.Toplevel(root)
+        dialog.title("HQE — Operator Acceptance & RC Sign-Off")
+        dialog.geometry("980x650")
+        dialog.minsize(860, 570)
+        dialog.configure(bg=palette["bg"])
+        dialog.transient(root)
+
+        outer = tk.Frame(
+            dialog,
+            bg=palette["panel"],
+            padx=16,
+            pady=14,
+        )
+        outer.pack(fill="both", expand=True, padx=14, pady=14)
+
+        tk.Label(
+            outer,
+            text="Operator Acceptance & RC Sign-Off",
+            bg=palette["panel"],
+            fg=palette["text"],
+            font=("Segoe UI Semibold", 18),
+            anchor="w",
+        ).pack(fill="x")
+
+        summary_var = tk.StringVar(
+            value=snapshot.get("display_text", "")
+        )
+        tk.Label(
+            outer,
+            textvariable=summary_var,
+            bg=palette["panel_alt"],
+            fg=palette["muted"],
+            anchor="w",
+            padx=10,
+            pady=8,
+        ).pack(fill="x", pady=(8, 10))
+
+        decision_var = tk.StringVar()
+        check_list = tk.Listbox(
+            outer,
+            exportselection=False,
+        )
+        check_list.pack(fill="both", expand=True)
+
+        tk.Label(
+            outer,
+            textvariable=decision_var,
+            bg=palette["panel_alt"],
+            fg=palette["muted"],
+            justify="left",
+            anchor="w",
+            wraplength=900,
+            padx=10,
+            pady=8,
+        ).pack(fill="x", pady=(10, 0))
+
+        def render(current: dict) -> None:
+            summary_var.set(current.get("display_text", ""))
+            report = current.get("latest", {}).get("report", {})
+            decision = report.get("decision", {})
+            decision_var.set(
+                f"{decision.get('status', 'NOT_RUN')}\n"
+                f"{decision.get('message', '')}"
+            )
+            check_list.delete(0, "end")
+            for item in report.get("checks", []):
+                check_list.insert(
+                    "end",
+                    f"[{item.get('status', '')}] "
+                    f"{item.get('name', '')} — "
+                    f"{item.get('message', '')}",
+                )
+
+        def refresh_dialog() -> None:
+            render(refresh_operator_acceptance_center(False))
+
+        buttons = tk.Frame(outer, bg=palette["panel"])
+        buttons.pack(fill="x", pady=(12, 0))
+
+        ttk.Button(
+            buttons,
+            text="Run Operator Acceptance Dry Run",
+            command=run_operator_acceptance,
+        ).pack(side="left", padx=(0, 6))
+
+        ttk.Button(
+            buttons,
+            text="Open Acceptance HTML",
+            command=lambda: open_operator_acceptance_path("html"),
+        ).pack(side="left", padx=6)
+
+        ttk.Button(
+            buttons,
+            text="Open Acceptance JSON",
+            command=lambda: open_operator_acceptance_path("json"),
+        ).pack(side="left", padx=6)
+
+        ttk.Button(
+            buttons,
+            text="Open Operator Guide",
+            command=lambda: open_operator_acceptance_path("guide"),
+        ).pack(side="left", padx=6)
+
+        ttk.Button(
+            buttons,
+            text="Refresh Acceptance Status",
+            command=refresh_dialog,
+        ).pack(side="left", padx=6)
+
+        tk.Label(
+            outer,
+            text=(
+                "POST-FREEZE ACCEPTANCE ONLY • NO PRODUCT FEATURE CHANGE • "
+                "REAL ORDERS NO • THIS IS NOT A PROFITABILITY CLAIM"
+            ),
+            bg=palette["panel"],
+            fg=palette["muted"],
+            anchor="w",
+            pady=10,
+        ).pack(fill="x")
+
+        render(snapshot)
+
+    operator_acceptance_panel = tk.Frame(
+        action_panel,
+        bg=palette["panel_alt"],
+        highlightbackground=palette["border"],
+        highlightthickness=2,
+    )
+    operator_acceptance_panel.pack(
+        fill="x",
+        padx=18,
+        pady=(6, 10),
+    )
+
+    tk.Label(
+        operator_acceptance_panel,
+        text="FINAL OPERATOR ACCEPTANCE",
+        bg=palette["panel_alt"],
+        fg=palette["text"],
+        font=("Segoe UI Semibold", 11),
+        anchor="w",
+        padx=10,
+        pady=8,
+    ).pack(fill="x")
+
+    tk.Label(
+        operator_acceptance_panel,
+        textvariable=operator_acceptance_status,
+        bg=palette["panel_alt"],
+        fg=palette["muted"],
+        justify="left",
+        anchor="w",
+        wraplength=300,
+        padx=10,
+        pady=6,
+    ).pack(fill="x")
+
+    ttk.Button(
+        operator_acceptance_panel,
+        text="Operator Acceptance & RC Sign-Off",
+        command=open_operator_acceptance_center,
+    ).pack(fill="x", padx=10, pady=(2, 10))
+
+
+    def _hqe_report_callback_exception(
+        exception_type,
+        exception_value,
+        exception_traceback,
+    ) -> None:
+        import traceback
+        rendered = ''.join(
+            traceback.format_exception(
+                exception_type,
+                exception_value,
+                exception_traceback,
+            )
+        )
+        error_path = (
+            Path(workspace)
+            / 'HQE_RELEASE_CENTER'
+            / 'ui_errors'
+            / 'HQE_UI_CALLBACK_ERROR.txt'
+        )
+        try:
+            error_path.parent.mkdir(
+                parents=True,
+                exist_ok=True,
+            )
+            error_path.write_text(
+                rendered,
+                encoding='utf-8',
+            )
+        except Exception:
+            pass
+        messagebox.showerror(
+            'HQE UI Error',
+            'A UI action failed safely.\n\n'
+            + str(exception_value)
+            + '\n\nError log: '
+            + str(error_path),
+        )
+
+    root.report_callback_exception = (
+        _hqe_report_callback_exception
+    )
+
     def open_backtest_product_center() -> None:
         snapshot = refresh_backtest_product_center(False)
 
         dialog = tk.Toplevel(root)
-        dialog.title("HQE — Backtest Product Center")
+        dialog.title("HQE â€” Backtest Product Center")
         dialog.geometry("1160x760")
         dialog.minsize(1020, 680)
         dialog.configure(bg=palette["bg"])
@@ -5000,7 +5861,7 @@ def run_gui(args: argparse.Namespace) -> int:
         tk.Label(
             outer,
             text=(
-                "Recorded Data • Strategy Pack • Costs • "
+                "Recorded Data â€¢ Strategy Pack â€¢ Costs â€¢ "
                 "Equity / Drawdown Evidence"
             ),
             bg=palette["panel"],
@@ -5398,8 +6259,8 @@ def run_gui(args: argparse.Namespace) -> int:
         tk.Label(
             outer,
             text=(
-                "RECORDED DATA ONLY • NO FAKE OPTION PRICES • "
-                "REAL ORDERS NO • BROKER EXECUTION NO"
+                "RECORDED DATA ONLY â€¢ NO FAKE OPTION PRICES â€¢ "
+                "REAL ORDERS NO â€¢ BROKER EXECUTION NO"
             ),
             bg=palette["panel"],
             fg=palette["muted"],
@@ -5410,1373 +6271,577 @@ def run_gui(args: argparse.Namespace) -> int:
         render_runs(snapshot)
         preview_job()
 
-    backtest_product_panel = tk.Frame(
-        action_panel,
-        bg=palette["panel_alt"],
-        highlightbackground=palette["border"],
-        highlightthickness=1,
-    )
-    backtest_product_panel.pack(fill="x", padx=18, pady=(4, 8))
-
-    tk.Label(
-        backtest_product_panel,
-        textvariable=backtest_product_status,
-        bg=palette["panel_alt"],
-        fg=palette["muted"],
-        justify="left",
-        anchor="w",
-        wraplength=300,
-        padx=10,
-        pady=8,
-    ).pack(fill="x")
-
-    ttk.Button(
-        action_panel,
-        text="Backtest Product Center",
-        style="Secondary.TButton",
-        command=open_backtest_product_center,
-    ).pack(fill="x", padx=18, pady=3)
-
-    root.after(
-        2100,
-        lambda: refresh_backtest_product_center(False),
-    )
-
-
-    paper_validation_report_status = tk.StringVar(
-        value="Paper-validation intelligence will appear after refresh."
-    )
-
-    def refresh_paper_validation_report_center(
-        show_dialog: bool = False,
-    ) -> dict:
-        try:
-            snapshot = paper_validation_center_snapshot(
-                repo_root(),
-                workspace,
-            )
-            paper_validation_report_status.set(
-                snapshot["display_text"]
-            )
-            footer_status.set(snapshot["display_text"])
-            if show_dialog:
-                messagebox.showinfo(
-                    "Paper Validation Intelligence",
-                    snapshot["display_text"],
-                )
-            return snapshot
-        except Exception as exc:
-            paper_validation_report_status.set(
-                "Paper-validation refresh failed safely."
-            )
-            footer_status.set(
-                f"Paper-validation report error: {exc}"
-            )
-            if show_dialog:
-                messagebox.showerror(
-                    "Paper Validation Intelligence",
-                    str(exc),
-                )
-            return {}
-
-    def poll_validation_report_pack() -> None:
-        snapshot = refresh_paper_validation_report_center(False)
-        operation = snapshot.get("operation", {})
-        status = str(operation.get("status", ""))
-        if status == "RUNNING":
-            root.after(1000, poll_validation_report_pack)
-            return
-        message = str(
-            operation.get(
-                "message",
-                "Paper-validation report operation finished.",
-            )
+    def open_advanced_tools_hub() -> None:
+        advanced_tools_dialog = tk.Toplevel(root)
+        advanced_tools_dialog.title(
+            'HQE - Advanced Tools & Product Centers'
         )
-        footer_status.set(message)
-        if status == "PASS":
-            messagebox.showinfo(
-                "Paper Validation Intelligence",
-                message,
-            )
-        elif status in {"FAILED", "BLOCKED"}:
-            messagebox.showerror(
-                "Paper Validation Intelligence",
-                message,
-            )
-
-    def generate_validation_report_pack() -> None:
-        try:
-            launch_report_pack_worker(
-                repo_root(),
-                workspace,
-            )
-            paper_validation_report_status.set(
-                "Generating validation report pack safely..."
-            )
-            footer_status.set(
-                "Paper-validation report generation started."
-            )
-            root.after(1000, poll_validation_report_pack)
-        except Exception as exc:
-            messagebox.showerror(
-                "Paper Validation Intelligence",
-                str(exc),
-            )
-
-    def open_latest_validation_report(kind: str) -> None:
-        snapshot = refresh_paper_validation_report_center(False)
-        latest = snapshot.get("latest_report", {})
-        key = {
-            "html": "html_path",
-            "json": "json_path",
-            "zip": "zip_path",
-            "folder": "report_dir",
-        }.get(kind, "report_dir")
-        raw_path = str(latest.get(key, "")).strip()
-        if not raw_path:
-            messagebox.showwarning(
-                "Paper Validation Intelligence",
-                "No generated validation report is available yet.",
-            )
-            return
-        path = Path(raw_path)
-        if not path.exists():
-            messagebox.showerror(
-                "Paper Validation Intelligence",
-                f"Report path is missing: {path}",
-            )
-            return
-        try:
-            os.startfile(path)
-        except Exception as exc:
-            messagebox.showerror(
-                "Paper Validation Intelligence",
-                str(exc),
-            )
-
-    def open_paper_validation_report_center() -> None:
-        snapshot = refresh_paper_validation_report_center(False)
-
-        dialog = tk.Toplevel(root)
-        dialog.title("HQE — Paper Validation Intelligence")
-        dialog.geometry("1080x740")
-        dialog.minsize(940, 650)
-        dialog.configure(bg=palette["bg"])
-        dialog.transient(root)
-
-        outer = tk.Frame(
-            dialog,
-            bg=palette["panel"],
+        advanced_tools_dialog.geometry('820x720')
+        advanced_tools_dialog.minsize(680, 520)
+        hub_bg = palette.get('bg', '#101a31')
+        hub_panel = palette.get('panel', '#18243d')
+        hub_text = palette.get('text', '#ffffff')
+        hub_muted = palette.get('muted', '#a9bad7')
+        hub_border = palette.get('border', '#34445f')
+        advanced_tools_dialog.configure(bg=hub_bg)
+        advanced_tools_dialog.transient(root)
+        advanced_tools_shell = tk.Frame(
+            advanced_tools_dialog,
+            bg=hub_bg,
             padx=16,
             pady=14,
         )
-        outer.pack(fill="both", expand=True, padx=14, pady=14)
-
-        tk.Label(
-            outer,
-            text="Paper Validation Intelligence & Reports",
-            bg=palette["panel"],
-            fg=palette["text"],
-            font=("Segoe UI Semibold", 18),
-            anchor="w",
-        ).pack(fill="x")
-
-        summary_var = tk.StringVar(
-            value=snapshot.get("display_text", "")
-        )
-        tk.Label(
-            outer,
-            textvariable=summary_var,
-            bg=palette["panel_alt"],
-            fg=palette["muted"],
-            anchor="w",
-            padx=10,
-            pady=8,
-        ).pack(fill="x", pady=(8, 10))
-
-        top = tk.Frame(outer, bg=palette["panel"])
-        top.pack(fill="x")
-
-        decision_var = tk.StringVar()
-        progress_var = tk.StringVar()
-        drift_var = tk.StringVar()
-
-        for title, variable in (
-            ("Decision", decision_var),
-            ("Progress", progress_var),
-            ("Strategy Drift", drift_var),
-        ):
-            card = tk.LabelFrame(
-                top,
-                text=title,
-                bg=palette["panel"],
-                fg=palette["text"],
-                padx=10,
-                pady=8,
-            )
-            card.pack(
-                side="left",
-                fill="both",
-                expand=True,
-                padx=4,
-            )
-            tk.Label(
-                card,
-                textvariable=variable,
-                bg=palette["panel"],
-                fg=palette["muted"],
-                justify="left",
-                anchor="nw",
-                wraplength=300,
-            ).pack(fill="both", expand=True)
-
-        body = tk.Frame(outer, bg=palette["panel"])
-        body.pack(fill="both", expand=True, pady=(12, 0))
-
-        weekly_frame = tk.LabelFrame(
-            body,
-            text="Weekly Summary",
-            bg=palette["panel"],
-            fg=palette["text"],
-            padx=8,
-            pady=8,
-        )
-        weekly_frame.pack(
-            side="left",
-            fill="both",
+        advanced_tools_shell.pack(
+            fill='both',
             expand=True,
         )
-
-        reason_frame = tk.LabelFrame(
-            body,
-            text="No-Trade Reasons",
-            bg=palette["panel"],
-            fg=palette["text"],
-            padx=8,
-            pady=8,
-        )
-        reason_frame.pack(
-            side="left",
-            fill="both",
-            expand=True,
-            padx=(12, 0),
-        )
-
-        weekly_list = tk.Listbox(
-            weekly_frame,
-            exportselection=False,
-        )
-        weekly_list.pack(fill="both", expand=True)
-
-        reason_list = tk.Listbox(
-            reason_frame,
-            exportselection=False,
-        )
-        reason_list.pack(fill="both", expand=True)
-
-        def render(current: dict) -> None:
-            summary_var.set(current.get("display_text", ""))
-            decision = current.get("decision", {})
-            progress = current.get("progress", {})
-            drift = current.get("strategy_drift", {})
-
-            decision_var.set(
-                f"{decision.get('status', '')}\n"
-                f"{decision.get('message', '')}"
-            )
-            progress_var.set(
-                f"Days: {progress.get('observed_days', 0)}/"
-                f"{progress.get('minimum_days', 20)}\n"
-                f"Trades: {progress.get('observed_trades', 0)}/"
-                f"{progress.get('minimum_trades', 30)}\n"
-                f"Expiry weeks: {progress.get('expiry_weeks', 0)}/"
-                f"{progress.get('minimum_expiry_weeks', 4)}\n"
-                f"Valid trade days: "
-                f"{progress.get('valid_trade_days', 0)}\n"
-                f"No-trade days: "
-                f"{progress.get('no_trade_days', 0)}"
-            )
-            drift_var.set(
-                f"{drift.get('status', '')}\n"
-                f"{drift.get('message', '')}"
-            )
-
-            weekly_list.delete(0, "end")
-            for item in current.get("weekly_summaries", []):
-                weekly_list.insert(
-                    "end",
-                    f"{item.get('iso_week', '')} | "
-                    f"days {item.get('observed_days', 0)} | "
-                    f"trades {item.get('trade_count', 0)} | "
-                    f"no-trade {item.get('no_trade_days', 0)}",
-                )
-
-            reason_list.delete(0, "end")
-            for item in current.get("no_trade_reasons", []):
-                reason_list.insert(
-                    "end",
-                    f"{item.get('reason', '')} | "
-                    f"{item.get('count', 0)} days | "
-                    f"{item.get('percent_of_no_trade_days', 0)}%",
-                )
-
-        def refresh_dialog() -> None:
-            render(refresh_paper_validation_report_center(False))
-
-        buttons = tk.Frame(outer, bg=palette["panel"])
-        buttons.pack(fill="x", pady=(12, 0))
-
-        ttk.Button(
-            buttons,
-            text="Refresh Validation Status",
-            command=refresh_dialog,
-        ).pack(side="left", padx=(0, 6))
-
-        ttk.Button(
-            buttons,
-            text="Generate Report Pack",
-            command=generate_validation_report_pack,
-        ).pack(side="left", padx=6)
-
-        ttk.Button(
-            buttons,
-            text="Open Latest HTML Report",
-            command=lambda: open_latest_validation_report("html"),
-        ).pack(side="left", padx=6)
-
-        ttk.Button(
-            buttons,
-            text="Open Latest JSON Report",
-            command=lambda: open_latest_validation_report("json"),
-        ).pack(side="left", padx=6)
-
-        ttk.Button(
-            buttons,
-            text="Open Latest ZIP Pack",
-            command=lambda: open_latest_validation_report("zip"),
-        ).pack(side="left", padx=6)
-
         tk.Label(
-            outer,
+            advanced_tools_shell,
+            text="Advanced Tools & Product Centers",
+            bg=hub_bg,
+            fg=hub_text,
+            font=('Segoe UI Semibold', 18),
+            anchor='w',
+        ).pack(fill='x')
+        tk.Label(
+            advanced_tools_shell,
             text=(
-                "PAPER/DATA ONLY • FORMAL REVIEW IS NOT REAL-TRADING "
-                "APPROVAL • THIS IS NOT A PROFITABILITY CLAIM"
+                'Advanced centers load only when opened.'
             ),
-            bg=palette["panel"],
-            fg=palette["muted"],
-            anchor="w",
+            bg=hub_bg,
+            fg=hub_muted,
+            anchor='w',
+            pady=6,
+        ).pack(fill='x')
+        advanced_tools_body = tk.Frame(
+            advanced_tools_shell,
+            bg=hub_bg,
+        )
+        advanced_tools_body.pack(
+            fill='both',
+            expand=True,
+            pady=(8, 0),
+        )
+        advanced_tools_canvas = tk.Canvas(
+            advanced_tools_body,
+            bg=hub_bg,
+            highlightthickness=0,
+            borderwidth=0,
+        )
+        advanced_tools_scrollbar = ttk.Scrollbar(
+            advanced_tools_body,
+            orient='vertical',
+            command=advanced_tools_canvas.yview,
+        )
+        advanced_tools_canvas.configure(
+            yscrollcommand=
+            advanced_tools_scrollbar.set,
+        )
+        advanced_tools_scrollbar.pack(
+            side='right',
+            fill='y',
+        )
+        advanced_tools_canvas.pack(
+            side='left',
+            fill='both',
+            expand=True,
+        )
+        advanced_tools_inner = tk.Frame(
+            advanced_tools_canvas,
+            bg=hub_bg,
+        )
+        advanced_tools_window = (
+            advanced_tools_canvas.create_window(
+                (0, 0),
+                window=advanced_tools_inner,
+                anchor='nw',
+            )
+        )
+        def _sync_advanced_tools(_event=None):
+            advanced_tools_canvas.itemconfigure(
+                advanced_tools_window,
+                width=max(
+                    1,
+                    advanced_tools_canvas.winfo_width(),
+                ),
+            )
+            advanced_tools_canvas.configure(
+                scrollregion=
+                advanced_tools_canvas.bbox('all'),
+            )
+        def _advanced_tools_wheel(event):
+            advanced_tools_canvas.yview_scroll(
+                -1 if event.delta > 0 else 1,
+                'units',
+            )
+            return 'break'
+        advanced_tools_inner.bind(
+            '<Configure>',
+            _sync_advanced_tools,
+        )
+        advanced_tools_canvas.bind(
+            '<Configure>',
+            _sync_advanced_tools,
+        )
+        advanced_tools_canvas.bind(
+            '<MouseWheel>',
+            _advanced_tools_wheel,
+        )
+
+        card_1 = tk.Frame(
+            advanced_tools_inner,
+            bg=hub_panel,
+            highlightthickness=1,
+            highlightbackground=hub_border,
+            padx=12,
             pady=10,
-        ).pack(fill="x")
+        )
+        card_1.pack(
+            fill='x',
+            padx=4,
+            pady=5,
+        )
+        tk.Label(
+            card_1,
+            text='Operator Dashboard',
+            bg=hub_panel,
+            fg=hub_text,
+            font=('Segoe UI Semibold', 12),
+            anchor='w',
+        ).pack(fill='x')
+        tk.Label(
+            card_1,
+            text='Guided Connect -> Prepare -> Watch -> Close -> Review flow.',
+            bg=hub_panel,
+            fg=hub_muted,
+            anchor='w',
+            justify='left',
+            wraplength=650,
+            pady=5,
+        ).pack(fill='x')
+        ttk.Button(
+            card_1,
+            text='Open Operator Dashboard',
+            command=open_operator_dashboard,
+        ).pack(
+            side='right',
+            pady=(4, 0),
+        )
+        card_2 = tk.Frame(
+            advanced_tools_inner,
+            bg=hub_panel,
+            highlightthickness=1,
+            highlightbackground=hub_border,
+            padx=12,
+            pady=10,
+        )
+        card_2.pack(
+            fill='x',
+            padx=4,
+            pady=5,
+        )
+        tk.Label(
+            card_2,
+            text='Market Data Quality Center',
+            bg=hub_panel,
+            fg=hub_text,
+            font=('Segoe UI Semibold', 12),
+            anchor='w',
+        ).pack(fill='x')
+        tk.Label(
+            card_2,
+            text='Inspect gaps, duplicates, timestamps and OHLCV quality.',
+            bg=hub_panel,
+            fg=hub_muted,
+            anchor='w',
+            justify='left',
+            wraplength=650,
+            pady=5,
+        ).pack(fill='x')
+        ttk.Button(
+            card_2,
+            text='Open Market Data Quality Center',
+            command=open_market_data_quality_center,
+        ).pack(
+            side='right',
+            pady=(4, 0),
+        )
+        card_3 = tk.Frame(
+            advanced_tools_inner,
+            bg=hub_panel,
+            highlightthickness=1,
+            highlightbackground=hub_border,
+            padx=12,
+            pady=10,
+        )
+        card_3.pack(
+            fill='x',
+            padx=4,
+            pady=5,
+        )
+        tk.Label(
+            card_3,
+            text='Strategy Pack Center',
+            bg=hub_panel,
+            fg=hub_text,
+            font=('Segoe UI Semibold', 12),
+            anchor='w',
+        ).pack(fill='x')
+        tk.Label(
+            card_3,
+            text='Review, clone, import and export paper-only strategy packs.',
+            bg=hub_panel,
+            fg=hub_muted,
+            anchor='w',
+            justify='left',
+            wraplength=650,
+            pady=5,
+        ).pack(fill='x')
+        ttk.Button(
+            card_3,
+            text='Open Strategy Pack Center',
+            command=open_strategy_pack_center,
+        ).pack(
+            side='right',
+            pady=(4, 0),
+        )
+        card_4 = tk.Frame(
+            advanced_tools_inner,
+            bg=hub_panel,
+            highlightthickness=1,
+            highlightbackground=hub_border,
+            padx=12,
+            pady=10,
+        )
+        card_4.pack(
+            fill='x',
+            padx=4,
+            pady=5,
+        )
+        tk.Label(
+            card_4,
+            text='Strategy Builder & Selector',
+            bg=hub_panel,
+            fg=hub_text,
+            font=('Segoe UI Semibold', 12),
+            anchor='w',
+        ).pack(fill='x')
+        tk.Label(
+            card_4,
+            text='Build, validate and select a paper-only strategy draft.',
+            bg=hub_panel,
+            fg=hub_muted,
+            anchor='w',
+            justify='left',
+            wraplength=650,
+            pady=5,
+        ).pack(fill='x')
+        ttk.Button(
+            card_4,
+            text='Open Strategy Builder & Selector',
+            command=open_strategy_builder_center,
+        ).pack(
+            side='right',
+            pady=(4, 0),
+        )
+        card_5 = tk.Frame(
+            advanced_tools_inner,
+            bg=hub_panel,
+            highlightthickness=1,
+            highlightbackground=hub_border,
+            padx=12,
+            pady=10,
+        )
+        card_5.pack(
+            fill='x',
+            padx=4,
+            pady=5,
+        )
+        tk.Label(
+            card_5,
+            text='Backtest Product Center',
+            bg=hub_panel,
+            fg=hub_text,
+            font=('Segoe UI Semibold', 12),
+            anchor='w',
+        ).pack(fill='x')
+        tk.Label(
+            card_5,
+            text='Create guarded recorded-data research backtest jobs.',
+            bg=hub_panel,
+            fg=hub_muted,
+            anchor='w',
+            justify='left',
+            wraplength=650,
+            pady=5,
+        ).pack(fill='x')
+        ttk.Button(
+            card_5,
+            text='Open Backtest Product Center',
+            command=open_backtest_product_center,
+        ).pack(
+            side='right',
+            pady=(4, 0),
+        )
+        card_6 = tk.Frame(
+            advanced_tools_inner,
+            bg=hub_panel,
+            highlightthickness=1,
+            highlightbackground=hub_border,
+            padx=12,
+            pady=10,
+        )
+        card_6.pack(
+            fill='x',
+            padx=4,
+            pady=5,
+        )
+        tk.Label(
+            card_6,
+            text='Session History',
+            bg=hub_panel,
+            fg=hub_text,
+            font=('Segoe UI Semibold', 12),
+            anchor='w',
+        ).pack(fill='x')
+        tk.Label(
+            card_6,
+            text='Browse earlier paper sessions, reports and evidence.',
+            bg=hub_panel,
+            fg=hub_muted,
+            anchor='w',
+            justify='left',
+            wraplength=650,
+            pady=5,
+        ).pack(fill='x')
+        ttk.Button(
+            card_6,
+            text='Open Session History',
+            command=open_session_history_center,
+        ).pack(
+            side='right',
+            pady=(4, 0),
+        )
+        card_7 = tk.Frame(
+            advanced_tools_inner,
+            bg=hub_panel,
+            highlightthickness=1,
+            highlightbackground=hub_border,
+            padx=12,
+            pady=10,
+        )
+        card_7.pack(
+            fill='x',
+            padx=4,
+            pady=5,
+        )
+        tk.Label(
+            card_7,
+            text='Paper Validation Intelligence',
+            bg=hub_panel,
+            fg=hub_text,
+            font=('Segoe UI Semibold', 12),
+            anchor='w',
+        ).pack(fill='x')
+        tk.Label(
+            card_7,
+            text='Track days, trades, expiry weeks, reasons and drift.',
+            bg=hub_panel,
+            fg=hub_muted,
+            anchor='w',
+            justify='left',
+            wraplength=650,
+            pady=5,
+        ).pack(fill='x')
+        ttk.Button(
+            card_7,
+            text='Open Paper Validation Intelligence',
+            command=open_paper_validation_report_center,
+        ).pack(
+            side='right',
+            pady=(4, 0),
+        )
+        card_8 = tk.Frame(
+            advanced_tools_inner,
+            bg=hub_panel,
+            highlightthickness=1,
+            highlightbackground=hub_border,
+            padx=12,
+            pady=10,
+        )
+        card_8.pack(
+            fill='x',
+            padx=4,
+            pady=5,
+        )
+        tk.Label(
+            card_8,
+            text='Windows Release Center',
+            bg=hub_panel,
+            fg=hub_text,
+            font=('Segoe UI Semibold', 12),
+            anchor='w',
+        ).pack(fill='x')
+        tk.Label(
+            card_8,
+            text='Backup, restore staging, diagnostics and release checks.',
+            bg=hub_panel,
+            fg=hub_muted,
+            anchor='w',
+            justify='left',
+            wraplength=650,
+            pady=5,
+        ).pack(fill='x')
+        ttk.Button(
+            card_8,
+            text='Open Windows Release Center',
+            command=open_release_center,
+        ).pack(
+            side='right',
+            pady=(4, 0),
+        )
+        card_9 = tk.Frame(
+            advanced_tools_inner,
+            bg=hub_panel,
+            highlightthickness=1,
+            highlightbackground=hub_border,
+            padx=12,
+            pady=10,
+        )
+        card_9.pack(
+            fill='x',
+            padx=4,
+            pady=5,
+        )
+        tk.Label(
+            card_9,
+            text='Final RC Audit & Freeze',
+            bg=hub_panel,
+            fg=hub_text,
+            font=('Segoe UI Semibold', 12),
+            anchor='w',
+        ).pack(fill='x')
+        tk.Label(
+            card_9,
+            text='Verify release safety, required files and freeze hashes.',
+            bg=hub_panel,
+            fg=hub_muted,
+            anchor='w',
+            justify='left',
+            wraplength=650,
+            pady=5,
+        ).pack(fill='x')
+        ttk.Button(
+            card_9,
+            text='Open Final RC Audit & Freeze',
+            command=open_rc_audit_center,
+        ).pack(
+            side='right',
+            pady=(4, 0),
+        )
+        card_10 = tk.Frame(
+            advanced_tools_inner,
+            bg=hub_panel,
+            highlightthickness=1,
+            highlightbackground=hub_border,
+            padx=12,
+            pady=10,
+        )
+        card_10.pack(
+            fill='x',
+            padx=4,
+            pady=5,
+        )
+        tk.Label(
+            card_10,
+            text='Operator Acceptance & RC Sign-Off',
+            bg=hub_panel,
+            fg=hub_text,
+            font=('Segoe UI Semibold', 12),
+            anchor='w',
+        ).pack(fill='x')
+        tk.Label(
+            card_10,
+            text='Review final paper-only app acceptance evidence.',
+            bg=hub_panel,
+            fg=hub_muted,
+            anchor='w',
+            justify='left',
+            wraplength=650,
+            pady=5,
+        ).pack(fill='x')
+        ttk.Button(
+            card_10,
+            text='Open Operator Acceptance & RC Sign-Off',
+            command=open_operator_acceptance_center,
+        ).pack(
+            side='right',
+            pady=(4, 0),
+        )
+        advanced_tools_dialog.update_idletasks()
+        _sync_advanced_tools()
 
-        render(snapshot)
-
-    paper_validation_report_panel = tk.Frame(
+    ttk.Button(
         action_panel,
-        bg=palette["panel_alt"],
-        highlightbackground=palette["border"],
-        highlightthickness=1,
-    )
-    paper_validation_report_panel.pack(
-        fill="x",
+        text="Advanced Tools & Product Centers",
+        style='Secondary.TButton',
+        command=open_advanced_tools_hub,
+    ).pack(
+        fill='x',
         padx=18,
-        pady=(4, 8),
+        pady=(8, 4),
     )
 
-    tk.Label(
-        paper_validation_report_panel,
-        textvariable=paper_validation_report_status,
-        bg=palette["panel_alt"],
-        fg=palette["muted"],
-        justify="left",
-        anchor="w",
-        wraplength=300,
-        padx=10,
-        pady=8,
-    ).pack(fill="x")
-
-    ttk.Button(
-        action_panel,
-        text="Paper Validation Intelligence",
-        style="Secondary.TButton",
-        command=open_paper_validation_report_center,
-    ).pack(fill="x", padx=18, pady=3)
-
-    root.after(
-        2250,
-        lambda: refresh_paper_validation_report_center(False),
-    )
-
-
-    release_center_status = tk.StringVar(
-        value="Windows Release Center will appear after refresh."
-    )
-
-    def refresh_release_center(
-        show_dialog: bool = False,
-    ) -> dict:
-        try:
-            snapshot = release_center_snapshot(
-                repo_root(),
-                workspace,
-            )
-            release_center_status.set(snapshot["display_text"])
-            footer_status.set(snapshot["display_text"])
-            if show_dialog:
-                messagebox.showinfo(
-                    "Windows Release Center",
-                    snapshot["display_text"],
+    if os.environ.get(
+        'HQE_ADVANCED_TOOLS_SMOKE'
+    ) == '1':
+        def _hqe_smoke_advanced_tools():
+            open_advanced_tools_hub()
+            root.update_idletasks()
+            dialogs = [
+                child
+                for child in root.winfo_children()
+                if isinstance(child, tk.Toplevel)
+                and 'Advanced Tools' in child.title()
+            ]
+            if not dialogs:
+                raise RuntimeError(
+                    'Advanced Tools dialog did not open.'
                 )
-            return snapshot
-        except Exception as exc:
-            release_center_status.set(
-                "Release Center refresh failed safely."
+            def _collect(widget):
+                values = []
+                try:
+                    value = widget.cget('text')
+                    if value:
+                        values.append(str(value))
+                except Exception:
+                    pass
+                for child in widget.winfo_children():
+                    values.extend(_collect(child))
+                return values
+            rendered = '\n'.join(
+                _collect(dialogs[-1])
             )
-            footer_status.set(f"Release Center error: {exc}")
-            if show_dialog:
-                messagebox.showerror(
-                    "Windows Release Center",
-                    str(exc),
+            required = ('Operator Dashboard', 'Market Data Quality Center', 'Strategy Pack Center', 'Strategy Builder & Selector', 'Backtest Product Center', 'Session History', 'Paper Validation Intelligence', 'Windows Release Center', 'Final RC Audit & Freeze', 'Operator Acceptance & RC Sign-Off')
+            missing = [
+                label
+                for label in required
+                if label not in rendered
+            ]
+            if missing:
+                raise RuntimeError(
+                    'Advanced hub missing: '
+                    + ', '.join(missing)
                 )
-            return {}
-
-    def poll_release_operation() -> None:
-        snapshot = refresh_release_center(False)
-        operation = snapshot.get("operation", {})
-        status = str(operation.get("status", ""))
-        if status == "RUNNING":
-            root.after(1000, poll_release_operation)
-            return
-        message = str(
-            operation.get(
-                "message",
-                "Release operation finished.",
+            print(
+                'HQE_ADVANCED_TOOLS_SMOKE_PASS',
+                flush=True,
             )
+            root.after(250, root.destroy)
+        root.after(
+            250,
+            _hqe_smoke_advanced_tools,
         )
-        footer_status.set(message)
-        if status == "PASS":
-            messagebox.showinfo(
-                "Windows Release Center",
-                message,
-            )
-        elif status in {"FAILED", "BLOCKED"}:
-            messagebox.showerror(
-                "Windows Release Center",
-                message,
-            )
-
-    def run_release_operation(
-        operation: str,
-        source_zip: str = "",
-    ) -> None:
-        try:
-            launch_release_operation(
-                repo_root(),
-                workspace,
-                operation,
-                source_zip,
-            )
-            release_center_status.set(
-                f"Release operation {operation} is running safely..."
-            )
-            footer_status.set(
-                "Release operation running. Trading remains locked."
-            )
-            root.after(1000, poll_release_operation)
-        except Exception as exc:
-            messagebox.showerror(
-                "Windows Release Center",
-                str(exc),
-            )
-
-    def install_desktop_shortcut() -> None:
-        try:
-            launch_desktop_shortcut_install(repo_root())
-            messagebox.showinfo(
-                "Windows Release Center",
-                "Desktop shortcut installation started.",
-            )
-        except Exception as exc:
-            messagebox.showerror(
-                "Windows Release Center",
-                str(exc),
-            )
-
-    def open_release_output(kind: str) -> None:
-        snapshot = refresh_release_center(False)
-        latest = snapshot.get("latest_outputs", {})
-        key = {
-            "backup": "latest_backup",
-            "restore": "latest_restore_staging",
-            "diagnostics": "latest_diagnostics",
-            "rc": "latest_rc_report",
-        }.get(kind, "latest_rc_report")
-        raw_path = str(latest.get(key, "")).strip()
-        if not raw_path:
-            messagebox.showwarning(
-                "Windows Release Center",
-                f"No {kind} output is available yet.",
-            )
-            return
-        path = Path(raw_path)
-        if not path.exists():
-            messagebox.showerror(
-                "Windows Release Center",
-                f"Output path is missing: {path}",
-            )
-            return
-        try:
-            os.startfile(path)
-        except Exception as exc:
-            messagebox.showerror(
-                "Windows Release Center",
-                str(exc),
-            )
-
-    def open_release_center() -> None:
-        from tkinter import filedialog
-
-        snapshot = refresh_release_center(False)
-
-        dialog = tk.Toplevel(root)
-        dialog.title("HQE — Windows Release Center")
-        dialog.geometry("1040x720")
-        dialog.minsize(900, 620)
-        dialog.configure(bg=palette["bg"])
-        dialog.transient(root)
-
-        outer = tk.Frame(
-            dialog,
-            bg=palette["panel"],
-            padx=16,
-            pady=14,
-        )
-        outer.pack(fill="both", expand=True, padx=14, pady=14)
-
-        tk.Label(
-            outer,
-            text="Windows Release Center",
-            bg=palette["panel"],
-            fg=palette["text"],
-            font=("Segoe UI Semibold", 18),
-            anchor="w",
-        ).pack(fill="x")
-
-        tk.Label(
-            outer,
-            text=(
-                "One Icon • License • Backup/Restore • Diagnostics • "
-                "Release-Candidate Dry Run"
-            ),
-            bg=palette["panel"],
-            fg=palette["muted"],
-            anchor="w",
-            pady=4,
-        ).pack(fill="x")
-
-        summary_var = tk.StringVar(
-            value=snapshot.get("display_text", "")
-        )
-        tk.Label(
-            outer,
-            textvariable=summary_var,
-            bg=palette["panel_alt"],
-            fg=palette["muted"],
-            anchor="w",
-            padx=10,
-            pady=8,
-        ).pack(fill="x", pady=(8, 10))
-
-        license_var = tk.StringVar()
-        operation_var = tk.StringVar()
-
-        top = tk.Frame(outer, bg=palette["panel"])
-        top.pack(fill="x")
-
-        for title, variable in (
-            ("License Lifecycle", license_var),
-            ("Latest Operation", operation_var),
-        ):
-            card = tk.LabelFrame(
-                top,
-                text=title,
-                bg=palette["panel"],
-                fg=palette["text"],
-                padx=10,
-                pady=8,
-            )
-            card.pack(
-                side="left",
-                fill="both",
-                expand=True,
-                padx=4,
-            )
-            tk.Label(
-                card,
-                textvariable=variable,
-                bg=palette["panel"],
-                fg=palette["muted"],
-                justify="left",
-                anchor="nw",
-                wraplength=460,
-            ).pack(fill="both", expand=True)
-
-        checks_list = tk.Listbox(
-            outer,
-            exportselection=False,
-        )
-        checks_list.pack(
-            fill="both",
-            expand=True,
-            pady=(12, 0),
-        )
-
-        def render(current: dict) -> None:
-            summary_var.set(current.get("display_text", ""))
-            license_data = current.get("license", {})
-            details = license_data.get("details", {})
-            license_var.set(
-                f"Check: {license_data.get('status', '')}\n"
-                f"Lifecycle: {details.get('status', '')}\n"
-                f"{license_data.get('message', '')}"
-            )
-            operation = current.get("operation", {})
-            operation_var.set(
-                f"Status: {operation.get('status', 'IDLE')}\n"
-                f"Operation: {operation.get('operation', '')}\n"
-                f"{operation.get('message', '')}"
-            )
-            checks_list.delete(0, "end")
-            for item in current.get("required_checks", []):
-                checks_list.insert(
-                    "end",
-                    f"[{item.get('status', '')}] "
-                    f"{item.get('name', '')} — "
-                    f"{item.get('message', '')}",
-                )
-
-        def refresh_dialog() -> None:
-            render(refresh_release_center(False))
-
-        def choose_restore_backup() -> None:
-            selected = filedialog.askopenfilename(
-                parent=dialog,
-                title="Select HQE Backup ZIP",
-                filetypes=[("HQE Backup ZIP", "*.zip")],
-            )
-            if selected:
-                run_release_operation(
-                    "restore_stage",
-                    selected,
-                )
-
-        buttons = tk.Frame(outer, bg=palette["panel"])
-        buttons.pack(fill="x", pady=(12, 0))
-
-        ttk.Button(
-            buttons,
-            text="Run RC Dry Run",
-            command=lambda: run_release_operation("rc_dry_run"),
-        ).pack(side="left", padx=(0, 5))
-
-        ttk.Button(
-            buttons,
-            text="Create User Backup",
-            command=lambda: run_release_operation("backup"),
-        ).pack(side="left", padx=5)
-
-        ttk.Button(
-            buttons,
-            text="Stage Restore from Backup",
-            command=choose_restore_backup,
-        ).pack(side="left", padx=5)
-
-        ttk.Button(
-            buttons,
-            text="Create Diagnostics Bundle",
-            command=lambda: run_release_operation("diagnostics"),
-        ).pack(side="left", padx=5)
-
-        ttk.Button(
-            buttons,
-            text="Install Desktop Shortcut",
-            command=install_desktop_shortcut,
-        ).pack(side="left", padx=5)
-
-        second_buttons = tk.Frame(outer, bg=palette["panel"])
-        second_buttons.pack(fill="x", pady=(8, 0))
-
-        ttk.Button(
-            second_buttons,
-            text="Refresh Release Status",
-            command=refresh_dialog,
-        ).pack(side="left", padx=(0, 5))
-
-        ttk.Button(
-            second_buttons,
-            text="Open Latest RC Report",
-            command=lambda: open_release_output("rc"),
-        ).pack(side="left", padx=5)
-
-        ttk.Button(
-            second_buttons,
-            text="Open Latest Backup",
-            command=lambda: open_release_output("backup"),
-        ).pack(side="left", padx=5)
-
-        ttk.Button(
-            second_buttons,
-            text="Open Latest Diagnostics",
-            command=lambda: open_release_output("diagnostics"),
-        ).pack(side="left", padx=5)
-
-        ttk.Button(
-            second_buttons,
-            text="Open Restore Staging",
-            command=lambda: open_release_output("restore"),
-        ).pack(side="left", padx=5)
-
-        tk.Label(
-            outer,
-            text=(
-                "RC DRY RUN ONLY • RESTORE STAGING DOES NOT OVERWRITE • "
-                "REAL ORDERS NO • BROKER EXECUTION NO"
-            ),
-            bg=palette["panel"],
-            fg=palette["muted"],
-            anchor="w",
-            pady=10,
-        ).pack(fill="x")
-
-        render(snapshot)
-
-    release_center_panel = tk.Frame(
-        action_panel,
-        bg=palette["panel_alt"],
-        highlightbackground=palette["border"],
-        highlightthickness=1,
-    )
-    release_center_panel.pack(
-        fill="x",
-        padx=18,
-        pady=(4, 8),
-    )
-
-    tk.Label(
-        release_center_panel,
-        textvariable=release_center_status,
-        bg=palette["panel_alt"],
-        fg=palette["muted"],
-        justify="left",
-        anchor="w",
-        wraplength=300,
-        padx=10,
-        pady=8,
-    ).pack(fill="x")
-
-    ttk.Button(
-        action_panel,
-        text="Windows Release Center",
-        style="Secondary.TButton",
-        command=open_release_center,
-    ).pack(fill="x", padx=18, pady=3)
-
-    root.after(
-        2400,
-        lambda: refresh_release_center(False),
-    )
-
-
-    rc_audit_status = tk.StringVar(
-        value="Final RC audit status will appear after refresh."
-    )
-
-    def refresh_rc_audit_center(
-        show_dialog: bool = False,
-    ) -> dict:
-        try:
-            snapshot = rc_audit_center_snapshot(
-                repo_root(),
-                workspace,
-            )
-            rc_audit_status.set(snapshot["display_text"])
-            footer_status.set(snapshot["display_text"])
-            if show_dialog:
-                messagebox.showinfo(
-                    "Final RC Audit & Freeze",
-                    snapshot["display_text"],
-                )
-            return snapshot
-        except Exception as exc:
-            rc_audit_status.set(
-                "Final RC audit refresh failed safely."
-            )
-            footer_status.set(f"Final RC audit error: {exc}")
-            if show_dialog:
-                messagebox.showerror(
-                    "Final RC Audit & Freeze",
-                    str(exc),
-                )
-            return {}
-
-    def poll_rc_audit() -> None:
-        snapshot = refresh_rc_audit_center(False)
-        latest = snapshot.get("latest_audit", {})
-        status = str(latest.get("status", ""))
-        if not status:
-            root.after(1000, poll_rc_audit)
-            return
-        message = str(
-            latest.get(
-                "message",
-                "End-to-end RC audit completed.",
-            )
-        )
-        footer_status.set(message)
-        if status == "FAILED":
-            messagebox.showerror(
-                "Final RC Audit & Freeze",
-                message,
-            )
-        else:
-            messagebox.showinfo(
-                "Final RC Audit & Freeze",
-                message,
-            )
-
-    def run_final_rc_audit() -> None:
-        try:
-            launch_rc_audit_worker(
-                repo_root(),
-                workspace,
-            )
-            rc_audit_status.set(
-                "End-to-end RC audit is running safely..."
-            )
-            footer_status.set(
-                "RC audit running; no trading operation started."
-            )
-            root.after(1400, poll_rc_audit)
-        except Exception as exc:
-            messagebox.showerror(
-                "Final RC Audit & Freeze",
-                str(exc),
-            )
-
-    def open_rc_audit_path(kind: str) -> None:
-        snapshot = refresh_rc_audit_center(False)
-        raw_path = str(
-            {
-                "report": snapshot.get("latest_report", ""),
-                "freeze": snapshot.get("freeze_manifest", ""),
-                "guide": snapshot.get("operator_guide", ""),
-            }.get(kind, "")
-        ).strip()
-        if not raw_path:
-            messagebox.showwarning(
-                "Final RC Audit & Freeze",
-                f"No {kind} file is available yet.",
-            )
-            return
-        path = Path(raw_path)
-        if not path.exists():
-            messagebox.showerror(
-                "Final RC Audit & Freeze",
-                f"File is missing: {path}",
-            )
-            return
-        try:
-            os.startfile(path)
-        except Exception as exc:
-            messagebox.showerror(
-                "Final RC Audit & Freeze",
-                str(exc),
-            )
-
-    def open_rc_audit_center() -> None:
-        snapshot = refresh_rc_audit_center(False)
-
-        dialog = tk.Toplevel(root)
-        dialog.title("HQE — Final RC Audit & Freeze")
-        dialog.geometry("980x650")
-        dialog.minsize(860, 570)
-        dialog.configure(bg=palette["bg"])
-        dialog.transient(root)
-
-        outer = tk.Frame(
-            dialog,
-            bg=palette["panel"],
-            padx=16,
-            pady=14,
-        )
-        outer.pack(fill="both", expand=True, padx=14, pady=14)
-
-        tk.Label(
-            outer,
-            text="Final RC Audit & Freeze",
-            bg=palette["panel"],
-            fg=palette["text"],
-            font=("Segoe UI Semibold", 18),
-            anchor="w",
-        ).pack(fill="x")
-
-        summary_var = tk.StringVar(
-            value=snapshot.get("display_text", "")
-        )
-        tk.Label(
-            outer,
-            textvariable=summary_var,
-            bg=palette["panel_alt"],
-            fg=palette["muted"],
-            anchor="w",
-            padx=10,
-            pady=8,
-        ).pack(fill="x", pady=(8, 10))
-
-        freeze_var = tk.StringVar()
-        audit_var = tk.StringVar()
-
-        top = tk.Frame(outer, bg=palette["panel"])
-        top.pack(fill="x")
-
-        for title, variable in (
-            ("Paper-Only Freeze", freeze_var),
-            ("Latest End-to-End Audit", audit_var),
-        ):
-            card = tk.LabelFrame(
-                top,
-                text=title,
-                bg=palette["panel"],
-                fg=palette["text"],
-                padx=10,
-                pady=8,
-            )
-            card.pack(
-                side="left",
-                fill="both",
-                expand=True,
-                padx=4,
-            )
-            tk.Label(
-                card,
-                textvariable=variable,
-                bg=palette["panel"],
-                fg=palette["muted"],
-                justify="left",
-                anchor="nw",
-                wraplength=430,
-            ).pack(fill="both", expand=True)
-
-        check_list = tk.Listbox(
-            outer,
-            exportselection=False,
-        )
-        check_list.pack(
-            fill="both",
-            expand=True,
-            pady=(12, 0),
-        )
-
-        def render(current: dict) -> None:
-            summary_var.set(current.get("display_text", ""))
-            freeze = current.get("freeze", {})
-            latest = current.get("latest_audit", {})
-            freeze_var.set(
-                f"Status: {freeze.get('status', '')}\n"
-                f"Files: {freeze.get('file_count', 0)}\n"
-                f"{freeze.get('message', '')}"
-            )
-            audit_var.set(
-                f"Status: {latest.get('status', 'NOT_RUN')}\n"
-                f"Passed: {latest.get('passed_count', 0)} | "
-                f"Review: {latest.get('review_count', 0)} | "
-                f"Failed: {latest.get('failed_count', 0)}\n"
-                f"{latest.get('message', '')}"
-            )
-            check_list.delete(0, "end")
-            for item in latest.get("checks", []):
-                check_list.insert(
-                    "end",
-                    f"[{item.get('status', '')}] "
-                    f"{item.get('name', '')} — "
-                    f"{item.get('message', '')}",
-                )
-
-        def refresh_dialog() -> None:
-            render(refresh_rc_audit_center(False))
-
-        buttons = tk.Frame(outer, bg=palette["panel"])
-        buttons.pack(fill="x", pady=(12, 0))
-
-        ttk.Button(
-            buttons,
-            text="Run End-to-End RC Audit",
-            command=run_final_rc_audit,
-        ).pack(side="left", padx=(0, 6))
-
-        ttk.Button(
-            buttons,
-            text="Open Latest Audit Report",
-            command=lambda: open_rc_audit_path("report"),
-        ).pack(side="left", padx=6)
-
-        ttk.Button(
-            buttons,
-            text="Open Freeze Manifest",
-            command=lambda: open_rc_audit_path("freeze"),
-        ).pack(side="left", padx=6)
-
-        ttk.Button(
-            buttons,
-            text="Open Operator Guide",
-            command=lambda: open_rc_audit_path("guide"),
-        ).pack(side="left", padx=6)
-
-        ttk.Button(
-            buttons,
-            text="Refresh Audit Status",
-            command=refresh_dialog,
-        ).pack(side="left", padx=6)
-
-        tk.Label(
-            outer,
-            text=(
-                "PAPER/DATA/RESEARCH RC ONLY • NO TRADING OPERATION • "
-                "THIS IS NOT A PROFITABILITY CLAIM"
-            ),
-            bg=palette["panel"],
-            fg=palette["muted"],
-            anchor="w",
-            pady=10,
-        ).pack(fill="x")
-
-        render(snapshot)
-
-    rc_audit_panel = tk.Frame(
-        action_panel,
-        bg=palette["panel_alt"],
-        highlightbackground=palette["border"],
-        highlightthickness=2,
-    )
-    rc_audit_panel.pack(fill="x", padx=18, pady=(6, 10))
-
-    tk.Label(
-        rc_audit_panel,
-        text="FINAL PAPER-ONLY RELEASE CANDIDATE",
-        bg=palette["panel_alt"],
-        fg=palette["text"],
-        font=("Segoe UI Semibold", 11),
-        anchor="w",
-        padx=10,
-        pady=8,
-    ).pack(fill="x")
-
-    tk.Label(
-        rc_audit_panel,
-        textvariable=rc_audit_status,
-        bg=palette["panel_alt"],
-        fg=palette["muted"],
-        justify="left",
-        anchor="w",
-        wraplength=300,
-        padx=10,
-        pady=6,
-    ).pack(fill="x")
-
-    ttk.Button(
-        rc_audit_panel,
-        text="Final RC Audit & Freeze",
-        command=open_rc_audit_center,
-    ).pack(fill="x", padx=10, pady=(2, 10))
-
-    root.after(
-        2550,
-        lambda: refresh_rc_audit_center(False),
-    )
-
-
-    operator_acceptance_status = tk.StringVar(
-        value="Operator acceptance has not been run."
-    )
-
-    def refresh_operator_acceptance_center(
-        show_dialog: bool = False,
-    ) -> dict:
-        try:
-            snapshot = operator_acceptance_center_snapshot(
-                repo_root(),
-                workspace,
-            )
-            operator_acceptance_status.set(
-                snapshot["display_text"]
-            )
-            footer_status.set(snapshot["display_text"])
-            if show_dialog:
-                messagebox.showinfo(
-                    "Operator Acceptance & RC Sign-Off",
-                    snapshot["display_text"],
-                )
-            return snapshot
-        except Exception as exc:
-            operator_acceptance_status.set(
-                "Operator acceptance refresh failed safely."
-            )
-            footer_status.set(
-                f"Operator acceptance error: {exc}"
-            )
-            if show_dialog:
-                messagebox.showerror(
-                    "Operator Acceptance & RC Sign-Off",
-                    str(exc),
-                )
-            return {}
-
-    def poll_operator_acceptance() -> None:
-        snapshot = refresh_operator_acceptance_center(False)
-        status = snapshot.get("latest", {}).get("status", {})
-        operation_status = str(status.get("status", ""))
-        if operation_status == "RUNNING":
-            root.after(1000, poll_operator_acceptance)
-            return
-        message = str(
-            status.get(
-                "message",
-                "Operator acceptance dry run completed.",
-            )
-        )
-        footer_status.set(message)
-        if operation_status == "FAILED":
-            messagebox.showerror(
-                "Operator Acceptance & RC Sign-Off",
-                message,
-            )
-        else:
-            messagebox.showinfo(
-                "Operator Acceptance & RC Sign-Off",
-                message,
-            )
-
-    def run_operator_acceptance() -> None:
-        try:
-            launch_operator_acceptance(
-                repo_root(),
-                workspace,
-            )
-            operator_acceptance_status.set(
-                "Operator acceptance dry run is running..."
-            )
-            footer_status.set(
-                "Read-only operator acceptance is running."
-            )
-            root.after(1200, poll_operator_acceptance)
-        except Exception as exc:
-            messagebox.showerror(
-                "Operator Acceptance & RC Sign-Off",
-                str(exc),
-            )
-
-    def open_operator_acceptance_path(kind: str) -> None:
-        snapshot = refresh_operator_acceptance_center(False)
-        latest = snapshot.get("latest", {})
-        raw_path = str(
-            {
-                "html": latest.get("html_path", ""),
-                "json": latest.get("json_path", ""),
-                "folder": latest.get("report_dir", ""),
-                "guide": snapshot.get("operator_guide", ""),
-            }.get(kind, "")
-        ).strip()
-        if not raw_path:
-            messagebox.showwarning(
-                "Operator Acceptance & RC Sign-Off",
-                f"No {kind} file is available yet.",
-            )
-            return
-        path = Path(raw_path)
-        if not path.exists():
-            messagebox.showerror(
-                "Operator Acceptance & RC Sign-Off",
-                f"File is missing: {path}",
-            )
-            return
-        try:
-            os.startfile(path)
-        except Exception as exc:
-            messagebox.showerror(
-                "Operator Acceptance & RC Sign-Off",
-                str(exc),
-            )
-
-    def open_operator_acceptance_center() -> None:
-        snapshot = refresh_operator_acceptance_center(False)
-
-        dialog = tk.Toplevel(root)
-        dialog.title("HQE — Operator Acceptance & RC Sign-Off")
-        dialog.geometry("980x650")
-        dialog.minsize(860, 570)
-        dialog.configure(bg=palette["bg"])
-        dialog.transient(root)
-
-        outer = tk.Frame(
-            dialog,
-            bg=palette["panel"],
-            padx=16,
-            pady=14,
-        )
-        outer.pack(fill="both", expand=True, padx=14, pady=14)
-
-        tk.Label(
-            outer,
-            text="Operator Acceptance & RC Sign-Off",
-            bg=palette["panel"],
-            fg=palette["text"],
-            font=("Segoe UI Semibold", 18),
-            anchor="w",
-        ).pack(fill="x")
-
-        summary_var = tk.StringVar(
-            value=snapshot.get("display_text", "")
-        )
-        tk.Label(
-            outer,
-            textvariable=summary_var,
-            bg=palette["panel_alt"],
-            fg=palette["muted"],
-            anchor="w",
-            padx=10,
-            pady=8,
-        ).pack(fill="x", pady=(8, 10))
-
-        decision_var = tk.StringVar()
-        check_list = tk.Listbox(
-            outer,
-            exportselection=False,
-        )
-        check_list.pack(fill="both", expand=True)
-
-        tk.Label(
-            outer,
-            textvariable=decision_var,
-            bg=palette["panel_alt"],
-            fg=palette["muted"],
-            justify="left",
-            anchor="w",
-            wraplength=900,
-            padx=10,
-            pady=8,
-        ).pack(fill="x", pady=(10, 0))
-
-        def render(current: dict) -> None:
-            summary_var.set(current.get("display_text", ""))
-            report = current.get("latest", {}).get("report", {})
-            decision = report.get("decision", {})
-            decision_var.set(
-                f"{decision.get('status', 'NOT_RUN')}\n"
-                f"{decision.get('message', '')}"
-            )
-            check_list.delete(0, "end")
-            for item in report.get("checks", []):
-                check_list.insert(
-                    "end",
-                    f"[{item.get('status', '')}] "
-                    f"{item.get('name', '')} — "
-                    f"{item.get('message', '')}",
-                )
-
-        def refresh_dialog() -> None:
-            render(refresh_operator_acceptance_center(False))
-
-        buttons = tk.Frame(outer, bg=palette["panel"])
-        buttons.pack(fill="x", pady=(12, 0))
-
-        ttk.Button(
-            buttons,
-            text="Run Operator Acceptance Dry Run",
-            command=run_operator_acceptance,
-        ).pack(side="left", padx=(0, 6))
-
-        ttk.Button(
-            buttons,
-            text="Open Acceptance HTML",
-            command=lambda: open_operator_acceptance_path("html"),
-        ).pack(side="left", padx=6)
-
-        ttk.Button(
-            buttons,
-            text="Open Acceptance JSON",
-            command=lambda: open_operator_acceptance_path("json"),
-        ).pack(side="left", padx=6)
-
-        ttk.Button(
-            buttons,
-            text="Open Operator Guide",
-            command=lambda: open_operator_acceptance_path("guide"),
-        ).pack(side="left", padx=6)
-
-        ttk.Button(
-            buttons,
-            text="Refresh Acceptance Status",
-            command=refresh_dialog,
-        ).pack(side="left", padx=6)
-
-        tk.Label(
-            outer,
-            text=(
-                "POST-FREEZE ACCEPTANCE ONLY • NO PRODUCT FEATURE CHANGE • "
-                "REAL ORDERS NO • THIS IS NOT A PROFITABILITY CLAIM"
-            ),
-            bg=palette["panel"],
-            fg=palette["muted"],
-            anchor="w",
-            pady=10,
-        ).pack(fill="x")
-
-        render(snapshot)
-
-    operator_acceptance_panel = tk.Frame(
-        action_panel,
-        bg=palette["panel_alt"],
-        highlightbackground=palette["border"],
-        highlightthickness=2,
-    )
-    operator_acceptance_panel.pack(
-        fill="x",
-        padx=18,
-        pady=(6, 10),
-    )
-
-    tk.Label(
-        operator_acceptance_panel,
-        text="FINAL OPERATOR ACCEPTANCE",
-        bg=palette["panel_alt"],
-        fg=palette["text"],
-        font=("Segoe UI Semibold", 11),
-        anchor="w",
-        padx=10,
-        pady=8,
-    ).pack(fill="x")
-
-    tk.Label(
-        operator_acceptance_panel,
-        textvariable=operator_acceptance_status,
-        bg=palette["panel_alt"],
-        fg=palette["muted"],
-        justify="left",
-        anchor="w",
-        wraplength=300,
-        padx=10,
-        pady=6,
-    ).pack(fill="x")
-
-    ttk.Button(
-        operator_acceptance_panel,
-        text="Operator Acceptance & RC Sign-Off",
-        command=open_operator_acceptance_center,
-    ).pack(fill="x", padx=10, pady=(2, 10))
-
-    root.after(
-        2700,
-        lambda: refresh_operator_acceptance_center(False),
-    )
 
     root.mainloop()
     return 0
