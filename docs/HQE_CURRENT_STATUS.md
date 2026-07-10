@@ -83,3 +83,18 @@ This is not a profitability claim.
 
 All real-trading and broker-execution locks remain active.
 
+## Public workflow bunch completed
+
+- Single App V2 public entrypoint
+- Desktop shortcut generation support
+- No visible PowerShell in public daily use
+- No visible CMD after app launch
+- Final dry-run evidence pack
+- Public workflow regression tests
+
+## Next roadmap gate
+
+**Run the actual App V2 operator smoke and review visual usability before UI/dashboard finalization.**
+
+Real trading remains locked.
+
