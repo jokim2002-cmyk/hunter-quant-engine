@@ -191,3 +191,11 @@ Real trading remains locked.
 Build version 2.0.0-owner-preview.2, install it, verify silent desktop launch, complete uninstall/reinstall smoke, then run the installer final freeze gate.
 
 Real trading remains locked.
+
+
+## App V2 controlled dry runs
+
+- Two-run bounded paper-watch orchestrator added
+- Per-run stdout, stderr, process and workspace-change evidence added
+- Final readiness decision added
+- Safety locks remain mandatory
