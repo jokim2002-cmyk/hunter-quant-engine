@@ -273,6 +273,9 @@ def derive_status(workspace: Path) -> Dict[str, Any]:
         Path(__file__).resolve().parents[1], workspace, run_revalidation=False
     )
     unified_health = derive_unified_health(workspace)
+    if unified_health.get("auth_ok"):
+        credential_status["auth_status"] = "AUTH_OK_CODE_200"
+        credential_status["recommendation"] = "CONTINUE_WITH_CURRENT_TOKEN"
 
     return {
         "version": VERSION,

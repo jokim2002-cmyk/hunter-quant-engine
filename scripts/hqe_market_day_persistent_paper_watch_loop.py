@@ -162,7 +162,7 @@ def write_status(path: Path, payload: Dict[str, Any]) -> None:
 def run_data_fetch(workspace: Path, symbol: str) -> Dict[str, Any]:
     repo = repo_root()
     py = repo / ".venv" / "Scripts" / "python.exe"
-    fetcher = repo / "scripts" / "hqe_fyers_historical_5m_data_only_fetcher.py"
+    fetcher = repo / "scripts" / "hqe_current_day_live_data_cycle.py"
     if not fetcher.exists():
         return {"attempted": False, "reason": "fetcher_not_found"}
     try:

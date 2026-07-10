@@ -273,3 +273,12 @@ Real trading remains locked.
 - Actual Python watch PID is the only PID truth
 - Stopped paper watch safely restarted with current environment
 - Dashboard old false-positive health fields overridden
+
+
+## Final Persistent Watch Live-Data Repair V1
+
+- Persistent watch routes through current-day live-data cycle
+- Explicit live-data-only execution is mandatory
+- Failed cycles preserve the last known good CSV
+- Sample-schema overwrite during market watch is blocked
+- Dashboard auth state uses latest API result
