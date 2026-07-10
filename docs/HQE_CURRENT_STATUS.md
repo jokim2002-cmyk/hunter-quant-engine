@@ -236,3 +236,12 @@ Real trading remains locked.
 - Watch process count added
 - Operator recommendation added
 - No automatic restart or broker execution
+
+
+## Fyers Live Fetch Diagnostic V2
+
+- Explicit live data-only flag detection added
+- API/history execution proof required
+- SHA-256, row count and candle timestamp comparison added
+- Offline sample rewrite rejection added
+- Actual Python process filter repaired structurally

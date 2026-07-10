@@ -1,16 +1,20 @@
 from __future__ import annotations
 
 import argparse
+import csv
+import hashlib
 import json
 import os
 import subprocess
 import time
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Iterable, List, Optional
+from zoneinfo import ZoneInfo
 
-VERSION = "HQE_FYERS_LIVE_FETCH_DIAGNOSTIC_V1"
+VERSION = "HQE_FYERS_LIVE_FETCH_DIAGNOSTIC_V2"
 OUTPUT_FILENAME = "HQE_FYERS_LIVE_FETCH_DIAGNOSTIC.json"
+INDIA_TZ = ZoneInfo("Asia/Kolkata")
 
 
 def utc_now() -> datetime:
@@ -36,15 +40,101 @@ def atomic_write_json(path: Path, payload: Dict[str, Any]) -> None:
     temporary.replace(path)
 
 
-def sha_snapshot(path: Path) -> Dict[str, Any]:
-    if not path.exists():
-        return {"exists": False, "size_bytes": 0, "modified_ns": None}
-    stat = path.stat()
-    return {
-        "exists": True,
-        "size_bytes": stat.st_size,
-        "modified_ns": stat.st_mtime_ns,
+def sha256(path: Path) -> Optional[str]:
+    if not path.exists() or not path.is_file():
+        return None
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def parse_datetime(value: Any) -> Optional[datetime]:
+    if value in (None, ""):
+        return None
+
+    text = str(value).strip()
+    if not text:
+        return None
+
+    try:
+        parsed = datetime.fromisoformat(text.replace("Z", "+00:00"))
+    except ValueError:
+        parsed = None
+
+    if parsed is None:
+        for fmt in (
+            "%Y-%m-%d %H:%M:%S",
+            "%Y-%m-%d %H:%M",
+            "%d-%m-%Y %H:%M:%S",
+            "%d/%m/%Y %H:%M:%S",
+        ):
+            try:
+                parsed = datetime.strptime(text, fmt)
+                break
+            except ValueError:
+                continue
+
+    if parsed is None:
+        try:
+            number = float(text)
+        except ValueError:
+            return None
+        if number > 10_000_000_000:
+            number /= 1000
+        try:
+            parsed = datetime.fromtimestamp(number, tz=timezone.utc)
+        except (OSError, OverflowError, ValueError):
+            return None
+
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=INDIA_TZ)
+
+    return parsed.astimezone(timezone.utc)
+
+
+def find_datetime_column(fieldnames: Iterable[str]) -> Optional[str]:
+    normalized = {name.strip().lower(): name for name in fieldnames if name}
+    for candidate in ("datetime", "timestamp", "time", "date", "candle_time", "bar_time"):
+        if candidate in normalized:
+            return normalized[candidate]
+    return None
+
+
+def csv_semantics(path: Path) -> Dict[str, Any]:
+    base = {
+        "exists": path.exists(),
+        "size_bytes": path.stat().st_size if path.exists() else 0,
+        "modified_ns": path.stat().st_mtime_ns if path.exists() else None,
+        "sha256": sha256(path),
+        "row_count": 0,
+        "latest_candle_utc": None,
     }
+
+    if not path.exists():
+        return base
+
+    try:
+        with path.open("r", encoding="utf-8-sig", newline="") as handle:
+            reader = csv.DictReader(handle)
+            column = find_datetime_column(reader.fieldnames or [])
+            latest = None
+            rows = 0
+            for row in reader:
+                rows += 1
+                if column:
+                    parsed = parse_datetime(row.get(column))
+                    if parsed is not None and (latest is None or parsed > latest):
+                        latest = parsed
+    except (OSError, csv.Error):
+        return base
+
+    base["row_count"] = rows
+    base["latest_candle_utc"] = (
+        latest.replace(microsecond=0).isoformat() if latest is not None else None
+    )
+    return base
 
 
 def actual_python_watch_processes() -> List[Dict[str, Any]]:
@@ -84,8 +174,7 @@ def actual_python_watch_processes() -> List[Dict[str, Any]]:
         payload = [payload]
 
     return [
-        item
-        for item in payload
+        item for item in payload
         if isinstance(item, dict)
         and item.get("ProcessId")
         and str(item.get("Name", "")).lower() in {"python.exe", "pythonw.exe"}
@@ -96,7 +185,6 @@ def canonical_python_watch_process(
     processes: Optional[List[Dict[str, Any]]] = None,
 ) -> Dict[str, Any]:
     items = processes if processes is not None else actual_python_watch_processes()
-
     if not items:
         return {
             "canonical_pid": None,
@@ -106,11 +194,7 @@ def canonical_python_watch_process(
         }
 
     ids = {int(item["ProcessId"]) for item in items}
-    roots = [
-        item
-        for item in items
-        if int(item.get("ParentProcessId") or 0) not in ids
-    ]
+    roots = [item for item in items if int(item.get("ParentProcessId") or 0) not in ids]
     preferred = roots or items
     canonical = min(preferred, key=lambda item: int(item["ProcessId"]))
 
@@ -125,34 +209,38 @@ def canonical_python_watch_process(
 
 
 def discover_fetcher(repo: Path) -> Dict[str, Any]:
+    preferred = repo / "scripts" / "hqe_fyers_historical_5m_data_only_fetcher.py"
+    if preferred.exists():
+        return {
+            "selected": str(preferred),
+            "selection_reason": "CANONICAL_FETCHER_PRESENT",
+            "candidate_count": 1,
+            "candidates": [{"path": str(preferred), "score": 100}],
+        }
+
     candidates = []
     for path in sorted((repo / "scripts").glob("*.py")):
         try:
-            text = path.read_text(encoding="utf-8-sig", errors="replace")
+            lower = path.read_text(encoding="utf-8-sig", errors="replace").lower()
         except OSError:
             continue
 
         score = 0
-        lower = text.lower()
-        if "data_only_history_call_completed" in lower:
-            score += 10
         if "fyers" in lower:
             score += 5
         if "historical" in lower or "history" in lower:
             score += 4
-        if "5m" in lower or "resolution" in lower:
-            score += 2
-        if "argparse" in lower:
-            score += 1
-        if "persistent_paper_watch_loop" in path.name:
-            score -= 5
+        if "data_only_history_call_completed" in lower:
+            score += 10
+        if path.name == "hqe_fyers_live_fetch_diagnostic.py":
+            score -= 100
         if score > 0:
             candidates.append({"path": str(path), "score": score})
 
     candidates.sort(key=lambda item: (-item["score"], item["path"]))
-
     return {
         "selected": candidates[0]["path"] if candidates else None,
+        "selection_reason": "SCORED_DISCOVERY",
         "candidate_count": len(candidates),
         "candidates": candidates[:10],
     }
@@ -173,12 +261,28 @@ def help_text(python_exe: Path, script: Path, repo: Path) -> Dict[str, Any]:
     }
 
 
+def detect_live_flag(help_output: str) -> Optional[str]:
+    candidates = (
+        "--execute-live-data-only",
+        "--execute-live-data",
+        "--run-live-data-only",
+        "--live-data-only",
+        "--execute-history",
+        "--run-history",
+    )
+    for candidate in candidates:
+        if candidate in help_output:
+            return candidate
+    return None
+
+
 def build_command(
     python_exe: Path,
     script: Path,
     workspace: Path,
     help_output: str,
-) -> List[str]:
+    require_live: bool,
+) -> Dict[str, Any]:
     command = [str(python_exe), str(script)]
 
     if "--workspace" in help_output:
@@ -190,7 +294,15 @@ def build_command(
     if "--write" in help_output:
         command += ["--write"]
 
-    return command
+    live_flag = detect_live_flag(help_output)
+    if require_live and live_flag:
+        command.append(live_flag)
+
+    return {
+        "command": command,
+        "live_flag": live_flag,
+        "live_flag_applied": bool(require_live and live_flag),
+    }
 
 
 def execute_fetcher(
@@ -201,99 +313,160 @@ def execute_fetcher(
     evidence_dir: Path,
 ) -> Dict[str, Any]:
     helper = help_text(python_exe, script, repo)
-    command = build_command(python_exe, script, workspace, helper["stdout"] + helper["stderr"])
+    command_info = build_command(
+        python_exe,
+        script,
+        workspace,
+        helper["stdout"] + helper["stderr"],
+        require_live=True,
+    )
 
     stdout_path = evidence_dir / "FETCH_STDOUT.txt"
     stderr_path = evidence_dir / "FETCH_STDERR.txt"
+    sample = workspace / "FYERS_HISTORICAL_5M_DATA_ONLY_SAMPLE.csv"
+    status = workspace / "MODULE_173_FYERS_HISTORICAL_5M_DATA_ONLY_FETCHER_STATUS.json"
 
     before = {
-        "sample_csv": sha_snapshot(workspace / "FYERS_HISTORICAL_5M_DATA_ONLY_SAMPLE.csv"),
-        "fetch_status": sha_snapshot(workspace / "MODULE_173_FYERS_HISTORICAL_5M_DATA_ONLY_FETCHER_STATUS.json"),
+        "sample_csv": csv_semantics(sample),
+        "fetch_status": {
+            "exists": status.exists(),
+            "sha256": sha256(status),
+            "size_bytes": status.stat().st_size if status.exists() else 0,
+            "modified_ns": status.stat().st_mtime_ns if status.exists() else None,
+        },
     }
+
+    if not command_info["live_flag"]:
+        stdout_path.write_text("", encoding="utf-8")
+        stderr_path.write_text("Live data execution flag not found in fetcher help.\n", encoding="utf-8")
+        return {
+            "executed": False,
+            "decision": "LIVE_FETCH_FLAG_NOT_FOUND",
+            "command": command_info["command"],
+            "live_flag": None,
+            "live_flag_applied": False,
+            "help_returncode": helper["returncode"],
+            "stdout_file": str(stdout_path),
+            "stderr_file": str(stderr_path),
+            "before": before,
+            "after": before,
+            "timed_out": False,
+            "returncode": None,
+            "duration_seconds": 0.0,
+        }
 
     started = time.monotonic()
     try:
         completed = subprocess.run(
-            command,
+            command_info["command"],
             cwd=repo,
             capture_output=True,
             text=True,
             timeout=120,
         )
         timed_out = False
+        stdout = completed.stdout
+        stderr = completed.stderr
+        returncode = completed.returncode
     except subprocess.TimeoutExpired as exc:
-        completed = None
         timed_out = True
         stdout = exc.stdout or ""
         stderr = exc.stderr or ""
-    else:
-        stdout = completed.stdout
-        stderr = completed.stderr
+        returncode = None
 
     stdout_path.write_text(stdout, encoding="utf-8", errors="replace")
     stderr_path.write_text(stderr, encoding="utf-8", errors="replace")
 
     after = {
-        "sample_csv": sha_snapshot(workspace / "FYERS_HISTORICAL_5M_DATA_ONLY_SAMPLE.csv"),
-        "fetch_status": sha_snapshot(workspace / "MODULE_173_FYERS_HISTORICAL_5M_DATA_ONLY_FETCHER_STATUS.json"),
-    }
-
-    changed = {
-        key: before[key] != after[key]
-        for key in before
+        "sample_csv": csv_semantics(sample),
+        "fetch_status": {
+            "exists": status.exists(),
+            "sha256": sha256(status),
+            "size_bytes": status.stat().st_size if status.exists() else 0,
+            "modified_ns": status.stat().st_mtime_ns if status.exists() else None,
+        },
     }
 
     return {
-        "command": command,
+        "executed": True,
+        "command": command_info["command"],
+        "live_flag": command_info["live_flag"],
+        "live_flag_applied": command_info["live_flag_applied"],
         "duration_seconds": round(time.monotonic() - started, 2),
         "timed_out": timed_out,
-        "returncode": None if completed is None else completed.returncode,
+        "returncode": returncode,
         "stdout_file": str(stdout_path),
         "stderr_file": str(stderr_path),
         "before": before,
         "after": after,
-        "changed": changed,
         "help_returncode": helper["returncode"],
     }
 
 
-def classify(
-    execution: Dict[str, Any],
-    fetch_status: Dict[str, Any],
-    csv_changed: bool,
-) -> Dict[str, str]:
-    raw_status = str(
-        fetch_status.get("status")
-        or fetch_status.get("decision")
-        or fetch_status.get("fetch_status")
-        or "UNKNOWN"
-    )
+def classify(execution: Dict[str, Any], fetch_status: Dict[str, Any]) -> Dict[str, str]:
+    if execution.get("decision") == "LIVE_FETCH_FLAG_NOT_FOUND":
+        return {
+            "decision": "LIVE_FETCH_FLAG_NOT_FOUND",
+            "recommendation": "INSPECT_FETCHER_CLI_AND_ADD_EXPLICIT_LIVE_DATA_ONLY_FLAG",
+        }
 
-    if execution["timed_out"]:
+    if execution.get("timed_out"):
         return {
             "decision": "FETCH_DIAGNOSTIC_TIMEOUT",
             "recommendation": "INSPECT_FETCH_STDOUT_STDERR",
         }
 
-    if execution["returncode"] not in (0, None):
+    if execution.get("returncode") not in (0, None):
         return {
             "decision": "FETCHER_PROCESS_FAILED",
             "recommendation": "INSPECT_FETCH_STDERR_AND_FETCHER_ARGUMENTS",
         }
 
-    if not csv_changed:
-        if "COMPLETED" in raw_status.upper() or "PASS" in raw_status.upper():
-            return {
-                "decision": "FETCH_REPORTED_COMPLETE_BUT_CSV_UNCHANGED",
-                "recommendation": "INSPECT_FYERS_RESPONSE_AND_CSV_WRITER",
-            }
+    external_api = bool(
+        fetch_status.get("external_api_calls_executed")
+        or fetch_status.get("external_api_calls_executed_by_module_173")
+    )
+    history_result = fetch_status.get("history_result") or {}
+    history_executed = bool(history_result.get("executed"))
+    returned_rows = int(history_result.get("rows") or 0)
+    offline_sample = str(history_result.get("status") or "").upper() == "OFFLINE_SAMPLE_SCHEMA_BY_DEFAULT"
+
+    before_csv = execution["before"]["sample_csv"]
+    after_csv = execution["after"]["sample_csv"]
+
+    content_changed = before_csv.get("sha256") != after_csv.get("sha256")
+    row_count_increased = int(after_csv.get("row_count") or 0) > int(before_csv.get("row_count") or 0)
+    candle_advanced = (
+        after_csv.get("latest_candle_utc") is not None
+        and after_csv.get("latest_candle_utc") != before_csv.get("latest_candle_utc")
+    )
+
+    if offline_sample or not execution.get("live_flag_applied"):
         return {
-            "decision": "FETCH_DID_NOT_UPDATE_CSV",
-            "recommendation": "CHECK_FYERS_RESPONSE_STATUS_AND_CREDENTIALS",
+            "decision": "LIVE_FETCH_NOT_REQUESTED_OFFLINE_SAMPLE_ONLY",
+            "recommendation": "RERUN_WITH_VALID_LIVE_DATA_ONLY_FLAG",
+        }
+
+    if not external_api or not history_executed:
+        return {
+            "decision": "LIVE_FETCH_FLAG_APPLIED_BUT_API_NOT_EXECUTED",
+            "recommendation": "INSPECT_FETCHER_BRANCH_AND_CREDENTIAL_VALIDATION",
+        }
+
+    if returned_rows <= 0:
+        return {
+            "decision": "LIVE_API_EXECUTED_BUT_ZERO_ROWS_RETURNED",
+            "recommendation": "CHECK_REQUEST_RANGE_SYMBOL_AND_FYERS_RESPONSE",
+        }
+
+    if not content_changed and not row_count_increased and not candle_advanced:
+        return {
+            "decision": "LIVE_FETCH_REPORTED_SUCCESS_BUT_CSV_CONTENT_UNCHANGED",
+            "recommendation": "INSPECT_CSV_WRITER_AND_RESPONSE_MAPPING",
         }
 
     return {
-        "decision": "FETCH_UPDATED_CSV",
+        "decision": "LIVE_FETCH_UPDATED_CANDLE_DATA",
         "recommendation": "RUN_CANDLE_FRESHNESS_AUDIT",
     }
 
@@ -308,40 +481,30 @@ def run_diagnostic(repo: Path, workspace: Path, execute: bool) -> Dict[str, Any]
     evidence_dir.mkdir(parents=True, exist_ok=False)
 
     selected = discovery["selected"]
-    execution: Dict[str, Any] = {
-        "executed": False,
-        "reason": "EXECUTION_NOT_REQUESTED",
-    }
+    execution: Dict[str, Any] = {"executed": False, "reason": "EXECUTION_NOT_REQUESTED"}
 
     if execute and selected:
-        execution = {
-            "executed": True,
-            **execute_fetcher(
-                repo,
-                workspace,
-                python_exe,
-                Path(selected),
-                evidence_dir,
-            ),
-        }
+        execution = execute_fetcher(
+            repo,
+            workspace,
+            python_exe,
+            Path(selected),
+            evidence_dir,
+        )
 
     fetch_status = read_json(
         workspace / "MODULE_173_FYERS_HISTORICAL_5M_DATA_ONLY_FETCHER_STATUS.json"
     )
 
-    if execution.get("executed"):
-        decision = classify(
-            execution,
-            fetch_status,
-            bool(execution["changed"]["sample_csv"]),
-        )
+    if execution.get("executed") or execution.get("decision") == "LIVE_FETCH_FLAG_NOT_FOUND":
+        result = classify(execution, fetch_status)
     elif not selected:
-        decision = {
+        result = {
             "decision": "FETCHER_SCRIPT_NOT_DISCOVERED",
             "recommendation": "REVIEW_FETCHER_CANDIDATES_MANUALLY",
         }
     else:
-        decision = {
+        result = {
             "decision": "FETCHER_DISCOVERED_READY_FOR_EXECUTION",
             "recommendation": "RERUN_WITH_EXECUTE_FETCH",
         }
@@ -356,7 +519,7 @@ def run_diagnostic(repo: Path, workspace: Path, execute: bool) -> Dict[str, Any]
         "canonical_watch_process": process,
         "execution": execution,
         "fetch_status_after": fetch_status,
-        **decision,
+        **result,
         "paper_only": True,
         "data_only": True,
         "real_money_enabled": False,

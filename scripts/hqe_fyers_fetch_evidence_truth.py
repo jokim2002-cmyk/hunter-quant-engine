@@ -181,15 +181,22 @@ def query_watch_processes() -> List[Dict[str, Any]]:
         "-Command",
         (
             "Get-CimInstance Win32_Process | "
-            "Where-Object {$_.CommandLine -like "
-            "'*hqe_market_day_persistent_paper_watch_loop.py*'} | "
-            "Select-Object ProcessId,ParentProcessId,ExecutablePath,CommandLine | "
+            "Where-Object {"
+            "$_.CommandLine -like '*hqe_market_day_persistent_paper_watch_loop.py*' "
+            "-and $_.Name -match '^python(w)?\\.exe$'"
+            "} | "
+            "Select-Object ProcessId,ParentProcessId,Name,ExecutablePath,CommandLine | "
             "ConvertTo-Json -Compress"
         ),
     ]
 
     try:
-        completed = subprocess.run(command, capture_output=True, text=True, timeout=10)
+        completed = subprocess.run(
+            command,
+            capture_output=True,
+            text=True,
+            timeout=10,
+        )
     except (OSError, subprocess.TimeoutExpired):
         return []
 
@@ -204,8 +211,14 @@ def query_watch_processes() -> List[Dict[str, Any]]:
 
     if isinstance(payload, dict):
         payload = [payload]
-    return [item for item in payload if isinstance(item, dict) and item.get("ProcessId")]
 
+    return [
+        item
+        for item in payload
+        if isinstance(item, dict)
+        and item.get("ProcessId")
+        and str(item.get("Name", "")).lower() in {"python.exe", "pythonw.exe"}
+    ]
 
 def canonical_watch_process(processes: Optional[List[Dict[str, Any]]] = None) -> Dict[str, Any]:
     items = processes if processes is not None else query_watch_processes()
