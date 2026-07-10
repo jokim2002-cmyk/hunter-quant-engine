@@ -619,3 +619,19 @@ Next action after this bunch: review the generated acceptance decision.
 Only blocking findings may be repaired before paper-only RC sign-off.
 
 Real trading remains outside the release. This is not a profitability claim.
+
+## HQE Final Paper-Only RC Evidence and Sign-Off
+
+Final operator acceptance decision: `ACCEPTED_FOR_PAPER_ONLY_RC`
+
+Final release-candidate status: `PAPER_ONLY_RC_SIGNED_OFF`
+
+The exact acceptance decision is preserved in
+`release/HQE_PAPER_ONLY_RC_SIGNOFF.json`.
+
+No product or trading feature was added in this bunch. Release manifest,
+freeze hashes and final sign-off evidence were completed.
+
+Commit after PASS: `Add final paper-only RC evidence and sign-off`
+
+Real trading remains outside this release. This is not a profitability claim.

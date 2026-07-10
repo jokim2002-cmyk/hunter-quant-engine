@@ -15,10 +15,11 @@
     "scripts/hqe_release_candidate_audit.py",
     "scripts/hqe_app_release_candidate_audit_center.py",
     "scripts/hqe_operator_acceptance_engine.py",
-    "scripts/hqe_app_operator_acceptance_center.py"
+    "scripts/hqe_app_operator_acceptance_center.py",
+    "scripts/hqe_final_rc_signoff_engine.py"
   ],
   "product": "Hunter Quant Engine",
-  "product_version": "0.9.0-paper-rc3",
+  "product_version": "0.9.0-paper-rc4",
   "profitability_claim": false,
   "release_channel": "PAPER_RC",
   "required_files": [
@@ -35,7 +36,10 @@
     "docs/HQE_PAPER_ONLY_RC_OPERATOR_GUIDE.md",
     "scripts/hqe_operator_acceptance_engine.py",
     "scripts/hqe_app_operator_acceptance_center.py",
-    "docs/HQE_OPERATOR_ACCEPTANCE_RC_SIGNOFF_BUNCH.md"
+    "docs/HQE_OPERATOR_ACCEPTANCE_RC_SIGNOFF_BUNCH.md",
+    "scripts/hqe_final_rc_signoff_engine.py",
+    "docs/HQE_FINAL_PAPER_ONLY_RC_SIGNOFF.md",
+    "release/HQE_PAPER_ONLY_RC_SIGNOFF.json"
   ],
   "safety": {
     "auto_trading": false,
