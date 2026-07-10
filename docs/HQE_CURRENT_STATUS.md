@@ -199,3 +199,12 @@ Real trading remains locked.
 - Per-run stdout, stderr, process and workspace-change evidence added
 - Final readiness decision added
 - Safety locks remain mandatory
+
+
+## Operator Live Status Dashboard V1
+
+- Read-only live operator dashboard added
+- Watch status, freshness, broker, symbol and decision panels added
+- Workspace and evidence shortcuts added
+- Five-second refresh added
+- Safety locks remain mandatory

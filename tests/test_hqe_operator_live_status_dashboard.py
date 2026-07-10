@@ -1,0 +1,87 @@
+from __future__ import annotations
+
+import importlib.util
+import json
+import sys
+from datetime import datetime, timedelta, timezone
+from pathlib import Path
+
+REPO = Path(__file__).resolve().parents[1]
+SCRIPT = REPO / "scripts" / "hqe_operator_live_status_dashboard.py"
+
+
+def load_module():
+    spec = importlib.util.spec_from_file_location("hqe_operator_dashboard_test", SCRIPT)
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    assert spec.loader is not None
+    spec.loader.exec_module(module)
+    return module
+
+
+def test_freshness_labels(monkeypatch):
+    module = load_module()
+    fixed = datetime(2026, 7, 10, 5, 0, tzinfo=timezone.utc)
+    monkeypatch.setattr(module, "utc_now", lambda: fixed)
+
+    assert module.freshness_label(fixed - timedelta(seconds=30)) == "FRESH"
+    assert module.freshness_label(fixed - timedelta(minutes=5)) == "RECENT"
+    assert module.freshness_label(fixed - timedelta(minutes=30)) == "STALE"
+    assert module.freshness_label(None) == "UNKNOWN"
+
+
+def test_derive_status_reads_workspace(tmp_path):
+    module = load_module()
+
+    (tmp_path / "HQE_PERSISTENT_MARKET_DAY_PAPER_WATCH_STATUS.json").write_text(
+        json.dumps(
+            {
+                "status": "RUNNING",
+                "symbol": "NSE:NIFTY50-INDEX",
+                "generated_at_utc": "2026-07-10T05:00:00+00:00",
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    (tmp_path / "MODULE_173_FYERS_HISTORICAL_5M_DATA_ONLY_FETCHER_STATUS.json").write_text(
+        json.dumps(
+            {
+                "broker": "Fyers",
+                "generated_at_utc": "2026-07-10T05:00:00+00:00",
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    evidence = tmp_path / "HQE_APP_V2_CONTROLLED_DRY_RUNS_20260710_100000"
+    evidence.mkdir()
+    (evidence / "HQE_APP_V2_CONTROLLED_DRY_RUN_SUMMARY.json").write_text(
+        json.dumps(
+            {
+                "decision": "APP_V2_CONTROLLED_DRY_RUNS_COMPLETE",
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    payload = module.derive_status(tmp_path)
+
+    assert payload["watch_status"] == "RUNNING"
+    assert payload["broker"] == "Fyers"
+    assert payload["symbol"] == "NSE:NIFTY50-INDEX"
+    assert payload["latest_decision"] == "APP_V2_CONTROLLED_DRY_RUNS_COMPLETE"
+    assert payload["real_orders_enabled"] is False
+    assert payload["broker_execution_enabled"] is False
+    assert payload["auto_trading_enabled"] is False
+
+
+def test_missing_workspace_files_stays_safe(tmp_path):
+    module = load_module()
+    payload = module.derive_status(tmp_path)
+
+    assert payload["data_freshness"] == "UNKNOWN"
+    assert payload["real_money_enabled"] is False
+    assert payload["real_orders_enabled"] is False
+    assert payload["broker_execution_enabled"] is False
+    assert payload["auto_trading_enabled"] is False
