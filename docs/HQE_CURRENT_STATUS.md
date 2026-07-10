@@ -98,3 +98,16 @@ All real-trading and broker-execution locks remain active.
 
 Real trading remains locked.
 
+## Operator smoke gate prepared
+
+- App V2 static UI readiness gate
+- Manual operator smoke checklist
+- Workspace operator smoke launcher
+- UI and safety regression tests
+
+## Current next action
+
+Run the App V2 manual operator smoke. After the visual review passes, proceed to final UI/dashboard polish only where evidence shows it is needed.
+
+Real trading remains locked.
+
