@@ -503,3 +503,27 @@ Next cohesive roadmap bunch: Backtest Product Center with dataset,
 strategy, date, risk and cost controls plus result visualization.
 
 Real trading remains locked. This is not a profitability claim.
+
+## HQE Backtest Product Center Bunch
+
+Combined roadmap work completed:
+
+1. Quality-approved dataset selection
+2. Strategy-pack selection
+3. Date, capital, cost, slippage, tax and trade-limit controls
+4. Backtest-job schema and validation
+5. Guarded existing-runner discovery
+6. Hidden background backtest jobs
+7. JSON/CSV result normalization
+8. Metrics and equity/drawdown evidence
+9. App-native Backtest Product Center
+
+HQE does not fabricate option prices. Backtest execution is enabled only
+for an existing compatible runner that exposes a passing guard-check.
+
+Commit after PASS: `Add backtest product center bunch`
+
+Next cohesive roadmap bunch: paper-validation progress, no-trade reasons,
+strategy-drift warnings, weekly summaries and final report exports.
+
+Real trading remains locked. This is not a profitability claim.

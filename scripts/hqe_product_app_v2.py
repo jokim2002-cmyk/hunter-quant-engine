@@ -13,6 +13,13 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, Optional
 
+from hqe_app_backtest_product_center import (
+    backtest_center_snapshot,
+    create_backtest_job,
+    preview_backtest_job,
+    run_backtest_job,
+)
+
 from hqe_app_strategy_builder_center import (
     build_preview as build_strategy_preview,
     builder_center_snapshot,
@@ -4476,6 +4483,511 @@ def run_gui(args: argparse.Namespace) -> int:
     root.after(
         1950,
         lambda: refresh_strategy_builder_center(False),
+    )
+
+
+    backtest_product_status = tk.StringVar(
+        value="Backtest Product Center will appear after refresh."
+    )
+
+    def refresh_backtest_product_center(
+        show_dialog: bool = False,
+    ) -> dict:
+        try:
+            snapshot = backtest_center_snapshot(
+                repo_root(),
+                workspace,
+            )
+            backtest_product_status.set(snapshot["display_text"])
+            footer_status.set(snapshot["display_text"])
+            if show_dialog:
+                messagebox.showinfo(
+                    "Backtest Product Center",
+                    snapshot["display_text"],
+                )
+            return snapshot
+        except Exception as exc:
+            backtest_product_status.set(
+                "Backtest Center refresh failed safely."
+            )
+            footer_status.set(f"Backtest Center error: {exc}")
+            if show_dialog:
+                messagebox.showerror(
+                    "Backtest Product Center",
+                    str(exc),
+                )
+            return {}
+
+    def open_backtest_product_center() -> None:
+        snapshot = refresh_backtest_product_center(False)
+
+        dialog = tk.Toplevel(root)
+        dialog.title("HQE — Backtest Product Center")
+        dialog.geometry("1160x760")
+        dialog.minsize(1020, 680)
+        dialog.configure(bg=palette["bg"])
+        dialog.transient(root)
+
+        outer = tk.Frame(
+            dialog,
+            bg=palette["panel"],
+            padx=16,
+            pady=14,
+        )
+        outer.pack(fill="both", expand=True, padx=14, pady=14)
+
+        tk.Label(
+            outer,
+            text="Backtest Product Center",
+            bg=palette["panel"],
+            fg=palette["text"],
+            font=("Segoe UI Semibold", 18),
+            anchor="w",
+        ).pack(fill="x")
+
+        tk.Label(
+            outer,
+            text=(
+                "Recorded Data • Strategy Pack • Costs • "
+                "Equity / Drawdown Evidence"
+            ),
+            bg=palette["panel"],
+            fg=palette["muted"],
+            anchor="w",
+            pady=4,
+        ).pack(fill="x")
+
+        summary_var = tk.StringVar(
+            value=snapshot.get("display_text", "")
+        )
+        tk.Label(
+            outer,
+            textvariable=summary_var,
+            bg=palette["panel_alt"],
+            fg=palette["muted"],
+            anchor="w",
+            padx=10,
+            pady=8,
+        ).pack(fill="x", pady=(8, 10))
+
+        body = tk.Frame(outer, bg=palette["panel"])
+        body.pack(fill="both", expand=True)
+
+        form_frame = tk.LabelFrame(
+            body,
+            text="Backtest Job Controls",
+            bg=palette["panel"],
+            fg=palette["text"],
+            padx=10,
+            pady=8,
+        )
+        form_frame.pack(
+            side="left",
+            fill="both",
+            expand=False,
+        )
+
+        result_frame = tk.LabelFrame(
+            body,
+            text="Job Preview and Results",
+            bg=palette["panel"],
+            fg=palette["text"],
+            padx=10,
+            pady=8,
+        )
+        result_frame.pack(
+            side="left",
+            fill="both",
+            expand=True,
+            padx=(12, 0),
+        )
+
+        datasets = list(snapshot.get("datasets", []))
+        strategies = list(snapshot.get("strategies", []))
+        compatible_runners = [
+            runner
+            for runner in snapshot.get("runners", [])
+            if runner.get("compatible")
+        ]
+
+        dataset_map = {
+            f"{item.get('name', '')} | score {item.get('score', 0)} | "
+            f"rows {item.get('row_count', 0)}": item.get("path", "")
+            for item in datasets
+        }
+        strategy_map = {
+            f"{item.get('name', '')} | {item.get('version', '')} | "
+            f"{item.get('source', '')}": item.get("path", "")
+            for item in strategies
+        }
+        runner_map = {
+            f"{item.get('name', '')} | guarded": item.get("path", "")
+            for item in compatible_runners
+        }
+
+        variables = {
+            "dataset": tk.StringVar(
+                value=next(iter(dataset_map), "")
+            ),
+            "strategy": tk.StringVar(
+                value=next(iter(strategy_map), "")
+            ),
+            "runner": tk.StringVar(
+                value=next(iter(runner_map), "")
+            ),
+            "start_date": tk.StringVar(value=""),
+            "end_date": tk.StringVar(value=""),
+            "initial_capital": tk.StringVar(value="100000"),
+            "brokerage_per_order": tk.StringVar(value="20"),
+            "slippage_bps": tk.StringVar(value="5"),
+            "tax_bps": tk.StringVar(value="2"),
+            "max_trades_per_day": tk.StringVar(value="3"),
+        }
+
+        rows = [
+            ("Dataset", "dataset", tuple(dataset_map)),
+            ("Strategy Pack", "strategy", tuple(strategy_map)),
+            ("Guarded Runner", "runner", tuple(runner_map)),
+            ("Start Date YYYY-MM-DD", "start_date", None),
+            ("End Date YYYY-MM-DD", "end_date", None),
+            ("Initial Capital", "initial_capital", None),
+            ("Brokerage / Order", "brokerage_per_order", None),
+            ("Slippage BPS", "slippage_bps", None),
+            ("Taxes / Charges BPS", "tax_bps", None),
+            ("Max Trades / Day", "max_trades_per_day", None),
+        ]
+
+        for row, (label, key, values) in enumerate(rows):
+            tk.Label(
+                form_frame,
+                text=label,
+                bg=palette["panel"],
+                fg=palette["muted"],
+                anchor="w",
+            ).grid(
+                row=row,
+                column=0,
+                sticky="w",
+                padx=(0, 8),
+                pady=4,
+            )
+            if values is not None:
+                widget = ttk.Combobox(
+                    form_frame,
+                    textvariable=variables[key],
+                    values=values,
+                    state="readonly",
+                    width=54,
+                )
+            else:
+                widget = ttk.Entry(
+                    form_frame,
+                    textvariable=variables[key],
+                    width=57,
+                )
+            widget.grid(
+                row=row,
+                column=1,
+                sticky="ew",
+                pady=4,
+            )
+
+        preview_text = tk.Text(
+            result_frame,
+            wrap="word",
+            height=25,
+            width=62,
+        )
+        preview_text.pack(fill="both", expand=True)
+
+        recent_list = tk.Listbox(
+            result_frame,
+            height=8,
+            exportselection=False,
+        )
+        recent_list.pack(fill="x", pady=(10, 0))
+
+        latest_job = {"path": ""}
+        visible_runs: list[dict] = []
+
+        def form_payload() -> dict:
+            return {
+                "dataset_path": dataset_map.get(
+                    variables["dataset"].get(),
+                    "",
+                ),
+                "strategy_path": strategy_map.get(
+                    variables["strategy"].get(),
+                    "",
+                ),
+                "start_date": variables["start_date"].get(),
+                "end_date": variables["end_date"].get(),
+                "initial_capital": variables[
+                    "initial_capital"
+                ].get(),
+                "brokerage_per_order": variables[
+                    "brokerage_per_order"
+                ].get(),
+                "slippage_bps": variables[
+                    "slippage_bps"
+                ].get(),
+                "tax_bps": variables["tax_bps"].get(),
+                "max_trades_per_day": variables[
+                    "max_trades_per_day"
+                ].get(),
+            }
+
+        def preview_job() -> None:
+            preview_text.delete("1.0", "end")
+            try:
+                result = preview_backtest_job(form_payload())
+                job = result["job"]
+                validation = result["validation"]
+                preview_text.insert(
+                    "end",
+                    f"Job ID: {job['job_id']}\n"
+                    f"Mode: {job['mode']}\n"
+                    f"Dataset: {job['dataset_path']}\n"
+                    f"Strategy: "
+                    f"{validation.get('strategy_name', '')}\n"
+                    f"Dates: {job['start_date'] or 'all'} to "
+                    f"{job['end_date'] or 'all'}\n"
+                    f"Capital: {job['initial_capital']}\n"
+                    f"Brokerage: {job['brokerage_per_order']}\n"
+                    f"Slippage BPS: {job['slippage_bps']}\n"
+                    f"Tax BPS: {job['tax_bps']}\n"
+                    f"Max trades/day: "
+                    f"{job['max_trades_per_day']}\n\n"
+                    f"VALID: {validation['valid']}\n"
+                    f"WARNINGS: "
+                    f"{validation.get('warnings', [])}\n"
+                    f"ERRORS: {validation.get('errors', [])}\n\n"
+                    f"REAL ORDERS: NO\n"
+                    f"BROKER EXECUTION: NO\n"
+                    f"OPTION SELLING: NO"
+                )
+            except Exception as exc:
+                preview_text.insert("end", f"VALIDATION ERROR:\n{exc}")
+
+        def save_job() -> None:
+            try:
+                target = create_backtest_job(
+                    form_payload(),
+                    workspace,
+                )
+                latest_job["path"] = str(target)
+                messagebox.showinfo(
+                    "Backtest Product Center",
+                    f"Backtest job saved:\n{target}",
+                )
+            except Exception as exc:
+                messagebox.showerror(
+                    "Backtest Product Center",
+                    str(exc),
+                )
+
+        def poll_backtest() -> None:
+            current = refresh_backtest_product_center(False)
+            operation = current.get("operation", {})
+            status = str(operation.get("status", ""))
+            if status == "RUNNING":
+                root.after(1200, poll_backtest)
+                return
+            refresh_dialog()
+            message = str(
+                operation.get(
+                    "message",
+                    "Backtest operation finished.",
+                )
+            )
+            if status == "PASS":
+                messagebox.showinfo(
+                    "Backtest Product Center",
+                    message,
+                )
+            elif status in {"FAILED", "BLOCKED"}:
+                messagebox.showerror(
+                    "Backtest Product Center",
+                    message,
+                )
+
+        def run_job() -> None:
+            runner_path = runner_map.get(
+                variables["runner"].get(),
+                "",
+            )
+            if not runner_path:
+                messagebox.showwarning(
+                    "Backtest Product Center",
+                    "No compatible guarded backtest runner is available.",
+                )
+                return
+            try:
+                if not latest_job["path"]:
+                    target = create_backtest_job(
+                        form_payload(),
+                        workspace,
+                    )
+                    latest_job["path"] = str(target)
+                run_backtest_job(
+                    repo_root(),
+                    workspace,
+                    Path(latest_job["path"]),
+                    Path(runner_path),
+                )
+                footer_status.set(
+                    "Recorded-data backtest running safely."
+                )
+                root.after(1200, poll_backtest)
+            except Exception as exc:
+                messagebox.showerror(
+                    "Backtest Product Center",
+                    str(exc),
+                )
+
+        def selected_run() -> dict:
+            selection = recent_list.curselection()
+            if not selection:
+                return {}
+            index = int(selection[0])
+            if index >= len(visible_runs):
+                return {}
+            return visible_runs[index]
+
+        def open_run_path(kind: str) -> None:
+            record = selected_run()
+            if not record and visible_runs:
+                record = visible_runs[0]
+            raw_path = str(
+                record.get(
+                    "summary_path" if kind == "summary" else "output_dir",
+                    "",
+                )
+            )
+            if not raw_path:
+                messagebox.showwarning(
+                    "Backtest Product Center",
+                    "No backtest result is available yet.",
+                )
+                return
+            path = Path(raw_path)
+            if not path.exists():
+                messagebox.showerror(
+                    "Backtest Product Center",
+                    f"Backtest result path is missing: {path}",
+                )
+                return
+            try:
+                os.startfile(path)
+            except Exception as exc:
+                messagebox.showerror(
+                    "Backtest Product Center",
+                    str(exc),
+                )
+
+        def render_runs(current: dict) -> None:
+            visible_runs.clear()
+            recent_list.delete(0, "end")
+            for record in current.get("recent_runs", []):
+                visible_runs.append(record)
+                metrics = record.get("metrics", {})
+                recent_list.insert(
+                    "end",
+                    f"{record.get('job_id', '')} | "
+                    f"trades {metrics.get('trade_count', 0)} | "
+                    f"net {metrics.get('net_pnl', 'n/a')} | "
+                    f"DD {metrics.get('max_drawdown', 'n/a')}",
+                )
+
+        def refresh_dialog() -> None:
+            current = refresh_backtest_product_center(False)
+            summary_var.set(current.get("display_text", ""))
+            render_runs(current)
+
+        buttons = tk.Frame(outer, bg=palette["panel"])
+        buttons.pack(fill="x", pady=(12, 0))
+
+        ttk.Button(
+            buttons,
+            text="Preview Backtest Job",
+            command=preview_job,
+        ).pack(side="left", padx=(0, 6))
+
+        ttk.Button(
+            buttons,
+            text="Save Backtest Job",
+            command=save_job,
+        ).pack(side="left", padx=6)
+
+        ttk.Button(
+            buttons,
+            text="Run Guarded Backtest",
+            command=run_job,
+        ).pack(side="left", padx=6)
+
+        ttk.Button(
+            buttons,
+            text="Open Latest Result Summary",
+            command=lambda: open_run_path("summary"),
+        ).pack(side="left", padx=6)
+
+        ttk.Button(
+            buttons,
+            text="Open Result Folder",
+            command=lambda: open_run_path("folder"),
+        ).pack(side="left", padx=6)
+
+        ttk.Button(
+            buttons,
+            text="Refresh Results",
+            command=refresh_dialog,
+        ).pack(side="left", padx=6)
+
+        tk.Label(
+            outer,
+            text=(
+                "RECORDED DATA ONLY • NO FAKE OPTION PRICES • "
+                "REAL ORDERS NO • BROKER EXECUTION NO"
+            ),
+            bg=palette["panel"],
+            fg=palette["muted"],
+            anchor="w",
+            pady=10,
+        ).pack(fill="x")
+
+        render_runs(snapshot)
+        preview_job()
+
+    backtest_product_panel = tk.Frame(
+        action_panel,
+        bg=palette["panel_alt"],
+        highlightbackground=palette["border"],
+        highlightthickness=1,
+    )
+    backtest_product_panel.pack(fill="x", padx=18, pady=(4, 8))
+
+    tk.Label(
+        backtest_product_panel,
+        textvariable=backtest_product_status,
+        bg=palette["panel_alt"],
+        fg=palette["muted"],
+        justify="left",
+        anchor="w",
+        wraplength=300,
+        padx=10,
+        pady=8,
+    ).pack(fill="x")
+
+    ttk.Button(
+        action_panel,
+        text="Backtest Product Center",
+        style="Secondary.TButton",
+        command=open_backtest_product_center,
+    ).pack(fill="x", padx=18, pady=3)
+
+    root.after(
+        2100,
+        lambda: refresh_backtest_product_center(False),
     )
 
     root.mainloop()
