@@ -502,6 +502,12 @@ def run_gui(args: argparse.Namespace) -> int:
 
     selected_broker = tk.StringVar(value="fyers")
     footer_status = tk.StringVar(value="HQE App V2 ready.")
+    active_page = tk.StringVar(value="Overview")
+    page_title = tk.StringVar(value="Trader Overview")
+    page_subtitle = tk.StringVar(
+        value="Simple market-data and paper-validation control centre"
+    )
+    nav_buttons: dict[str, tk.Button] = {}
     card_vars = {
         "internet": tk.StringVar(value="Checking..."),
         "broker": tk.StringVar(value="Checking..."),
@@ -541,6 +547,9 @@ def run_gui(args: argparse.Namespace) -> int:
         fg=palette["muted"],
     ).pack(anchor="w", padx=24, pady=(0, 26))
 
+    def navigation_command(page_name: str) -> None:
+        show_page(page_name)
+
     for item in (
         "Overview",
         "Broker Connect",
@@ -548,17 +557,24 @@ def run_gui(args: argparse.Namespace) -> int:
         "Today Report",
         "System Safety",
     ):
-        fg = palette["text"] if item == "Overview" else palette["muted"]
-        tk.Label(
+        button = tk.Button(
             sidebar,
             text=item,
             font=("Segoe UI", 11, "bold" if item == "Overview" else "normal"),
-            bg=palette["sidebar"],
-            fg=fg,
+            bg=palette["panel_alt"] if item == "Overview" else palette["sidebar"],
+            fg=palette["text"] if item == "Overview" else palette["muted"],
+            activebackground=palette["panel_alt"],
+            activeforeground=palette["text"],
+            relief="flat",
+            bd=0,
             anchor="w",
             padx=24,
             pady=11,
-        ).pack(fill="x")
+            cursor="hand2",
+            command=lambda value=item: navigation_command(value),
+        )
+        button.pack(fill="x")
+        nav_buttons[item] = button
 
     tk.Label(
         sidebar,
@@ -575,7 +591,7 @@ def run_gui(args: argparse.Namespace) -> int:
 
     tk.Label(
         header,
-        text="Trader Overview",
+        textvariable=page_title,
         font=("Segoe UI", 23, "bold"),
         bg=palette["background"],
         fg=palette["text"],
@@ -583,7 +599,7 @@ def run_gui(args: argparse.Namespace) -> int:
 
     tk.Label(
         header,
-        text="Simple market-data and paper-validation control centre",
+        textvariable=page_subtitle,
         font=("Segoe UI", 10),
         bg=palette["background"],
         fg=palette["muted"],
@@ -649,6 +665,8 @@ def run_gui(args: argparse.Namespace) -> int:
 
     body = tk.Frame(content, bg=palette["background"])
     body.pack(fill="both", expand=True, padx=28, pady=18)
+
+    page_panel = tk.Frame(content, bg=palette["background"])
 
     broker_panel = tk.Frame(
         body,
@@ -794,6 +812,10 @@ def run_gui(args: argparse.Namespace) -> int:
 
         footer_status.set("Status refreshed.")
 
+        current_page = active_page.get()
+        if current_page != "Overview":
+            root.after_idle(lambda value=current_page: show_page(value, True))
+
     def start_watch() -> None:
         result = controller.start()
         footer_status.set(result["status"].replace("_", " ").title())
@@ -810,7 +832,9 @@ def run_gui(args: argparse.Namespace) -> int:
 
     def open_broker_connect_center() -> None:
         script = repo_root() / "scripts" / "hqe_broker_connect_center.py"
-        python_exe = repo_root() / ".venv" / "Scripts" / "python.exe"
+        python_exe = repo_root() / ".venv" / "Scripts" / "pythonw.exe"
+        if not python_exe.exists():
+            python_exe = repo_root() / ".venv" / "Scripts" / "python.exe"
         try:
             subprocess.Popen(
                 [str(python_exe), str(script), "--workspace", str(workspace), "--launch"],
@@ -839,6 +863,369 @@ def run_gui(args: argparse.Namespace) -> int:
             footer_status.set("Evidence folder opened.")
         except Exception as exc:
             messagebox.showerror("Open folder", str(exc))
+
+    def clear_page_panel() -> None:
+        for child in page_panel.winfo_children():
+            child.destroy()
+
+    def set_navigation_state(page_name: str) -> None:
+        active_page.set(page_name)
+        for name, button in nav_buttons.items():
+            selected = name == page_name
+            button.configure(
+                bg=palette["panel_alt"] if selected else palette["sidebar"],
+                fg=palette["text"] if selected else palette["muted"],
+                font=("Segoe UI", 11, "bold" if selected else "normal"),
+            )
+
+    def page_card(parent: tk.Widget, title: str, value: str) -> tk.Frame:
+        card = tk.Frame(
+            parent,
+            bg=palette["panel"],
+            highlightbackground=palette["border"],
+            highlightthickness=1,
+        )
+        tk.Label(
+            card,
+            text=title,
+            font=("Segoe UI", 10),
+            bg=palette["panel"],
+            fg=palette["muted"],
+        ).pack(anchor="w", padx=18, pady=(14, 4))
+        tk.Label(
+            card,
+            text=value,
+            font=("Segoe UI", 12, "bold"),
+            bg=palette["panel"],
+            fg=palette["text"],
+            justify="left",
+            wraplength=560,
+        ).pack(anchor="w", padx=18, pady=(0, 16))
+        return card
+
+    def open_operator_dashboard() -> None:
+        script = repo_root() / "scripts" / "hqe_operator_live_status_dashboard.py"
+        python_exe = repo_root() / ".venv" / "Scripts" / "pythonw.exe"
+        if not python_exe.exists():
+            python_exe = repo_root() / ".venv" / "Scripts" / "python.exe"
+
+        try:
+            subprocess.Popen(
+                [
+                    str(python_exe),
+                    str(script),
+                    "--workspace",
+                    str(workspace),
+                    "--launch",
+                ],
+                cwd=str(repo_root()),
+            )
+            footer_status.set("Operator live-status dashboard opened.")
+        except Exception as exc:
+            messagebox.showerror("Operator Live Status", str(exc))
+
+    def show_overview_page() -> None:
+        page_title.set("Trader Overview")
+        page_subtitle.set(
+            "Simple market-data and paper-validation control centre"
+        )
+        page_panel.pack_forget()
+        if not body.winfo_manager():
+            body.pack(fill="both", expand=True, padx=28, pady=18)
+
+    def show_broker_page() -> None:
+        page_title.set("Broker Connect")
+        page_subtitle.set(
+            "Choose and manage market-data broker connections inside HQE"
+        )
+
+        clear_page_panel()
+
+        intro = page_card(
+            page_panel,
+            "Connection policy",
+            "Broker connections are market-data only. "
+            "Real orders and broker execution remain hard locked.",
+        )
+        intro.pack(fill="x", pady=(0, 12))
+
+        architecture = architecture_payload(workspace)
+        grid = tk.Frame(page_panel, bg=palette["background"])
+        grid.pack(fill="both", expand=True)
+
+        for index, broker in enumerate(architecture["brokers"]):
+            broker_id = broker["broker_id"]
+            connection = (
+                broker["connection_test"]["status"]
+                .replace("_", " ")
+                .title()
+            )
+            market_data = (
+                broker["market_data_status"]["status"]
+                .replace("_", " ")
+                .title()
+            )
+
+            card = tk.Frame(
+                grid,
+                bg=palette["panel"],
+                highlightbackground=palette["border"],
+                highlightthickness=1,
+            )
+            card.grid(
+                row=index // 2,
+                column=index % 2,
+                sticky="nsew",
+                padx=6,
+                pady=6,
+            )
+            grid.grid_columnconfigure(index % 2, weight=1)
+
+            tk.Label(
+                card,
+                text=broker["display_name"],
+                font=("Segoe UI", 13, "bold"),
+                bg=palette["panel"],
+                fg=palette["text"],
+            ).pack(anchor="w", padx=16, pady=(14, 4))
+
+            tk.Label(
+                card,
+                text=f"Connection: {connection}\nMarket data: {market_data}",
+                font=("Segoe UI", 9),
+                bg=palette["panel"],
+                fg=palette["muted"],
+                justify="left",
+            ).pack(anchor="w", padx=16, pady=(0, 10))
+
+            ttk.Button(
+                card,
+                text="Select Broker",
+                style="Secondary.TButton",
+                command=lambda value=broker_id: select_broker(value),
+            ).pack(anchor="w", padx=16, pady=(0, 14))
+
+        ttk.Button(
+            page_panel,
+            text="Open Guided Broker Connect",
+            style="HQE.TButton",
+            command=open_broker_connect_center,
+        ).pack(anchor="e", pady=(12, 0))
+
+    def show_paper_watch_page() -> None:
+        page_title.set("Paper Watch")
+        page_subtitle.set(
+            "Live market-data observation and paper-only validation control"
+        )
+
+        clear_page_panel()
+
+        payload = app_status_payload(workspace)
+        running = controller.is_running()
+        watch_status = (
+            "RUNNING IN BACKGROUND"
+            if running
+            else payload["paper_watch"]["watch_status"]
+            .replace("_", " ")
+            .upper()
+        )
+
+        status_card = page_card(
+            page_panel,
+            "Current paper-watch state",
+            watch_status,
+        )
+        status_card.pack(fill="x", pady=(0, 12))
+
+        policy_card = page_card(
+            page_panel,
+            "Execution safety",
+            "Paper only: YES\n"
+            "Real orders: NO\n"
+            "Broker execution: NO\n"
+            "Auto trading: NO\n"
+            "Option selling: NO",
+        )
+        policy_card.pack(fill="x", pady=(0, 12))
+
+        actions = tk.Frame(page_panel, bg=palette["background"])
+        actions.pack(fill="x", pady=(8, 0))
+
+        ttk.Button(
+            actions,
+            text="Start Paper Watch",
+            style="HQE.TButton",
+            command=lambda: (start_watch(), show_page("Paper Watch")),
+        ).pack(side="left", padx=(0, 8))
+
+        ttk.Button(
+            actions,
+            text="Stop Paper Watch",
+            style="Secondary.TButton",
+            command=lambda: (stop_watch(), show_page("Paper Watch")),
+        ).pack(side="left", padx=8)
+
+        ttk.Button(
+            actions,
+            text="Refresh Status",
+            style="Secondary.TButton",
+            command=lambda: show_page("Paper Watch"),
+        ).pack(side="left", padx=8)
+
+        ttk.Button(
+            actions,
+            text="Open Live Status Dashboard",
+            style="Secondary.TButton",
+            command=open_operator_dashboard,
+        ).pack(side="left", padx=8)
+
+    def show_report_page() -> None:
+        page_title.set("Today Report")
+        page_subtitle.set(
+            "Latest paper-validation reports and market-close evidence"
+        )
+
+        clear_page_panel()
+
+        candidates = today_report_candidates(workspace)
+        available = [path for path in candidates if path.exists()]
+
+        if available:
+            latest = available[0]
+            report_value = (
+                f"Latest report: {latest.name}\n"
+                f"Location: {latest.parent}"
+            )
+        else:
+            report_value = (
+                "No HTML report is currently available. "
+                "The next valid paper workflow will create it."
+            )
+
+        report_card = page_card(
+            page_panel,
+            "Latest available report",
+            report_value,
+        )
+        report_card.pack(fill="x", pady=(0, 12))
+
+        close_evidence = (
+            workspace
+            / "DAY_001_MARKET_CLOSE_PACK"
+            / "DAY_001_MARKET_CLOSE_EVIDENCE.json"
+        )
+
+        evidence_text = (
+            f"Market-close evidence available:\n{close_evidence}"
+            if close_evidence.exists()
+            else "Market-close evidence is not available yet."
+        )
+
+        evidence_card = page_card(
+            page_panel,
+            "Validation evidence",
+            evidence_text,
+        )
+        evidence_card.pack(fill="x", pady=(0, 12))
+
+        actions = tk.Frame(page_panel, bg=palette["background"])
+        actions.pack(fill="x", pady=(8, 0))
+
+        ttk.Button(
+            actions,
+            text="Open Today Report",
+            style="HQE.TButton",
+            command=open_report,
+        ).pack(side="left", padx=(0, 8))
+
+        ttk.Button(
+            actions,
+            text="Open Evidence Folder",
+            style="Secondary.TButton",
+            command=open_workspace,
+        ).pack(side="left", padx=8)
+
+        ttk.Button(
+            actions,
+            text="Refresh Reports",
+            style="Secondary.TButton",
+            command=lambda: show_page("Today Report"),
+        ).pack(side="left", padx=8)
+
+    def show_safety_page() -> None:
+        page_title.set("System Safety")
+        page_subtitle.set(
+            "Hard safety locks protecting the HQE validation environment"
+        )
+
+        clear_page_panel()
+
+        safety_rows = (
+            ("Paper / simulation only", "ENABLED"),
+            ("Real money", "DISABLED"),
+            ("Real broker orders", "HARD BLOCKED"),
+            ("Broker execution", "HARD BLOCKED"),
+            ("Automatic trading", "DISABLED"),
+            ("Option selling", "DISABLED"),
+            ("Candidate tuning during validation", "LOCKED"),
+            ("Manual/fake trades", "PROHIBITED"),
+        )
+
+        grid = tk.Frame(page_panel, bg=palette["background"])
+        grid.pack(fill="both", expand=True)
+
+        for index, (title, state) in enumerate(safety_rows):
+            card = page_card(grid, title, state)
+            card.grid(
+                row=index // 2,
+                column=index % 2,
+                sticky="nsew",
+                padx=6,
+                pady=6,
+            )
+            grid.grid_columnconfigure(index % 2, weight=1)
+
+        tk.Label(
+            page_panel,
+            text=(
+                "HQE currently observes data and records paper-validation "
+                "evidence only. No profitability claim is made."
+            ),
+            font=("Segoe UI", 9),
+            bg=palette["background"],
+            fg=palette["muted"],
+            justify="left",
+        ).pack(anchor="w", pady=(14, 0))
+
+    def show_page(page_name: str, refresh_only: bool = False) -> None:
+        if page_name not in nav_buttons:
+            page_name = "Overview"
+
+        set_navigation_state(page_name)
+
+        if page_name == "Overview":
+            show_overview_page()
+            return
+
+        if body.winfo_manager():
+            body.pack_forget()
+
+        if not page_panel.winfo_manager():
+            page_panel.pack(
+                fill="both",
+                expand=True,
+                padx=28,
+                pady=18,
+            )
+
+        if page_name == "Broker Connect":
+            show_broker_page()
+        elif page_name == "Paper Watch":
+            show_paper_watch_page()
+        elif page_name == "Today Report":
+            show_report_page()
+        elif page_name == "System Safety":
+            show_safety_page()
 
     ttk.Button(
         action_panel,
@@ -925,6 +1312,7 @@ def run_gui(args: argparse.Namespace) -> int:
         root.destroy()
 
     root.protocol("WM_DELETE_WINDOW", close_app)
+    show_page("Overview")
     refresh_status()
     root.after(15000, refresh_status)
     root.mainloop()
