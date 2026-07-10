@@ -25,6 +25,7 @@ from hqe_product_license_common import (
     public_key_path,
     verify_license_key,
 )
+from hqe_app_v2_license_activation import run_activation_gui
 
 
 VERSION = "HQE_APP_V2_PUBLIC_TRADER_UI_V1"
@@ -829,18 +830,23 @@ def main() -> int:
     if not args.skip_license_check:
         status = license_status(workspace)
         if not status.get("valid"):
-            print(
-                json.dumps(
-                    {
-                        "status": "LICENSE_REQUIRED",
-                        "reason": status.get("reason"),
-                        "machine_id": status.get("machine_id"),
-                    },
-                    indent=2,
-                    sort_keys=True,
-                )
+            activation_result = run_activation_gui(
+                workspace=workspace,
+                initial_reason=str(status.get("reason", "license_required")),
             )
-            return 2
+            if not activation_result:
+                print(
+                    json.dumps(
+                        {
+                            "status": "LICENSE_REQUIRED",
+                            "reason": status.get("reason"),
+                            "machine_id": status.get("machine_id"),
+                        },
+                        indent=2,
+                        sort_keys=True,
+                    )
+                )
+                return 2
 
     return run_gui(args)
 

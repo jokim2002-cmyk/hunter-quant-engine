@@ -111,3 +111,17 @@ Run the App V2 manual operator smoke. After the visual review passes, proceed to
 
 Real trading remains locked.
 
+## App V2 license activation repair
+
+- Machine-ID mismatch now opens an activation screen
+- Machine ID can be copied from App V2
+- New license keys are validated before storage
+- No license bypass was introduced
+
+## Current next action
+
+Generate a license for the displayed Machine ID, activate App V2, then complete
+the manual visual operator smoke.
+
+Real trading remains locked.
+
