@@ -39,6 +39,11 @@ CREATE_NO_WINDOW = 0x08000000 if os.name == "nt" else 0
 
 
 def repo_root() -> Path:
+    env_hint = os.environ.get("HQE_REPO_HINT", "").strip()
+    if env_hint:
+        hinted = Path(env_hint)
+        if hinted.exists():
+            return hinted
     return Path(__file__).resolve().parents[1]
 
 
