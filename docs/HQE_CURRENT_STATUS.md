@@ -294,3 +294,17 @@ Real trading remains locked.
 Commit after successful tests: `Add app-native daily operations and dynamic reports`
 
 Real trading remains locked.
+
+## HQE App Completion Batch 3 — Broker and Data Health Center
+
+- Embedded internet, Fyers credential-presence, and market-data health status
+- App-native safe Fyers data-only connection test
+- Hidden background worker and responsive status polling
+- Secret values remain redacted
+- Multi-broker placeholders and permanent safety locks preserved
+
+Commit after PASS: `Add app-native broker and data health center`
+
+Next roadmap target: app-native Fyers login/token refresh flow, followed by the unified market-data layer.
+
+Real trading remains locked. This is not a profitability claim.

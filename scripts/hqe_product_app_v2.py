@@ -13,6 +13,11 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, Optional
 
+from hqe_app_broker_data_health import (
+    broker_health_snapshot,
+    launch_broker_health_worker,
+)
+
 from hqe_app_daily_operations import (
     launch_operation_worker,
     operations_snapshot,
@@ -898,6 +903,71 @@ def run_gui(args: argparse.Namespace) -> int:
             footer_status.set("Latest evidence could not be opened.")
             messagebox.showerror("Latest Evidence", str(exc))
 
+    broker_health_status = tk.StringVar(
+        value="Broker/data health will appear after refresh."
+    )
+
+    def refresh_broker_data_health(show_dialog: bool = False) -> None:
+        try:
+            snapshot = broker_health_snapshot(repo_root(), workspace)
+            broker_health_status.set(snapshot["display_text"])
+            footer_status.set(snapshot["broker_message"])
+            if show_dialog:
+                messagebox.showinfo(
+                    "Broker & Data Health",
+                    snapshot["display_text"] + "\n\n" + snapshot["broker_message"],
+                )
+        except Exception as exc:
+            broker_health_status.set("Broker/data health refresh failed safely.")
+            footer_status.set(f"Broker/data health error: {exc}")
+            if show_dialog:
+                messagebox.showerror("Broker & Data Health", str(exc))
+
+    def poll_safe_broker_data_test() -> None:
+        try:
+            snapshot = broker_health_snapshot(
+                repo_root(), workspace, check_internet=False
+            )
+            broker_health_status.set(snapshot["display_text"])
+            operation = snapshot["operation"]
+            if operation["status"] == "RUNNING":
+                root.after(900, poll_safe_broker_data_test)
+                return
+            footer_status.set(
+                operation["message"] or "Safe broker/data test finished."
+            )
+            if operation["status"] == "PASS":
+                messagebox.showinfo(
+                    "Safe Data Test",
+                    operation["message"] or "Fyers data-only test passed.",
+                )
+            elif operation["status"] in {"FAILED", "BLOCKED"}:
+                messagebox.showerror(
+                    "Safe Data Test",
+                    operation["message"] or "Safe data-only test did not pass.",
+                )
+        except Exception as exc:
+            footer_status.set(f"Safe data-test status error: {exc}")
+
+    def run_safe_broker_data_test() -> None:
+        try:
+            launch_broker_health_worker(
+                repo_root(),
+                workspace,
+                "safe_data_test",
+                "NSE:NIFTY50-INDEX",
+            )
+            broker_health_status.set(
+                "Safe Fyers data-only connection test is running..."
+            )
+            footer_status.set(
+                "Testing market data only. Real orders remain blocked."
+            )
+            root.after(900, poll_safe_broker_data_test)
+        except Exception as exc:
+            messagebox.showerror("Safe Data Test", str(exc))
+            footer_status.set(f"Safe data test could not start: {exc}")
+
     def open_broker_connect_center() -> None:
         script = repo_root() / "scripts" / "hqe_broker_connect_center.py"
         python_exe = repo_root() / ".venv" / "Scripts" / "pythonw.exe"
@@ -1318,6 +1388,40 @@ def run_gui(args: argparse.Namespace) -> int:
         command=stop_watch,
     ).pack(fill="x", padx=18, pady=5)
 
+    broker_health_panel = tk.Frame(
+        action_panel,
+        bg=palette["panel_alt"],
+        highlightbackground=palette["border"],
+        highlightthickness=1,
+    )
+    broker_health_panel.pack(fill="x", padx=18, pady=(4, 8))
+
+    tk.Label(
+        broker_health_panel,
+        textvariable=broker_health_status,
+        bg=palette["panel_alt"],
+        fg=palette["muted"],
+        justify="left",
+        anchor="w",
+        wraplength=300,
+        padx=10,
+        pady=8,
+    ).pack(fill="x")
+
+    ttk.Button(
+        action_panel,
+        text="Refresh Broker/Data Health",
+        style="Secondary.TButton",
+        command=lambda: refresh_broker_data_health(True),
+    ).pack(fill="x", padx=18, pady=3)
+
+    ttk.Button(
+        action_panel,
+        text="Run Safe Data Test",
+        style="Secondary.TButton",
+        command=run_safe_broker_data_test,
+    ).pack(fill="x", padx=18, pady=3)
+
     ttk.Button(
         action_panel,
         text="Broker Connect Center",
@@ -1401,6 +1505,7 @@ def run_gui(args: argparse.Namespace) -> int:
     refresh_status()
     root.after(15000, refresh_status)
     root.after(250, lambda: refresh_daily_operations(False))
+    root.after(450, lambda: refresh_broker_data_health(False))
     root.mainloop()
     return 0
 
