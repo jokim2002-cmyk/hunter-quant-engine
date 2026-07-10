@@ -416,3 +416,25 @@ Commit after PASS: `Add app-native paper-watch session control center`
 Next roadmap target: app-native consolidated operator dashboard and workflow simplification.
 
 Real trading remains locked. This is not a profitability claim.
+
+## HQE Operator Experience Consolidation Bunch
+
+Combined roadmap work completed in one bunch:
+
+1. Unified Operator Dashboard
+2. Connect → Prepare → Watch → Close → Review workflow
+3. Forward-validation progress engine
+4. Next-recommended-action guidance
+
+The dashboard aggregates broker login, market data, daily startup,
+paper watch, daily close, session history and safety evidence.
+
+Validation progress now tracks 20 observed days, 30 observed paper
+trades, 4 expiry weeks, valid trade days and no-trade days.
+
+Commit after PASS: `Add consolidated operator experience and validation dashboard`
+
+Next cohesive roadmap bunch: multi-broker data adapters and full
+market-data quality abstraction.
+
+Real trading remains locked. This is not a profitability claim.

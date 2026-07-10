@@ -13,6 +13,10 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, Optional
 
+from hqe_app_operator_dashboard import (
+    operator_dashboard_snapshot,
+)
+
 from hqe_app_paper_watch_control import (
     launch_watch_control_worker,
     session_snapshot as paper_watch_session_snapshot,
@@ -3063,6 +3067,322 @@ def run_gui(args: argparse.Namespace) -> int:
     ).pack(fill="x", padx=18, pady=3)
 
     root.after(1350, lambda: refresh_paper_watch_center(False))
+
+
+    operator_dashboard_status = tk.StringVar(
+        value="Operator dashboard will appear after refresh."
+    )
+
+    operator_actions = {
+        "connect": (
+            locals().get("open_fyers_auth_center")
+            or locals().get("open_fyers_login_center")
+            or open_market_data_center
+        ),
+        "prepare": open_daily_startup_center,
+        "watch": open_paper_watch_center,
+        "close": open_daily_close_center,
+        "review": open_session_history_center,
+        "safety": open_safety_evidence_center,
+    }
+
+    def refresh_operator_dashboard(
+        show_dialog: bool = False,
+    ) -> dict:
+        try:
+            snapshot = operator_dashboard_snapshot(
+                repo_root(),
+                workspace,
+            )
+            operator_dashboard_status.set(snapshot["display_text"])
+            footer_status.set(snapshot["display_text"])
+            if show_dialog:
+                messagebox.showinfo(
+                    "Operator Dashboard",
+                    snapshot["display_text"],
+                )
+            return snapshot
+        except Exception as exc:
+            operator_dashboard_status.set(
+                "Operator dashboard refresh failed safely."
+            )
+            footer_status.set(f"Operator dashboard error: {exc}")
+            if show_dialog:
+                messagebox.showerror(
+                    "Operator Dashboard",
+                    str(exc),
+                )
+            return {}
+
+    def open_operator_target(target: str) -> None:
+        action = operator_actions.get(target)
+        if action is None:
+            messagebox.showwarning(
+                "Operator Dashboard",
+                f"No app action is available for: {target}",
+            )
+            return
+        action()
+
+    def open_operator_dashboard() -> None:
+        snapshot = refresh_operator_dashboard(False)
+
+        dialog = tk.Toplevel(root)
+        dialog.title("HQE — Operator Dashboard")
+        dialog.geometry("960x690")
+        dialog.minsize(860, 610)
+        dialog.configure(bg=palette["bg"])
+        dialog.transient(root)
+
+        outer = tk.Frame(
+            dialog,
+            bg=palette["panel"],
+            padx=18,
+            pady=16,
+        )
+        outer.pack(fill="both", expand=True, padx=16, pady=16)
+
+        tk.Label(
+            outer,
+            text="Connect → Prepare → Watch → Close → Review",
+            bg=palette["panel"],
+            fg=palette["text"],
+            font=("Segoe UI Semibold", 18),
+            anchor="w",
+        ).pack(fill="x")
+
+        summary_var = tk.StringVar(
+            value=snapshot.get("display_text", "")
+        )
+        tk.Label(
+            outer,
+            textvariable=summary_var,
+            bg=palette["panel_alt"],
+            fg=palette["muted"],
+            justify="left",
+            anchor="w",
+            wraplength=860,
+            padx=12,
+            pady=10,
+        ).pack(fill="x", pady=(10, 12))
+
+        next_action_frame = tk.Frame(
+            outer,
+            bg=palette["panel_alt"],
+            highlightbackground=palette["border"],
+            highlightthickness=1,
+        )
+        next_action_frame.pack(fill="x", pady=(0, 12))
+
+        next_action_var = tk.StringVar()
+        tk.Label(
+            next_action_frame,
+            textvariable=next_action_var,
+            bg=palette["panel_alt"],
+            fg=palette["text"],
+            justify="left",
+            anchor="w",
+            padx=12,
+            pady=10,
+        ).pack(side="left", fill="x", expand=True)
+
+        workflow_frame = tk.Frame(outer, bg=palette["panel"])
+        workflow_frame.pack(fill="x", pady=(0, 12))
+
+        workflow_vars: list[tk.StringVar] = []
+        workflow_buttons: list[ttk.Button] = []
+
+        for column, target in enumerate(
+            ("connect", "prepare", "watch", "close", "review")
+        ):
+            workflow_frame.grid_columnconfigure(column, weight=1)
+            card = tk.Frame(
+                workflow_frame,
+                bg=palette["panel_alt"],
+                highlightbackground=palette["border"],
+                highlightthickness=1,
+                padx=8,
+                pady=8,
+            )
+            card.grid(
+                row=0,
+                column=column,
+                sticky="nsew",
+                padx=4,
+            )
+            variable = tk.StringVar(value=target.title())
+            workflow_vars.append(variable)
+            tk.Label(
+                card,
+                textvariable=variable,
+                bg=palette["panel_alt"],
+                fg=palette["muted"],
+                justify="left",
+                anchor="nw",
+                wraplength=150,
+            ).pack(fill="both", expand=True)
+            button = ttk.Button(
+                card,
+                text=f"Open {target.title()}",
+                command=lambda item=target: open_operator_target(item),
+            )
+            workflow_buttons.append(button)
+            button.pack(fill="x", pady=(8, 0))
+
+        progress_frame = tk.Frame(
+            outer,
+            bg=palette["panel_alt"],
+            highlightbackground=palette["border"],
+            highlightthickness=1,
+            padx=12,
+            pady=10,
+        )
+        progress_frame.pack(fill="x", pady=(0, 12))
+
+        tk.Label(
+            progress_frame,
+            text="Validation Progress",
+            bg=palette["panel_alt"],
+            fg=palette["text"],
+            font=("Segoe UI Semibold", 14),
+            anchor="w",
+        ).pack(fill="x")
+
+        progress_var = tk.StringVar()
+        tk.Label(
+            progress_frame,
+            textvariable=progress_var,
+            bg=palette["panel_alt"],
+            fg=palette["muted"],
+            justify="left",
+            anchor="w",
+            padx=0,
+            pady=8,
+        ).pack(fill="x")
+
+        recommended_target = {"value": "review"}
+
+        def render(current: dict) -> None:
+            summary_var.set(current.get("display_text", ""))
+
+            next_action = current.get("next_action", {})
+            recommended_target["value"] = str(
+                next_action.get("target", "review")
+            )
+            next_action_var.set(
+                f"NEXT: {next_action.get('title', 'Review')} — "
+                f"{next_action.get('message', '')}"
+            )
+
+            workflow = current.get("workflow", [])
+            for index, variable in enumerate(workflow_vars):
+                if index >= len(workflow):
+                    variable.set("Unavailable")
+                    continue
+                stage = workflow[index]
+                variable.set(
+                    f"{stage['name']}\n"
+                    f"Status: {stage['status']}\n"
+                    f"{stage['message']}"
+                )
+
+            progress = current.get("validation_progress", {})
+            progress_var.set(
+                f"Observed days: "
+                f"{progress.get('observed_days', 0)}/"
+                f"{progress.get('minimum_days', 20)} "
+                f"({progress.get('days_percent', 0)}%)\n"
+                f"Observed paper trades: "
+                f"{progress.get('observed_trades', 0)}/"
+                f"{progress.get('minimum_trades', 30)} "
+                f"({progress.get('trades_percent', 0)}%)\n"
+                f"Expiry weeks: "
+                f"{progress.get('expiry_weeks', 0)}/"
+                f"{progress.get('minimum_expiry_weeks', 4)} "
+                f"({progress.get('expiry_weeks_percent', 0)}%)\n"
+                f"Valid trade days: "
+                f"{progress.get('valid_trade_days', 0)} | "
+                f"No-trade days: {progress.get('no_trade_days', 0)}"
+            )
+
+        def refresh_dialog() -> None:
+            render(refresh_operator_dashboard(False))
+
+        ttk.Button(
+            next_action_frame,
+            text="Open Next Recommended Action",
+            command=lambda: open_operator_target(
+                recommended_target["value"]
+            ),
+        ).pack(side="right", padx=10, pady=8)
+
+        button_row = tk.Frame(outer, bg=palette["panel"])
+        button_row.pack(fill="x")
+
+        ttk.Button(
+            button_row,
+            text="Refresh Dashboard",
+            command=refresh_dialog,
+        ).pack(side="left", padx=(0, 6))
+
+        ttk.Button(
+            button_row,
+            text="Open Safety Center",
+            command=lambda: open_operator_target("safety"),
+        ).pack(side="left", padx=6)
+
+        tk.Label(
+            outer,
+            text=(
+                "PAPER/DATA ONLY • REAL ORDERS BLOCKED • "
+                "THIS IS NOT A PROFITABILITY CLAIM"
+            ),
+            bg=palette["panel"],
+            fg=palette["muted"],
+            anchor="w",
+            pady=12,
+        ).pack(fill="x")
+
+        render(snapshot)
+
+    operator_dashboard_panel = tk.Frame(
+        action_panel,
+        bg=palette["panel_alt"],
+        highlightbackground=palette["border"],
+        highlightthickness=2,
+    )
+    operator_dashboard_panel.pack(fill="x", padx=18, pady=(6, 10))
+
+    tk.Label(
+        operator_dashboard_panel,
+        text="PRIMARY DAILY WORKFLOW",
+        bg=palette["panel_alt"],
+        fg=palette["text"],
+        font=("Segoe UI Semibold", 11),
+        anchor="w",
+        padx=10,
+        pady=(8, 2),
+    ).pack(fill="x")
+
+    tk.Label(
+        operator_dashboard_panel,
+        textvariable=operator_dashboard_status,
+        bg=palette["panel_alt"],
+        fg=palette["muted"],
+        justify="left",
+        anchor="w",
+        wraplength=300,
+        padx=10,
+        pady=6,
+    ).pack(fill="x")
+
+    ttk.Button(
+        operator_dashboard_panel,
+        text="Open Operator Dashboard",
+        command=open_operator_dashboard,
+    ).pack(fill="x", padx=10, pady=(2, 10))
+
+    root.after(1500, lambda: refresh_operator_dashboard(False))
 
     root.mainloop()
     return 0
