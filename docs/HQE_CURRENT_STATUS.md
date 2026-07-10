@@ -551,3 +551,26 @@ Next cohesive roadmap bunch: Windows release hardening, license lifecycle,
 backup/restore, diagnostics bundle and end-to-end release-candidate dry run.
 
 Real trading remains locked. This is not a profitability claim.
+
+## HQE Windows Release Hardening and RC Dry-Run Bunch
+
+Combined roadmap work completed:
+
+1. Windows release manifest
+2. One-icon desktop shortcut installer/remover
+3. Offline license lifecycle and expiry states
+4. User backup and path-safe restore staging
+5. Diagnostics JSON/ZIP bundle
+6. Release-candidate required-file and compile checks
+7. Component guard dry run
+8. App-native Windows Release Center
+
+Restore never overwrites live workspace files automatically. RC dry run
+does not fetch data, start paper watch, run a backtest or place orders.
+
+Commit after PASS: `Add Windows release hardening and RC dry-run bunch`
+
+Next roadmap target: complete app-wide end-to-end usability dry runs,
+release-candidate fixes and final paper-only product freeze.
+
+Real trading remains locked. This is not a profitability claim.

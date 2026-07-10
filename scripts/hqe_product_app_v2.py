@@ -13,6 +13,12 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, Optional
 
+from hqe_app_release_center import (
+    launch_desktop_shortcut_install,
+    launch_release_operation,
+    release_center_snapshot,
+)
+
 from hqe_app_paper_validation_report_center import (
     launch_report_pack_worker,
     paper_validation_center_snapshot,
@@ -5357,6 +5363,385 @@ def run_gui(args: argparse.Namespace) -> int:
     root.after(
         2250,
         lambda: refresh_paper_validation_report_center(False),
+    )
+
+
+    release_center_status = tk.StringVar(
+        value="Windows Release Center will appear after refresh."
+    )
+
+    def refresh_release_center(
+        show_dialog: bool = False,
+    ) -> dict:
+        try:
+            snapshot = release_center_snapshot(
+                repo_root(),
+                workspace,
+            )
+            release_center_status.set(snapshot["display_text"])
+            footer_status.set(snapshot["display_text"])
+            if show_dialog:
+                messagebox.showinfo(
+                    "Windows Release Center",
+                    snapshot["display_text"],
+                )
+            return snapshot
+        except Exception as exc:
+            release_center_status.set(
+                "Release Center refresh failed safely."
+            )
+            footer_status.set(f"Release Center error: {exc}")
+            if show_dialog:
+                messagebox.showerror(
+                    "Windows Release Center",
+                    str(exc),
+                )
+            return {}
+
+    def poll_release_operation() -> None:
+        snapshot = refresh_release_center(False)
+        operation = snapshot.get("operation", {})
+        status = str(operation.get("status", ""))
+        if status == "RUNNING":
+            root.after(1000, poll_release_operation)
+            return
+        message = str(
+            operation.get(
+                "message",
+                "Release operation finished.",
+            )
+        )
+        footer_status.set(message)
+        if status == "PASS":
+            messagebox.showinfo(
+                "Windows Release Center",
+                message,
+            )
+        elif status in {"FAILED", "BLOCKED"}:
+            messagebox.showerror(
+                "Windows Release Center",
+                message,
+            )
+
+    def run_release_operation(
+        operation: str,
+        source_zip: str = "",
+    ) -> None:
+        try:
+            launch_release_operation(
+                repo_root(),
+                workspace,
+                operation,
+                source_zip,
+            )
+            release_center_status.set(
+                f"Release operation {operation} is running safely..."
+            )
+            footer_status.set(
+                "Release operation running. Trading remains locked."
+            )
+            root.after(1000, poll_release_operation)
+        except Exception as exc:
+            messagebox.showerror(
+                "Windows Release Center",
+                str(exc),
+            )
+
+    def install_desktop_shortcut() -> None:
+        try:
+            launch_desktop_shortcut_install(repo_root())
+            messagebox.showinfo(
+                "Windows Release Center",
+                "Desktop shortcut installation started.",
+            )
+        except Exception as exc:
+            messagebox.showerror(
+                "Windows Release Center",
+                str(exc),
+            )
+
+    def open_release_output(kind: str) -> None:
+        snapshot = refresh_release_center(False)
+        latest = snapshot.get("latest_outputs", {})
+        key = {
+            "backup": "latest_backup",
+            "restore": "latest_restore_staging",
+            "diagnostics": "latest_diagnostics",
+            "rc": "latest_rc_report",
+        }.get(kind, "latest_rc_report")
+        raw_path = str(latest.get(key, "")).strip()
+        if not raw_path:
+            messagebox.showwarning(
+                "Windows Release Center",
+                f"No {kind} output is available yet.",
+            )
+            return
+        path = Path(raw_path)
+        if not path.exists():
+            messagebox.showerror(
+                "Windows Release Center",
+                f"Output path is missing: {path}",
+            )
+            return
+        try:
+            os.startfile(path)
+        except Exception as exc:
+            messagebox.showerror(
+                "Windows Release Center",
+                str(exc),
+            )
+
+    def open_release_center() -> None:
+        from tkinter import filedialog
+
+        snapshot = refresh_release_center(False)
+
+        dialog = tk.Toplevel(root)
+        dialog.title("HQE — Windows Release Center")
+        dialog.geometry("1040x720")
+        dialog.minsize(900, 620)
+        dialog.configure(bg=palette["bg"])
+        dialog.transient(root)
+
+        outer = tk.Frame(
+            dialog,
+            bg=palette["panel"],
+            padx=16,
+            pady=14,
+        )
+        outer.pack(fill="both", expand=True, padx=14, pady=14)
+
+        tk.Label(
+            outer,
+            text="Windows Release Center",
+            bg=palette["panel"],
+            fg=palette["text"],
+            font=("Segoe UI Semibold", 18),
+            anchor="w",
+        ).pack(fill="x")
+
+        tk.Label(
+            outer,
+            text=(
+                "One Icon • License • Backup/Restore • Diagnostics • "
+                "Release-Candidate Dry Run"
+            ),
+            bg=palette["panel"],
+            fg=palette["muted"],
+            anchor="w",
+            pady=4,
+        ).pack(fill="x")
+
+        summary_var = tk.StringVar(
+            value=snapshot.get("display_text", "")
+        )
+        tk.Label(
+            outer,
+            textvariable=summary_var,
+            bg=palette["panel_alt"],
+            fg=palette["muted"],
+            anchor="w",
+            padx=10,
+            pady=8,
+        ).pack(fill="x", pady=(8, 10))
+
+        license_var = tk.StringVar()
+        operation_var = tk.StringVar()
+
+        top = tk.Frame(outer, bg=palette["panel"])
+        top.pack(fill="x")
+
+        for title, variable in (
+            ("License Lifecycle", license_var),
+            ("Latest Operation", operation_var),
+        ):
+            card = tk.LabelFrame(
+                top,
+                text=title,
+                bg=palette["panel"],
+                fg=palette["text"],
+                padx=10,
+                pady=8,
+            )
+            card.pack(
+                side="left",
+                fill="both",
+                expand=True,
+                padx=4,
+            )
+            tk.Label(
+                card,
+                textvariable=variable,
+                bg=palette["panel"],
+                fg=palette["muted"],
+                justify="left",
+                anchor="nw",
+                wraplength=460,
+            ).pack(fill="both", expand=True)
+
+        checks_list = tk.Listbox(
+            outer,
+            exportselection=False,
+        )
+        checks_list.pack(
+            fill="both",
+            expand=True,
+            pady=(12, 0),
+        )
+
+        def render(current: dict) -> None:
+            summary_var.set(current.get("display_text", ""))
+            license_data = current.get("license", {})
+            details = license_data.get("details", {})
+            license_var.set(
+                f"Check: {license_data.get('status', '')}\n"
+                f"Lifecycle: {details.get('status', '')}\n"
+                f"{license_data.get('message', '')}"
+            )
+            operation = current.get("operation", {})
+            operation_var.set(
+                f"Status: {operation.get('status', 'IDLE')}\n"
+                f"Operation: {operation.get('operation', '')}\n"
+                f"{operation.get('message', '')}"
+            )
+            checks_list.delete(0, "end")
+            for item in current.get("required_checks", []):
+                checks_list.insert(
+                    "end",
+                    f"[{item.get('status', '')}] "
+                    f"{item.get('name', '')} — "
+                    f"{item.get('message', '')}",
+                )
+
+        def refresh_dialog() -> None:
+            render(refresh_release_center(False))
+
+        def choose_restore_backup() -> None:
+            selected = filedialog.askopenfilename(
+                parent=dialog,
+                title="Select HQE Backup ZIP",
+                filetypes=[("HQE Backup ZIP", "*.zip")],
+            )
+            if selected:
+                run_release_operation(
+                    "restore_stage",
+                    selected,
+                )
+
+        buttons = tk.Frame(outer, bg=palette["panel"])
+        buttons.pack(fill="x", pady=(12, 0))
+
+        ttk.Button(
+            buttons,
+            text="Run RC Dry Run",
+            command=lambda: run_release_operation("rc_dry_run"),
+        ).pack(side="left", padx=(0, 5))
+
+        ttk.Button(
+            buttons,
+            text="Create User Backup",
+            command=lambda: run_release_operation("backup"),
+        ).pack(side="left", padx=5)
+
+        ttk.Button(
+            buttons,
+            text="Stage Restore from Backup",
+            command=choose_restore_backup,
+        ).pack(side="left", padx=5)
+
+        ttk.Button(
+            buttons,
+            text="Create Diagnostics Bundle",
+            command=lambda: run_release_operation("diagnostics"),
+        ).pack(side="left", padx=5)
+
+        ttk.Button(
+            buttons,
+            text="Install Desktop Shortcut",
+            command=install_desktop_shortcut,
+        ).pack(side="left", padx=5)
+
+        second_buttons = tk.Frame(outer, bg=palette["panel"])
+        second_buttons.pack(fill="x", pady=(8, 0))
+
+        ttk.Button(
+            second_buttons,
+            text="Refresh Release Status",
+            command=refresh_dialog,
+        ).pack(side="left", padx=(0, 5))
+
+        ttk.Button(
+            second_buttons,
+            text="Open Latest RC Report",
+            command=lambda: open_release_output("rc"),
+        ).pack(side="left", padx=5)
+
+        ttk.Button(
+            second_buttons,
+            text="Open Latest Backup",
+            command=lambda: open_release_output("backup"),
+        ).pack(side="left", padx=5)
+
+        ttk.Button(
+            second_buttons,
+            text="Open Latest Diagnostics",
+            command=lambda: open_release_output("diagnostics"),
+        ).pack(side="left", padx=5)
+
+        ttk.Button(
+            second_buttons,
+            text="Open Restore Staging",
+            command=lambda: open_release_output("restore"),
+        ).pack(side="left", padx=5)
+
+        tk.Label(
+            outer,
+            text=(
+                "RC DRY RUN ONLY • RESTORE STAGING DOES NOT OVERWRITE • "
+                "REAL ORDERS NO • BROKER EXECUTION NO"
+            ),
+            bg=palette["panel"],
+            fg=palette["muted"],
+            anchor="w",
+            pady=10,
+        ).pack(fill="x")
+
+        render(snapshot)
+
+    release_center_panel = tk.Frame(
+        action_panel,
+        bg=palette["panel_alt"],
+        highlightbackground=palette["border"],
+        highlightthickness=1,
+    )
+    release_center_panel.pack(
+        fill="x",
+        padx=18,
+        pady=(4, 8),
+    )
+
+    tk.Label(
+        release_center_panel,
+        textvariable=release_center_status,
+        bg=palette["panel_alt"],
+        fg=palette["muted"],
+        justify="left",
+        anchor="w",
+        wraplength=300,
+        padx=10,
+        pady=8,
+    ).pack(fill="x")
+
+    ttk.Button(
+        action_panel,
+        text="Windows Release Center",
+        style="Secondary.TButton",
+        command=open_release_center,
+    ).pack(fill="x", padx=18, pady=3)
+
+    root.after(
+        2400,
+        lambda: refresh_release_center(False),
     )
 
     root.mainloop()

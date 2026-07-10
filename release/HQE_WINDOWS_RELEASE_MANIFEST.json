@@ -1,0 +1,40 @@
+{
+  "app_entry": "scripts/hqe_product_app_v2.py",
+  "guard_scripts": [
+    "scripts/hqe_product_app_v2.py",
+    "scripts/hqe_release_readiness_engine.py",
+    "scripts/hqe_license_lifecycle.py",
+    "scripts/hqe_app_release_center.py",
+    "scripts/hqe_app_operator_dashboard.py",
+    "scripts/hqe_app_market_data_quality_center.py",
+    "scripts/hqe_app_strategy_builder_center.py",
+    "scripts/hqe_app_backtest_product_center.py",
+    "scripts/hqe_app_paper_validation_report_center.py",
+    "scripts/hqe_app_safety_evidence_center.py",
+    "scripts/hqe_app_paper_watch_control.py"
+  ],
+  "product": "Hunter Quant Engine",
+  "product_version": "0.9.0-paper-rc1",
+  "profitability_claim": false,
+  "release_channel": "PAPER_RC",
+  "required_files": [
+    "scripts/hqe_product_app_v2.py",
+    "scripts/hqe_release_readiness_engine.py",
+    "scripts/hqe_license_lifecycle.py",
+    "scripts/hqe_app_release_center.py",
+    "release/HQE_INSTALL_DESKTOP_SHORTCUT.ps1",
+    "release/HQE_REMOVE_DESKTOP_SHORTCUT.ps1",
+    "release/HQE_WINDOWS_RELEASE_MANIFEST.json",
+    "docs/HQE_CURRENT_STATUS.md"
+  ],
+  "safety": {
+    "auto_trading": false,
+    "broker_execution": false,
+    "option_selling": false,
+    "paper_only": true,
+    "real_money": false,
+    "real_orders": false
+  },
+  "schema_version": "1.0",
+  "shortcut_name": "Hunter Quant Engine"
+}
