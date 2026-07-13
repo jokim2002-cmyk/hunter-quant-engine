@@ -530,3 +530,13 @@ Status: COMPLETED AFTER TEST PASS.
 - Preserve callback recovery and paper-only execution locks
 
 Next: final button-by-button operator workflow QA and long-duration smoke.
+
+## Current Stabilization Priority — Bunch 8
+
+Status: COMPLETED AFTER TEST PASS.
+
+- Validate main operator button callbacks
+- Validate primary pages and daily workflows
+- Run combined app, RC, acceptance and sign-off safety smoke
+
+Next: long-duration app soak and final release freeze/sign-off.

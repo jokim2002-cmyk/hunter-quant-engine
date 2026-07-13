@@ -792,3 +792,17 @@ Commit after PASS: `Polish HQE operator loading and error feedback`
 Next: final button-by-button operator workflow QA.
 
 Real trading remains locked. This is not a profitability claim.
+
+## HQE App Stabilization Bunch 8 — Final Operator Workflow QA
+
+- Added source-level callback coverage for the main operator buttons
+- Verified all primary operator pages and daily workflows remain wired
+- Added final runtime smoke across app, RC, operator-acceptance and sign-off guards
+- Confirmed real-order and broker-execution invocation remain false
+- Permanent paper-only safety locks remain unchanged
+
+Commit after PASS: `Add final operator workflow QA and smoke`
+
+Next: long-duration app soak and final release freeze/sign-off.
+
+Real trading remains locked. This is not a profitability claim.
