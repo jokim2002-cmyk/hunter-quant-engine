@@ -551,3 +551,14 @@ Status: COMPLETED AFTER TEST PASS.
 - Store machine-readable soak evidence
 
 Next: clean release build and final freeze/sign-off.
+
+## Current Stabilization Priority — Bunch 10
+
+Status: COMPLETED AFTER TEST PASS.
+
+- Simplify the main Overview page
+- Remove broker cards from the main operator surface
+- Center daily-action controls in a single vertical panel
+- Keep broker management inside Broker Connect
+
+Next: final clean release build and freeze/sign-off.

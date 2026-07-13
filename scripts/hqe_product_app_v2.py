@@ -633,7 +633,7 @@ def run_gui(args: argparse.Namespace) -> int:
     except Exception:
         display_scaling = 1.0
     sidebar_width = min(250, max(205, int(window_width * 0.17)))
-    action_panel_width = min(360, max(300, int(window_width * 0.24)))
+    action_panel_width = min(520, max(420, int(window_width * 0.38)))
     root.geometry(
         f"{window_width}x{window_height}+{window_x}+{window_y}"
     )
@@ -864,6 +864,8 @@ def run_gui(args: argparse.Namespace) -> int:
         highlightthickness=1,
     )
     broker_panel.pack(side="left", fill="both", expand=True, padx=(0, 9))
+    # HQE_OVERVIEW_CENTERED_ACTIONS_V1
+    broker_panel.pack_forget()
 
     action_panel_host = tk.Frame(
         body,
@@ -872,7 +874,14 @@ def run_gui(args: argparse.Namespace) -> int:
         highlightbackground=palette["border"],
         highlightthickness=1,
     )
-    action_panel_host.pack(side="left", fill="y", padx=(9, 0))
+    action_panel_host.pack(
+        side="top",
+        fill="y",
+        expand=True,
+        padx=24,
+        pady=(0, 18),
+        anchor="center",
+    )
 
 
     action_panel_host.pack_propagate(False)

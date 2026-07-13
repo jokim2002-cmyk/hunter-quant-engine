@@ -820,3 +820,17 @@ Commit after PASS: `Add HQE long-duration GUI soak validation`
 Next: clean release build and final freeze/sign-off.
 
 Real trading remains locked. This is not a profitability claim.
+
+## HQE App Stabilization Bunch 10 — Centered Overview Actions
+
+- Removed the broker-card surface from the main Overview page
+- Centered the Daily Actions panel in a clean vertical layout
+- Increased the centered action-panel width for better readability
+- Broker management remains available through the Broker Connect page
+- Permanent paper-only and execution-blocking safety locks remain unchanged
+
+Commit after PASS: `Center HQE overview actions and hide broker surface`
+
+Next: final clean release build and freeze/sign-off.
+
+Real trading remains locked. This is not a profitability claim.
