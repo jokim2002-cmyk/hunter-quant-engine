@@ -695,3 +695,19 @@ Commit after PASS: `Fix advanced tools runtime and startup performance`
 
 Product remains paper/data/research only.
 Real trading remains excluded. This is not a profitability claim.
+
+## App Stabilization Bunch 1 - Scroll, speed, and direct tool access
+
+Completed in this bunch:
+
+1. The complete right-side action area now has a real vertical scrollbar.
+2. Mouse-wheel scrolling works while the pointer is over the action area.
+3. Advanced Tools is available from both the visible button and Tools menu.
+4. Ctrl+T opens Advanced Tools directly.
+5. Heavy broker/data refresh work starts after the main window is visible.
+6. Window size now adapts safely to the available screen.
+7. The desktop shortcut is refreshed to the current repository build.
+8. Local machine-bound license configuration is excluded from Git.
+
+Safety remains unchanged: paper/data/research only, with no real orders,
+no broker execution, no auto trading, and no option selling.

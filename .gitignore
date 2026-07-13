@@ -30,3 +30,6 @@ data/live_recording/
 data/paper_trading/
 *.generated.json
 *.generated.csv
+
+# Local machine-bound HQE runtime configuration
+HQE_PRODUCT_APP_CONFIG/

@@ -555,7 +555,17 @@ def run_gui(args: argparse.Namespace) -> int:
 
     root = tk.Tk()
     root.title("Hunter Quant Engine")
-    root.geometry("1180x760")
+    # HQE_STABILIZATION_GEOMETRY_V1
+    screen_width = max(1024, root.winfo_screenwidth())
+    screen_height = max(700, root.winfo_screenheight())
+    window_width = min(1440, max(1000, int(screen_width * 0.92)))
+    window_height = min(900, max(640, int(screen_height * 0.84)))
+    window_x = max(0, (screen_width - window_width) // 2)
+    window_y = max(0, (screen_height - window_height) // 3)
+    root.geometry(
+        f"{window_width}x{window_height}+{window_x}+{window_y}"
+    )
+    root.minsize(900, 600)
     root.minsize(1020, 680)
 
     icon = repo_root() / "assets" / "HQE_PRODUCT_APP.ico"
@@ -784,17 +794,81 @@ def run_gui(args: argparse.Namespace) -> int:
     )
     broker_panel.pack(side="left", fill="both", expand=True, padx=(0, 9))
 
-    action_panel = tk.Frame(
+    action_panel_host = tk.Frame(
         body,
         bg=palette["panel"],
         width=330,
         highlightbackground=palette["border"],
         highlightthickness=1,
     )
-    action_panel.pack(side="left", fill="y", padx=(9, 0))
+    action_panel_host.pack(side="left", fill="y", padx=(9, 0))
 
 
-    action_panel.pack_propagate(False)
+    action_panel_host.pack_propagate(False)
+    # HQE_STABILIZATION_SCROLL_V1
+    hqe_scroll_canvas = tk.Canvas(
+        action_panel_host,
+        bg=palette["panel"],
+        highlightthickness=0,
+        borderwidth=0,
+    )
+    hqe_scrollbar = ttk.Scrollbar(
+        action_panel_host,
+        orient="vertical",
+        command=hqe_scroll_canvas.yview,
+    )
+    hqe_scroll_canvas.configure(
+        yscrollcommand=hqe_scrollbar.set,
+    )
+    hqe_scrollbar.pack(side="right", fill="y")
+    hqe_scroll_canvas.pack(side="left", fill="both", expand=True)
+
+    action_panel = tk.Frame(
+        hqe_scroll_canvas,
+        bg=palette["panel"],
+    )
+    action_panel_window = hqe_scroll_canvas.create_window(
+        (0, 0),
+        window=action_panel,
+        anchor="nw",
+    )
+
+    def _sync_action_panel_scroll(_event=None) -> None:
+        try:
+            hqe_scroll_canvas.itemconfigure(
+                action_panel_window,
+                width=max(1, hqe_scroll_canvas.winfo_width()),
+            )
+            bounds = hqe_scroll_canvas.bbox("all")
+            if bounds is not None:
+                hqe_scroll_canvas.configure(scrollregion=bounds)
+        except tk.TclError:
+            return
+
+    def _action_panel_mousewheel(event):
+        try:
+            left = hqe_scroll_canvas.winfo_rootx()
+            top = hqe_scroll_canvas.winfo_rooty()
+            right = left + hqe_scroll_canvas.winfo_width()
+            bottom = top + hqe_scroll_canvas.winfo_height()
+            if (
+                left <= event.x_root <= right
+                and top <= event.y_root <= bottom
+            ):
+                direction = -1 if event.delta > 0 else 1
+                hqe_scroll_canvas.yview_scroll(direction, "units")
+                return "break"
+        except tk.TclError:
+            return None
+        return None
+
+    action_panel.bind("<Configure>", _sync_action_panel_scroll)
+    hqe_scroll_canvas.bind("<Configure>", _sync_action_panel_scroll)
+    root.bind_all(
+        "<MouseWheel>",
+        _action_panel_mousewheel,
+        add="+",
+    )
 
     tk.Label(
         broker_panel,
@@ -2030,12 +2104,22 @@ def run_gui(args: argparse.Namespace) -> int:
     root.protocol("WM_DELETE_WINDOW", close_app)
     show_page("Overview")
     refresh_status()
+    # HQE_STABILIZATION_STARTUP_V1
     root.after(15000, refresh_status)
-    root.after(250, lambda: refresh_daily_operations(False))
-    apply_stored_fyers_environment(overwrite=True)
-    root.after(300, refresh_fyers_auth_status)
-    root.after(600, lambda: refresh_market_data_center(False))
-    root.after(450, lambda: refresh_broker_data_health(False))
+    root.after(1200, lambda: refresh_daily_operations(False))
+
+    def _deferred_fyers_startup() -> None:
+        try:
+            apply_stored_fyers_environment(overwrite=True)
+            refresh_fyers_auth_status()
+        except Exception as exc:
+            footer_status.set(
+                f"Broker startup refresh failed safely: {exc}"
+            )
+
+    root.after(1700, _deferred_fyers_startup)
+    root.after(2400, lambda: refresh_broker_data_health(False))
+    root.after(3100, lambda: refresh_market_data_center(False))
 
     daily_startup_status = tk.StringVar(
         value="Daily startup readiness will appear after refresh."
@@ -6790,6 +6874,24 @@ def run_gui(args: argparse.Namespace) -> int:
         fill='x',
         padx=18,
         pady=(8, 4),
+    )
+
+    # HQE_STABILIZATION_MENU_V1
+    hqe_menu_bar = tk.Menu(root)
+    hqe_tools_menu = tk.Menu(hqe_menu_bar, tearoff=False)
+    hqe_tools_menu.add_command(
+        label="Advanced Tools & Product Centers",
+        accelerator="Ctrl+T",
+        command=open_advanced_tools_hub,
+    )
+    hqe_menu_bar.add_cascade(
+        label="Tools",
+        menu=hqe_tools_menu,
+    )
+    root.configure(menu=hqe_menu_bar)
+    root.bind(
+        "<Control-t>",
+        lambda _event: open_advanced_tools_hub(),
     )
 
     if os.environ.get(

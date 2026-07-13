@@ -459,3 +459,15 @@ HQE is successful when a non-coder retail trader can:
 8. Decide safely whether strategy deserves more testing.
 
 No coding. No CMD. No confusion.
+
+## Stabilization Bunch 1 - App usability repair
+
+Status: COMPLETED AFTER TEST PASS.
+
+This repair closes the immediate desktop usability blockers: missing main
+scrolling, hidden Advanced Tools access, slow visible startup, stale shortcut
+routing, and unsafe Git visibility of local machine-bound license files.
+
+Next roadmap bunch: test and repair every app-center action end to end, then
+continue product completion from the master roadmap without reopening real
+execution scope.
