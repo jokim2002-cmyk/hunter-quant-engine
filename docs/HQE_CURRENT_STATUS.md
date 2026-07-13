@@ -738,3 +738,16 @@ Commit after PASS: `Repair app centers and add full GUI smoke`
 Next: final startup/performance polish and operator UI defect repair.
 
 Real trading remains locked. This is not a profitability claim.
+
+## HQE App Stabilization Bunch 4 â€” RC Freeze Integrity Repair
+
+- Refreshed the paper-only RC SHA-256 freeze manifest after approved stabilization changes
+- Preserved all permanent paper/data/research safety locks
+- Restored release-candidate and operator-acceptance freeze verification
+- Added no new trading or execution feature
+
+Commit after PASS: `Refresh paper-only RC freeze after stabilization`
+
+Next: startup performance profiling and remaining operator UI polish.
+
+Real trading remains locked. This is not a profitability claim.

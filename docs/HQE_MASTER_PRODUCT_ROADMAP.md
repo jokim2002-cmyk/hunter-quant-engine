@@ -489,3 +489,13 @@ Next: full operator button smoke and remaining slow-center optimization.
 - Safety regression
 
 Next: final startup/performance polish and operator UI defect repair.
+
+## Current Stabilization Priority â€” Bunch 4
+
+Status: COMPLETED AFTER TEST PASS.
+
+- Refresh stale paper-only RC hashes after approved stabilization changes
+- Verify release-candidate and operator-acceptance integrity
+- Preserve all execution locks
+
+Next: startup performance profiling, lazy-loading verification, and operator UI polish.
