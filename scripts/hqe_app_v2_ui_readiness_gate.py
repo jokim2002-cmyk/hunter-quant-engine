@@ -31,7 +31,7 @@ def build_payload() -> Dict[str, Any]:
         "broker_connect_button_present": 'text="Broker Connect Center"' in app_text,
         "start_watch_button_present": 'text="Start Paper Watch"' in app_text,
         "stop_watch_button_present": 'text="Stop Paper Watch"' in app_text,
-        "today_report_button_present": 'text="Open Today Report"' in app_text,
+        "today_report_button_present": 'text="Open Trader Report"' in app_text,
         "evidence_folder_button_present": 'text="Open Evidence Folder"' in app_text,
         "six_broker_registry_used": "BROKER_REGISTRY" in app_text,
         "credential_fields_dynamic": "definition.credential_fields" in broker_text,

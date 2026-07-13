@@ -595,3 +595,87 @@ Status: WAITING FOR OPERATOR VISUAL APPROVAL.
 - Detailed status moved into individual centers
 
 Next: final release rebuild, freeze and sign-off.
+
+## Current Stabilization Priority — Trader Report UX
+
+Status: COMPLETED AFTER OPERATOR APPROVAL.
+
+- Present daily results as a readable HTML trader dashboard
+- Keep JSON separate for technical audit
+- Preserve raw evidence without forcing traders to read it
+
+Next: final release rebuild, freeze and sign-off.
+
+## Current Stabilization Priority — Exact Trader Report
+
+Status: WAITING FOR OPERATOR VISUAL APPROVAL.
+
+- Exact Module 133 daily pack interpretation
+- Plain trader meaning instead of internal codes
+- Technical JSON kept separate and collapsed
+
+Next: final commit, release rebuild, freeze and sign-off.
+
+## Current Priority — Fresh Bidirectional SMC Paper Verification
+
+Status: CODE REPAIR BUILT; FRESH MARKET-DAY EVIDENCE REQUIRED.
+
+- LONG -> CE BUY paper evaluation
+- SHORT -> PE BUY paper evaluation
+- NEUTRAL -> NO TRADE
+- Historical PE-only artifacts remain unchanged
+
+Next: fresh paper-watch session, trader report review, commit and release freeze.
+
+## Current Priority — Fresh Current-Day Paper Evidence
+
+Status: CURRENT-DAY GUARD IMPLEMENTED; LIVE MARKET-DAY RUN REQUIRED.
+
+- Old reports cannot appear as today's report
+- LONG -> CE BUY | SHORT -> PE BUY | NEUTRAL -> NO TRADE
+- Fresh NIFTY, CE and PE evidence is required
+
+Next: fresh paper-watch session, report review, commit and freeze.
+
+## Current Priority — Genuine CE/PE Market-Data Pipeline
+
+Status: OPTION-CHAIN DATA-ONLY FOUNDATION IMPLEMENTED; LIVE DATA-ONLY PROBE REQUIRED.
+
+- Phase A: FYERS option-chain snapshot with both CE and PE
+- Phase B: selected CE/PE historical 5m candles
+- Phase C: truthful recorded-data replay
+- Phase D: current-day trader report
+
+No fake option premium data may be generated.
+
+## Current Priority — Visible Broker Authentication
+
+Status: DIRECT FYERS TOKEN-REFRESH ACCESS ADDED.
+
+- One visible app-native button from Broker Connect
+- Secure DPAPI token refresh remains unchanged
+- No order APIs are enabled
+
+Next: refresh token and verify genuine CE + PE option-chain data.
+
+## Current Priority — Genuine Selected Option History
+
+Status: SELECTED CE/PE HISTORY FOUNDATION IMPLEMENTED; SECURE LIVE DATA-ONLY PROBE REQUIRED.
+
+- Phase A option-chain snapshot: verified
+- Phase B selected CE/PE historical 5m foundation: implemented
+- Phase C truthful recorded-data replay: not yet wired
+- Phase D current-day trader report: not yet generated
+
+No historical candle or paper trade may be fabricated.
+
+## Current Priority — Truthful Current-Day Recorded Replay
+
+Status: RECORDED REPLAY EVALUATION FOUNDATION IMPLEMENTED; SECURE DATA-ONLY PROBE REQUIRED.
+
+- Genuine NIFTY + selected CE + selected PE data
+- Bar-by-bar SMC direction evaluation
+- No position or PnL fabrication
+- App Today Report integration follows visual review
+
+Next: run replay probe, inspect report, then wire it into Today Report.

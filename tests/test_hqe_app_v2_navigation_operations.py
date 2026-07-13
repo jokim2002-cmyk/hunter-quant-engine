@@ -39,9 +39,9 @@ def test_paper_watch_page_has_app_native_controls():
 
 def test_report_and_evidence_actions_are_app_native():
     text = source()
-    assert 'text="Open Today Report"' in text
+    assert 'text="Open Trader Report"' in text
     assert 'text="Open Evidence Folder"' in text
-    assert 'text="Refresh Reports"' in text
+    assert 'text="Refresh Trader Report"' in text
 
 
 def test_guided_tools_prefer_pythonw():

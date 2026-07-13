@@ -889,3 +889,96 @@ Real trading remains locked. This is not a profitability claim.
 Commit only after operator approval: `Polish HQE final operator interface`
 
 Next: final release rebuild, freeze and sign-off.
+
+## HQE Trader Report UX — Human-Readable HTML
+
+- Added a trader-friendly HTML report renderer
+- Open Trader Report now opens HTML instead of raw JSON
+- JSON remains available only as explicitly labelled technical evidence
+- Added summary cards for date, day, status, signals, paper trades, paper P&L, broker and data health
+- Added no-trade explanations, warnings and collapsible technical evidence
+- Permanent paper-only safety language remains visible
+
+Commit after approval with the final UI changes.
+
+Next: final release rebuild, freeze and sign-off.
+
+## HQE Trader Report UX — Exact Day-Pack Interpretation
+
+- Replaced generic field guessing with exact Module 133 schema parsing
+- Added plain no-trade headline and Hinglish explanation
+- Added correct Day/date, signal, position, completed trades and paper P&L
+- Added readable strategy setup, trade details and evidence-quality sections
+- Removed duplicate raw JSON when report and evidence point to the same file
+- Preserved raw JSON only in the collapsed technical section
+
+Next: operator approval, then final commit and release freeze.
+
+## HQE Live SMC Direction Bridge
+
+- Preserved legacy PE-only evaluator for old evidence and compatibility
+- Added active SMC gate for genuine full-history market-day cycles
+- Bullish SMC maps to CE BUY paper evaluation
+- Bearish SMC maps to PE BUY paper evaluation
+- Neutral or conflicting SMC maps to no trade
+- Missing matching CE/PE premium fails safely instead of switching sides
+- Real orders, broker execution, auto trading and option selling remain blocked
+
+Next: verify a fresh market-day paper session before final commit and freeze.
+
+## HQE Current-Day Session Integrity Bunch
+
+- Today Report verifies the current IST trading date
+- Historical and undated reports are blocked from Today Report
+- Daily Close report button routes through the same date guard
+- Paper Watch startup waits for fresh current-day data
+- Report and technical-evidence freshness are visible in the app
+- Real orders, broker execution, auto trading and option selling remain blocked
+
+Next: fresh market-day NIFTY + CE + PE verification.
+
+## HQE FYERS Option-Chain Data-Only Foundation
+
+- Current audit confirmed the workspace has no genuine CE or PE option rows
+- Added explicit FYERS optionchain data-only fetch foundation
+- Normalizes CE and PE rows into one auditable snapshot CSV
+- Both sides are mandatory; incomplete chains fail safely
+- This step does not claim historical premium candles or replay readiness
+- No order API, broker execution, real money, auto trading or option selling
+
+Next: run the explicit data-only option-chain probe, then build selected CE/PE historical 5m capture.
+
+## HQE Visible Fyers Token Refresh Access
+
+- Broker Connect directly exposes Fyers Login & Token Refresh
+- Button wiring is AST-verified against open_fyers_auth_dialog
+- Existing Guided Broker Connect remains available
+- Windows DPAPI secure storage remains unchanged
+- Real orders, broker execution, auto trading and option selling remain blocked
+
+Next: visually refresh the Fyers token, then rerun the secure option-chain probe.
+
+## HQE Selected CE/PE Historical 5-Minute Foundation
+
+- Selects a genuine same-expiry, same-strike CE/PE pair from the FYERS option-chain snapshot
+- Uses nearest valid DTE and balanced premium selection
+- Fetches each option symbol separately through FYERS History API
+- Normalizes genuine 5-minute OHLCV candles into CE, PE and combined CSV files
+- Both sides are mandatory; missing candles fail safely
+- Replay and report readiness remain false until the next wiring phase
+- No real orders, broker execution, auto trading or option selling
+
+Next: run the explicit secure historical data-only probe.
+
+## HQE Current-Day Recorded Replay Evaluation Foundation
+
+- Fetches genuine current-day NIFTY 5-minute history through FYERS data-only History API
+- Reads the verified selected CE + PE 5-minute history
+- Replays the bidirectional SMC decision gate bar by bar
+- LONG maps to CE BUY evaluation; SHORT maps to PE BUY evaluation; NEUTRAL maps to no trade
+- ER20, DTE and premium guards are evaluated from recorded data
+- Writes JSON, CSV and readable HTML evidence
+- Does not open positions, calculate PnL or claim historical execution
+- No real orders, broker execution, auto trading or option selling
+
+Next: explicit secure recorded-data replay evaluation probe.

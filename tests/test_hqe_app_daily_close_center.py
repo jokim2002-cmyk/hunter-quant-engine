@@ -70,5 +70,5 @@ def test_app_contains_daily_close_center():
     assert "def open_daily_close_center" in text
     assert "Daily Close & Report" in text
     assert "Generate Daily Close Report" in text
-    assert "Open Latest Report" in text
-    assert "Open Latest Evidence" in text
+    assert "Open Trader Report" in text
+    assert "Open Technical Evidence (JSON)" in text

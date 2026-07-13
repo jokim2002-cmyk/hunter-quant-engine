@@ -120,6 +120,8 @@ from hqe_app_daily_operations import (
     resolve_latest_report,
 )
 
+from hqe_trader_report_renderer import ensure_trader_report
+
 from hqe_multi_broker_data_architecture import (
     BROKER_REGISTRY,
     SAFETY_LOCK,
@@ -134,6 +136,8 @@ from hqe_product_license_common import (
     verify_license_key,
 )
 from hqe_app_v2_license_activation import run_activation_gui
+from hqe_current_day_session_guard import current_day_report_status
+
 
 # HQE desktop mode: hide child console windows on Windows.
 if (
@@ -259,10 +263,22 @@ def paper_watch_status(workspace: Path) -> Dict[str, Any]:
 
 
 def today_report_candidates(workspace: Path) -> list[Path]:
-    """Return dynamic latest report/evidence candidates; never a fixed validation day."""
+    """Return only artifacts verified for the current IST date."""
+    freshness = current_day_report_status(workspace)
+    if not freshness["today_ready"]:
+        return []
+
     candidates: list[Path] = []
-    for path in (resolve_latest_report(workspace), resolve_latest_evidence(workspace)):
-        if path is not None and path.exists() and path not in candidates:
+    for path in (
+        ensure_trader_report(workspace),
+        resolve_latest_report(workspace),
+        resolve_latest_evidence(workspace),
+    ):
+        if (
+            path is not None
+            and path.exists()
+            and path not in candidates
+        ):
             candidates.append(path)
     return candidates
 
@@ -1201,12 +1217,26 @@ def run_gui(args: argparse.Namespace) -> int:
 
     def start_watch() -> None:
         result = controller.start()
-        footer_status.set(result["status"].replace("_", " ").title())
+        running = bool(
+            result.get("started") or controller.is_running()
+        )
         card_vars["watch"].set(
             "Running in background"
-            if result.get("started") or controller.is_running()
+            if running
             else result["status"].replace("_", " ").title()
         )
+        if running:
+            freshness = current_day_report_status(workspace)
+            footer_status.set(
+                "Today's Paper Watch is running for "
+                f"{freshness['today_pretty']}. "
+                "Waiting for fresh current-day data; historical "
+                "reports remain blocked from Today Report."
+            )
+        else:
+            footer_status.set(
+                result["status"].replace("_", " ").title()
+            )
 
     def stop_watch() -> None:
         result = controller.stop()
@@ -1231,7 +1261,12 @@ def run_gui(args: argparse.Namespace) -> int:
                 f"Day {int(latest_day):03d} • {latest_date}"
                 if latest_day and latest_date else "No observed validation day"
             )
-            report_state = "READY" if snapshot.get("latest_report") else "NOT READY"
+            today_report = current_day_report_status(workspace)
+            report_state = (
+                "TODAY READY"
+                if today_report["today_ready"]
+                else today_report["state"].replace("_", " ")
+            )
             evidence_state = "READY" if snapshot.get("latest_evidence") else "NOT READY"
             daily_ops_status.set(
                 "Embedded Live Status\n"
@@ -1823,20 +1858,42 @@ def run_gui(args: argparse.Namespace) -> int:
 
     def open_report() -> None:
         try:
-            report = resolve_latest_report(workspace)
+            freshness = current_day_report_status(workspace)
+            if not freshness["today_ready"]:
+                messagebox.showwarning(
+                    "Today's Trader Report",
+                    freshness["message"],
+                )
+                footer_status.set(freshness["message"])
+                return
+
+            report = ensure_trader_report(workspace)
             if report is None or not report.exists():
                 messagebox.showinfo(
-                    "Today Report",
-                    "Latest daily report is not available yet. Generate the daily close report, then refresh.",
+                    "Today's Trader Report",
+                    (
+                        "Today's source report exists, but the readable "
+                        "trader HTML is not ready yet."
+                    ),
                 )
-                footer_status.set("Latest report is not available yet.")
+                footer_status.set(
+                    "Today's trader report is not available yet."
+                )
                 return
+
             os.startfile(str(report))
-            footer_status.set(f"Opened latest report: {report.name}")
+            footer_status.set(
+                f"Opened today's trader report: {report.name}"
+            )
             refresh_daily_operations(False)
         except Exception as exc:
-            footer_status.set("Latest report could not be opened.")
-            messagebox.showerror("Today Report", str(exc))
+            footer_status.set(
+                "Today's trader report could not be opened."
+            )
+            messagebox.showerror(
+                "Today's Trader Report",
+                str(exc),
+            )
 
     def open_workspace() -> None:
         try:
@@ -2073,6 +2130,13 @@ def run_gui(args: argparse.Namespace) -> int:
             ).pack(anchor="w", padx=16, pady=(0, 14))
 
         ttk.Button(
+            page_panel,
+            text="Fyers Login & Token Refresh",
+            style="HQE.TButton",
+            command=open_fyers_auth_dialog,
+        ).pack(anchor="e", pady=(12, 0))
+
+        ttk.Button(
             broker_scroll_inner,
             text="Open Guided Broker Connect",
             style="HQE.TButton",
@@ -2155,61 +2219,84 @@ def run_gui(args: argparse.Namespace) -> int:
         ).pack(side="left", padx=8)
 
     def show_report_page() -> None:
-        page_title.set("Today Report")
+        page_title.set("Trader Report")
         page_subtitle.set(
-            "Latest paper-validation reports and market-close evidence"
+            "Current IST market-day report and technical evidence"
         )
 
         clear_page_panel()
 
+        freshness = current_day_report_status(workspace)
         candidates = today_report_candidates(workspace)
-        available = [path for path in candidates if path.exists()]
+        available = [
+            path for path in candidates if path.exists()
+        ]
 
-        if available:
+        if freshness["today_ready"] and available:
             latest = available[0]
             report_value = (
-                f"Latest report: {latest.name}\n"
+                f"Today's report is ready: {latest.name}\n"
+                f"Trading date: {freshness['today_pretty']}\n"
                 f"Location: {latest.parent}"
             )
         else:
             report_value = (
-                "No HTML report is currently available. "
-                "The next valid paper workflow will create it."
+                freshness["message"]
+                + "\n\nStart Paper Watch to capture fresh NIFTY, "
+                "CE and PE data for the current market day."
             )
 
         report_card = page_card(
             page_panel,
-            "Latest available report",
+            "Current-day trader report status",
             report_value,
         )
         report_card.pack(fill="x", pady=(0, 12))
 
-        close_evidence = (
-            resolve_latest_evidence(workspace)
+        evidence_path = resolve_latest_evidence(workspace)
+        evidence_is_today = bool(
+            evidence_path is not None
+            and evidence_path.exists()
+            and freshness["evidence_date"] == freshness["today"]
         )
-
-        evidence_text = (
-            f"Market-close evidence available:\n{close_evidence}"
-            if close_evidence.exists()
-            else "Market-close evidence is not available yet."
-        )
+        if evidence_is_today:
+            evidence_text = (
+                "Today's technical JSON evidence:\n"
+                f"{evidence_path}"
+            )
+        else:
+            evidence_text = (
+                "Today's technical evidence is not available yet.\n"
+                f"Latest evidence date: "
+                f"{freshness['evidence_date_pretty']}."
+            )
 
         evidence_card = page_card(
             page_panel,
-            "Validation evidence",
+            "Technical evidence status",
             evidence_text,
         )
         evidence_card.pack(fill="x", pady=(0, 12))
 
-        actions = tk.Frame(page_panel, bg=palette["background"])
+        actions = tk.Frame(
+            page_panel,
+            bg=palette["background"],
+        )
         actions.pack(fill="x", pady=(8, 0))
 
         ttk.Button(
             actions,
-            text="Open Today Report",
+            text="Open Trader Report",
             style="HQE.TButton",
             command=open_report,
         ).pack(side="left", padx=(0, 8))
+
+        ttk.Button(
+            actions,
+            text="Open Technical Evidence (JSON)",
+            style="Secondary.TButton",
+            command=open_latest_evidence,
+        ).pack(side="left", padx=8)
 
         ttk.Button(
             actions,
@@ -2220,7 +2307,7 @@ def run_gui(args: argparse.Namespace) -> int:
 
         ttk.Button(
             actions,
-            text="Refresh Reports",
+            text="Refresh Trader Report",
             style="Secondary.TButton",
             command=lambda: show_page("Today Report"),
         ).pack(side="left", padx=8)
@@ -2375,12 +2462,12 @@ def run_gui(args: argparse.Namespace) -> int:
     ttk.Button(action_panel, text="Prepare Next Market Day", style="Secondary.TButton", command=prepare_next_market_day).pack(fill="x", padx=28, pady=7)
     ttk.Button(action_panel, text="Run Day Rollover Guard", style="Secondary.TButton", command=run_day_rollover_guard).pack(fill="x", padx=28, pady=7)
     ttk.Button(action_panel, text="Generate Daily Close Report", style="Secondary.TButton", command=generate_daily_close_report).pack(fill="x", padx=28, pady=7)
-    ttk.Button(action_panel, text="Refresh Latest Report", style="Secondary.TButton", command=refresh_latest_report).pack(fill="x", padx=28, pady=7)
-    ttk.Button(action_panel, text="Open Latest Evidence", style="Secondary.TButton", command=open_latest_evidence).pack(fill="x", padx=28, pady=7)
+    ttk.Button(action_panel, text="Refresh Trader Report", style="Secondary.TButton", command=refresh_latest_report).pack(fill="x", padx=28, pady=7)
+    ttk.Button(action_panel, text="Open Technical Evidence (JSON)", style="Secondary.TButton", command=open_latest_evidence).pack(fill="x", padx=28, pady=7)
 
     ttk.Button(
         action_panel,
-        text="Open Today Report",
+        text="Open Trader Report",
         style="Secondary.TButton",
         command=open_report,
     ).pack(fill="x", padx=28, pady=7)
@@ -2673,26 +2760,36 @@ def run_gui(args: argparse.Namespace) -> int:
             messagebox.showerror("Daily Close & Report", str(exc))
 
     def open_daily_close_artifact(kind: str) -> None:
+        if kind == "report":
+            open_report()
+            return
+
         snapshot = refresh_daily_close_center(False)
-        key = "latest_report" if kind == "report" else "latest_evidence"
-        raw_path = str(snapshot.get(key, "")).strip()
+        raw_path = str(
+            snapshot.get("latest_evidence", "")
+        ).strip()
         if not raw_path:
             messagebox.showwarning(
                 "Daily Close & Report",
-                f"No latest {kind} is available yet.",
+                "No latest technical evidence is available yet.",
             )
             return
+
         path = Path(raw_path)
         if not path.exists():
             messagebox.showerror(
                 "Daily Close & Report",
-                f"Latest {kind} is missing: {path}",
+                f"Latest technical evidence is missing: {path}",
             )
             return
+
         try:
             os.startfile(path)
         except Exception as exc:
-            messagebox.showerror("Daily Close & Report", str(exc))
+            messagebox.showerror(
+                "Daily Close & Report",
+                str(exc),
+            )
 
     def open_daily_close_center() -> None:
         snapshot = refresh_daily_close_center(False)
@@ -2745,13 +2842,13 @@ def run_gui(args: argparse.Namespace) -> int:
 
         ttk.Button(
             frame,
-            text="Open Latest Report",
+            text="Open Trader Report",
             command=lambda: open_daily_close_artifact("report"),
         ).pack(fill="x", pady=3)
 
         ttk.Button(
             frame,
-            text="Open Latest Evidence",
+            text="Open Technical Evidence (JSON)",
             command=lambda: open_daily_close_artifact("evidence"),
         ).pack(fill="x", pady=3)
 

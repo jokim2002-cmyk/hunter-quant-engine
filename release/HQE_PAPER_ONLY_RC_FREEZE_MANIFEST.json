@@ -5,8 +5,8 @@
   "files": [
     {
       "path": "docs/HQE_CURRENT_STATUS.md",
-      "sha256": "3d3a063778c95973b36698d40e2de7501156cf4498a9e70077f6e9d4a9b77cb8",
-      "size_bytes": 32383
+      "sha256": "b37c8b16c1d59c50a99fc23f4d2181fbbf30d0f5bb46610f5cdd72bf9f8daaa3",
+      "size_bytes": 36853
     },
     {
       "path": "docs/HQE_FINAL_PAPER_ONLY_RC_SIGNOFF.md",
@@ -75,8 +75,8 @@
     },
     {
       "path": "scripts/hqe_product_app_v2.py",
-      "sha256": "5afca205c72ae63df500b8c2f36876ac21f458e7109f9dc000059e15ae2f74fb",
-      "size_bytes": 240460
+      "sha256": "a0310c5a580781689bdc84ddcb023b390154425c7cb1eb06e3aa128079e6ede3",
+      "size_bytes": 243255
     },
     {
       "path": "scripts/hqe_release_candidate_audit.py",
@@ -91,7 +91,7 @@
   ],
   "freeze_commit_message": "Add end-to-end RC audit and paper-only product freeze",
   "freeze_name": "HQE_PAPER_ONLY_PRODUCT_RC_FREEZE",
-  "generated_at_utc": "2026-07-13T14:05:15+00:00",
+  "generated_at_utc": "2026-07-13T17:17:10+00:00",
   "option_selling_enabled": false,
   "product": "Hunter Quant Engine",
   "profitability_claim": false,
@@ -111,6 +111,6 @@
   },
   "schema_version": "1.0",
   "scope": "Paper/data/research product release candidate. Real execution is excluded.",
-  "source_head_before_freeze_commit": "c4d6920",
+  "source_head_before_freeze_commit": "9e38214",
   "version": "0.9.0-paper-rc2"
 }

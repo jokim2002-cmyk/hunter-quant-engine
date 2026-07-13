@@ -1,4 +1,4 @@
-﻿"""
+"""
 Module 131: Forward Intraday Paper Supervisor
 
 Read-only, paper-only supervisor for locked HQE forward validation candidate.
@@ -23,6 +23,13 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Iterable
 
+import sys as _hqe_sys
+_HQE_SCRIPT_DIR = Path(__file__).resolve().parent
+if str(_HQE_SCRIPT_DIR) not in _hqe_sys.path:
+    _hqe_sys.path.insert(0, str(_HQE_SCRIPT_DIR))
+from hqe_smc_live_direction import evaluate_from_csv
+
+
 
 MODULE_ID = 131
 MODULE_NAME = "Forward Intraday Paper Supervisor"
@@ -44,6 +51,21 @@ LOCKED_CANDIDATE = {
     "target_percent": 1.20,
     "name": "ER20_GE_030_PE_ONLY_DTE_GE_1_LTP_20_200_SL040_TGT120",
 }
+
+ACTIVE_SMC_CANDIDATE = {
+    "filter": "SMC_PARAMETER_ALIGNED_AND_ER20_GE_030",
+    "direction": "SMC_BIDIRECTIONAL",
+    "min_dte": 1,
+    "min_last_traded_price": 20.0,
+    "max_last_traded_price": 200.0,
+    "stop_loss_percent": 0.40,
+    "target_percent": 1.20,
+    "name": (
+        "SMC_BIDIRECTIONAL_ER20_GE_030_LONG_CE_SHORT_PE_"
+        "DTE_GE_1_LTP_20_200_SL040_TGT120"
+    ),
+}
+
 
 MARKET_START = (9, 15)
 MARKET_END = (15, 30)
@@ -277,6 +299,42 @@ def build_locked_pe_signal(index_candles: list[Candle], premium_candles: list[Ca
     )
 
 
+def evaluate_active_smc_candidate(
+    index_csv,
+    premium_csv,
+    *legacy_args,
+    **legacy_kwargs,
+):
+    legacy = build_locked_pe_signal(*legacy_args, **legacy_kwargs)
+    directional = evaluate_from_csv(
+        Path(index_csv),
+        Path(premium_csv),
+        ACTIVE_SMC_CANDIDATE,
+        legacy.er20,
+    )
+    if directional["fallback_to_legacy"]:
+        return legacy
+    return SignalDecision(
+        signal_generated=directional["signal_generated"],
+        pe_reason=directional["reason"],
+        entry=directional["entry"],
+        stop_loss=directional["stop_loss"],
+        target=directional["target"],
+        er20=legacy.er20,
+        dte=(
+            directional["dte"]
+            if directional["dte"] is not None
+            else legacy.dte
+        ),
+        ltp=(
+            directional["ltp"]
+            if directional["ltp"] is not None
+            else legacy.ltp
+        ),
+    )
+
+
+
 def load_position_state(path: Path) -> dict[str, Any]:
     if not path.exists():
         return {"status": "FLAT", "paper_only": True, "module": MODULE_ID}
@@ -404,7 +462,7 @@ def write_report(
         f"- Data ready: {'YES' if ready else 'NO'}",
         f"- Readiness reason: {readiness_reason}",
         f"- Signal: {signal_text}",
-        f"- PE reason: {signal.pe_reason if signal else readiness_reason}",
+        f"- SMC direction reason: {signal.pe_reason if signal else readiness_reason}",
         f"- Entry: {signal.entry if signal else ''}",
         f"- SL: {signal.stop_loss if signal else ''}",
         f"- Target: {signal.target if signal else ''}",
@@ -450,7 +508,7 @@ def run_one_cycle(paths: SupervisorPaths, now: datetime) -> dict[str, Any]:
             state, event = evaluate_open_position(state, latest_premium, now)
             event.update({"module": MODULE_ID, "paper_only": True})
         else:
-            signal = build_locked_pe_signal(index_candles, premium_candles)
+            signal = evaluate_active_smc_candidate(paths.index_csv, paths.premium_csv, index_candles, premium_candles)
             event.update(
                 {
                     "signal_generated": signal.signal_generated,
@@ -468,7 +526,11 @@ def run_one_cycle(paths: SupervisorPaths, now: datetime) -> dict[str, Any]:
                     "status": "OPEN",
                     "paper_only": True,
                     "module": MODULE_ID,
-                    "side": "PE_BUY",
+                    "side": (
+                        "CE_BUY"
+                        if "OPTION_SIDE=CE_BUY" in signal.pe_reason
+                        else "PE_BUY"
+                    ),
                     "candidate": LOCKED_CANDIDATE["name"],
                     "entry_time": now.isoformat(timespec="seconds"),
                     "entry": signal.entry,
@@ -480,6 +542,13 @@ def run_one_cycle(paths: SupervisorPaths, now: datetime) -> dict[str, Any]:
                     "auto_trading_allowed": False,
                     "real_money_allowed": False,
                 }
+                event["signal_side"] = state["side"]
+                event["direction_reason"] = signal.pe_reason
+                event["candidate"] = (
+                    ACTIVE_SMC_CANDIDATE["name"]
+                    if "SMC_DECISION=" in signal.pe_reason
+                    else LOCKED_CANDIDATE["name"]
+                )
                 event["event"] = "POSITION_OPENED"
                 event["exit_reason"] = ""
             else:
@@ -577,11 +646,28 @@ def run_one_cycle(paths: SupervisorPaths, now: datetime) -> dict[str, Any]:
         "module": MODULE_ID,
         "module_name": MODULE_NAME,
         "paper_only": True,
-        "locked_candidate": LOCKED_CANDIDATE["name"],
+        "locked_candidate": event.get(
+            "candidate",
+            (
+                ACTIVE_SMC_CANDIDATE["name"]
+                if "SMC_DECISION=" in str(
+                    event.get("pe_reason", "")
+                )
+                else LOCKED_CANDIDATE["name"]
+            ),
+        ),
         "data_ready": ready,
         "readiness_reason": readiness_reason,
         "signal_generated": bool(event.get("signal_generated")),
+        "signal_side": event.get(
+            "signal_side",
+            state.get("side", "NO_TRADE"),
+        ),
         "event": event.get("event", ""),
+        "direction_reason": event.get(
+            "direction_reason",
+            event.get("pe_reason", readiness_reason),
+        ),
         "pe_reason": event.get("pe_reason", readiness_reason),
         "entry": event.get("entry", state.get("entry", "")),
         "stop_loss": event.get("stop_loss", state.get("stop_loss", "")),

@@ -78,8 +78,8 @@ def test_app_batch2_controls_and_no_hardcoded_day1():
     text = APP.read_text(encoding="utf-8-sig")
     for label in (
         "Prepare Next Market Day", "Run Day Rollover Guard",
-        "Generate Daily Close Report", "Refresh Latest Report",
-        "Open Latest Evidence", "Embedded Live Status",
+        "Generate Daily Close Report", "Refresh Trader Report",
+        "Open Technical Evidence (JSON)", "Embedded Live Status",
     ):
         assert f'text="{label}"' in text
     assert "launch_operation_worker(" in text
