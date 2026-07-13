@@ -39,11 +39,16 @@ def workspace_preflight(repo: Path) -> dict[str, Any]:
     ]
     status_lines = [line for line in status.splitlines() if line.strip()]
     allowed_changes = (
+        ".gitignore",
         "docs/HQE_CURRENT_STATUS.md",
         "docs/HQE_MASTER_PRODUCT_ROADMAP.md",
+        "release/HQE_INSTALL_DESKTOP_SHORTCUT.ps1",
         "release/HQE_PAPER_ONLY_RC_FREEZE_MANIFEST.json",
+        "scripts/hqe_desktop_exe_launcher.py",
         "scripts/hqe_release_workspace_preflight.py",
+        "scripts/hqe_windows_release_builder.py",
         "tests/test_hqe_release_workspace_preflight.py",
+        "tests/test_hqe_windows_release_builder.py",
     )
     unexpected = [
         line

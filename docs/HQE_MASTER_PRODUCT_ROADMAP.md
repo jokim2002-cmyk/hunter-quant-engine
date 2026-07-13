@@ -573,3 +573,14 @@ Status: COMPLETED AFTER TEST PASS.
 - Keep the final UI redesign pending for the last UI pass
 
 Next: final UI pass, clean release build and final freeze/sign-off.
+
+## Current Stabilization Priority — Bunch 12
+
+Status: COMPLETED AFTER TEST PASS.
+
+- Add a repeatable windowed one-file desktop launcher build
+- Verify the generated EXE against the permanent safety guard
+- Install the desktop shortcut against the current EXE
+- Keep source fallback available for recovery
+
+Next: final UI pass and final release freeze/sign-off.

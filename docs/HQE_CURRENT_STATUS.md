@@ -862,3 +862,17 @@ Commit after PASS: `Clean HQE release workspace and add preflight`
 Next: final UI pass, clean release build and final freeze/sign-off.
 
 Real trading remains locked. This is not a profitability claim.
+
+## HQE App Stabilization Bunch 12 — Deterministic Windows EXE Build
+
+- Added a deterministic PyInstaller Windows launcher build
+- Added built-EXE guard verification and SHA-256 evidence
+- Desktop installer now prefers the EXE and keeps a pythonw fallback
+- Generated release artifacts remain outside Git tracking
+- Final Overview redesign remains postponed until the final UI pass
+
+Commit after PASS: `Add deterministic HQE Windows EXE build`
+
+Next: final UI pass and final release freeze/sign-off.
+
+Real trading remains locked. This is not a profitability claim.
