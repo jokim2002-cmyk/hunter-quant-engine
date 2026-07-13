@@ -562,3 +562,14 @@ Status: COMPLETED AFTER TEST PASS.
 - Keep broker management inside Broker Connect
 
 Next: final clean release build and freeze/sign-off.
+
+## Current Stabilization Priority — Bunch 11
+
+Status: COMPLETED AFTER TEST PASS.
+
+- Remove temporary build and profiling artifacts from the repository
+- Preserve them outside the repository for recovery
+- Add a clean-workspace release preflight
+- Keep the final UI redesign pending for the last UI pass
+
+Next: final UI pass, clean release build and final freeze/sign-off.

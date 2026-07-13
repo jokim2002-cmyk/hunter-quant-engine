@@ -848,3 +848,17 @@ Commit after PASS: `Add HQE final release QA`
 Next: clean release build and final freeze/sign-off.
 
 Real trading remains locked. This is not a profitability claim.
+
+## HQE App Stabilization Bunch 11 — Release Workspace Cleanup
+
+- Moved known untracked build, profiling and backup artifacts outside the repository
+- Preserved all removed artifacts in a timestamped quarantine folder
+- Restored generated trading-log changes before release preparation
+- Added a repeatable release-workspace preflight guard
+- Final UI redesign remains postponed until the last UI pass
+
+Commit after PASS: `Clean HQE release workspace and add preflight`
+
+Next: final UI pass, clean release build and final freeze/sign-off.
+
+Real trading remains locked. This is not a profitability claim.
