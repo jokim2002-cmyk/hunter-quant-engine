@@ -43,7 +43,7 @@ def test_advanced_tools_always_has_direct_access() -> None:
 def test_startup_work_is_deferred_until_window_is_visible() -> None:
     text = source()
     assert "HQE_STABILIZATION_STARTUP_V1" in text
-    assert 'show_page("Overview")\n    refresh_status()' in text
+    assert 'show_page("Overview")\n    refresh_status_async()' in text
     assert "root.after(1200, lambda: refresh_daily_operations(False))" in text
     assert "root.after(1700, _deferred_fyers_startup)" in text
     assert "root.after(2400, lambda: refresh_broker_data_health(False))" in text

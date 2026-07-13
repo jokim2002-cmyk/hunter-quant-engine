@@ -499,3 +499,13 @@ Status: COMPLETED AFTER TEST PASS.
 - Preserve all execution locks
 
 Next: startup performance profiling, lazy-loading verification, and operator UI polish.
+
+## Current Stabilization Priority — Bunch 5
+
+Status: COMPLETED AFTER TEST PASS.
+
+- Remove blocking status work from first-window startup
+- Keep network and process discovery off the Tkinter UI thread
+- Preserve lazy-loaded maintenance centers and hidden child processes
+
+Next: professional UI spacing, DPI scaling and responsive layout polish.

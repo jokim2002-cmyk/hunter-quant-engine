@@ -60,4 +60,4 @@ def test_safety_page_keeps_real_execution_locked():
 
 def test_overview_is_initialized_before_mainloop():
     text = source()
-    assert 'show_page("Overview")\n    refresh_status()' in text
+    assert 'show_page("Overview")\n    refresh_status_async()' in text

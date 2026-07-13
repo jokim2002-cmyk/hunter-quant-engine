@@ -1046,6 +1046,78 @@ def run_gui(args: argparse.Namespace) -> int:
         if current_page != "Overview":
             root.after_idle(lambda value=current_page: show_page(value, True))
 
+    def refresh_status_async() -> None:
+        # Refresh startup status off the Tkinter UI thread.
+
+        def worker() -> None:
+            try:
+                payload = app_status_payload(workspace)
+                architecture = architecture_payload(workspace)
+                running = controller.is_running()
+                error = ""
+            except Exception as exc:
+                payload = {}
+                architecture = {}
+                running = False
+                error = f"{type(exc).__name__}: {exc}"
+
+            def apply_result() -> None:
+                if error:
+                    footer_status.set(
+                        "Background status refresh failed safely. "
+                        "Use Refresh All Status to retry."
+                    )
+                    return
+
+                broker_id = selected_broker.get()
+                selected = next(
+                    (
+                        item
+                        for item in architecture.get("brokers", [])
+                        if item.get("broker_id") == broker_id
+                    ),
+                    None,
+                )
+                if selected is None:
+                    footer_status.set(
+                        "Broker status is temporarily unavailable."
+                    )
+                    return
+
+                card_vars["internet"].set(
+                    payload.get("internet", {}).get("status", "UNKNOWN")
+                )
+                card_vars["broker"].set(
+                    f"{selected['display_name']}: "
+                    f"{selected['connection_test']['status'].replace('_', ' ').title()}"
+                )
+                card_vars["data"].set(
+                    selected["market_data_status"]["status"]
+                    .replace("_", " ")
+                    .title()
+                )
+                if running:
+                    card_vars["watch"].set("Running in background")
+                else:
+                    watch = (
+                        payload.get("paper_watch", {})
+                        .get("watch_status", "NOT_STARTED")
+                    )
+                    card_vars["watch"].set(
+                        str(watch).replace("_", " ").title()
+                    )
+
+                footer_status.set("Status refreshed.")
+                current_page = active_page.get()
+                if current_page != "Overview":
+                    root.after_idle(
+                        lambda value=current_page: show_page(value, True)
+                    )
+
+            root.after(0, apply_result)
+
+        threading.Thread(target=worker, daemon=True).start()
+
     def start_watch() -> None:
         result = controller.start()
         footer_status.set(result["status"].replace("_", " ").title())
@@ -2149,9 +2221,9 @@ def run_gui(args: argparse.Namespace) -> int:
 
     root.protocol("WM_DELETE_WINDOW", close_app)
     show_page("Overview")
-    refresh_status()
+    refresh_status_async()
     # HQE_STABILIZATION_STARTUP_V1
-    root.after(15000, refresh_status)
+    root.after(15000, refresh_status_async)
     root.after(1200, lambda: refresh_daily_operations(False))
 
     def _deferred_fyers_startup() -> None:

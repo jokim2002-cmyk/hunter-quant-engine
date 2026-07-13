@@ -751,3 +751,16 @@ Commit after PASS: `Refresh paper-only RC freeze after stabilization`
 Next: startup performance profiling and remaining operator UI polish.
 
 Real trading remains locked. This is not a profitability claim.
+
+## HQE App Stabilization Bunch 5 — Non-Blocking Startup Refresh
+
+- Initial internet, broker, market-data and paper-watch checks now run outside the Tkinter UI thread
+- The main window becomes interactive before slow network or process discovery completes
+- Scheduled status refresh also uses the non-blocking path
+- Existing manual controls, callbacks and permanent paper-only safety locks remain unchanged
+
+Commit after PASS: `Make HQE startup status refresh non-blocking`
+
+Next: UI spacing, DPI and responsive-layout polish.
+
+Real trading remains locked. This is not a profitability claim.
