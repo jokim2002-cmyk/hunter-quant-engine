@@ -834,3 +834,17 @@ Commit after PASS: `Center HQE overview actions and hide broker surface`
 Next: final clean release build and freeze/sign-off.
 
 Real trading remains locked. This is not a profitability claim.
+
+## HQE App Stabilization Bunch 10 — Final Release QA
+
+- Postponed the Overview redesign until final UI work
+- Added final release-asset integrity checks
+- Added combined app, RC, operator-acceptance, sign-off and freeze verification
+- Added machine-readable final release QA evidence
+- Real-order, broker-execution and auto-trading invocation remain false
+
+Commit after PASS: `Add HQE final release QA`
+
+Next: clean release build and final freeze/sign-off.
+
+Real trading remains locked. This is not a profitability claim.
