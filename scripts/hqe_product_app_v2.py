@@ -1279,6 +1279,7 @@ def run_gui(args: argparse.Namespace) -> int:
         if operation.get("status") == "RUNNING":
             root.after(900, poll_market_data_refresh)
             return
+        clear_operator_busy('Market-data refresh finished.')
         message = operation.get("message", "Market-data refresh finished.")
         footer_status.set(message)
         if operation.get("status") == "PASS":
@@ -1286,8 +1287,44 @@ def run_gui(args: argparse.Namespace) -> int:
         elif operation.get("status") == "FAILED":
             messagebox.showerror("Market Data", message)
 
+    operator_busy_state = {"count": 0}
+
+    def set_operator_busy(message: str) -> None:
+        operator_busy_state["count"] += 1
+        footer_status.set(message)
+        try:
+            root.configure(cursor="watch")
+            root.update_idletasks()
+        except tk.TclError:
+            pass
+
+    def clear_operator_busy(message: str) -> None:
+        operator_busy_state["count"] = max(
+            0, operator_busy_state["count"] - 1
+        )
+        if operator_busy_state["count"] == 0:
+            try:
+                root.configure(cursor="")
+            except tk.TclError:
+                pass
+        footer_status.set(message)
+
+    def show_safe_operation_error(
+        title: str,
+        action: str,
+        exc: BaseException,
+    ) -> None:
+        message = (
+            f"{action} could not complete safely "
+            f"({type(exc).__name__}).\n\n"
+            "No real order was sent. Check the connection and try again."
+        )
+        clear_operator_busy(message.splitlines()[0])
+        messagebox.showerror(title, message)
+
     def run_market_data_refresh() -> None:
         try:
+            set_operator_busy('Refreshing market data safely...')
             launch_market_data_worker(
                 repo_root(),
                 workspace,
@@ -1302,7 +1339,7 @@ def run_gui(args: argparse.Namespace) -> int:
             )
             root.after(900, poll_market_data_refresh)
         except Exception as exc:
-            messagebox.showerror("Market Data", str(exc))
+            show_safe_operation_error('Market Data', 'Market-data refresh', exc)
             footer_status.set(f"Market-data refresh could not start: {exc}")
 
     def open_latest_market_data_file() -> None:
@@ -1677,6 +1714,7 @@ def run_gui(args: argparse.Namespace) -> int:
             if operation["status"] == "RUNNING":
                 root.after(900, poll_safe_broker_data_test)
                 return
+            clear_operator_busy('Safe broker data test finished.')
             footer_status.set(
                 operation["message"] or "Safe broker/data test finished."
             )
@@ -1695,6 +1733,7 @@ def run_gui(args: argparse.Namespace) -> int:
 
     def run_safe_broker_data_test() -> None:
         try:
+            set_operator_busy('Running the safe broker data test...')
             launch_broker_health_worker(
                 repo_root(),
                 workspace,
@@ -1709,7 +1748,7 @@ def run_gui(args: argparse.Namespace) -> int:
             )
             root.after(900, poll_safe_broker_data_test)
         except Exception as exc:
-            messagebox.showerror("Safe Data Test", str(exc))
+            show_safe_operation_error('Safe Data Test', 'Safe broker data test', exc)
             footer_status.set(f"Safe data test could not start: {exc}")
 
     def open_broker_connect_center() -> None:
@@ -2293,6 +2332,7 @@ def run_gui(args: argparse.Namespace) -> int:
         if payload["status"] == "RUNNING":
             root.after(900, poll_daily_startup_operation)
             return
+        clear_operator_busy('Daily startup operation finished.')
         refresh_daily_startup_center(False)
         footer_status.set(
             payload["message"] or "Daily startup operation finished."
@@ -2304,6 +2344,7 @@ def run_gui(args: argparse.Namespace) -> int:
 
     def prepare_next_market_day_from_app() -> None:
         try:
+            set_operator_busy('Preparing the next market day safely...')
             launch_daily_startup_worker(repo_root(), workspace)
             daily_startup_status.set("Preparing next market day safely...")
             footer_status.set(
@@ -2311,7 +2352,7 @@ def run_gui(args: argparse.Namespace) -> int:
             )
             root.after(900, poll_daily_startup_operation)
         except Exception as exc:
-            messagebox.showerror("Daily Startup", str(exc))
+            show_safe_operation_error('Daily Startup', 'Next-day preparation', exc)
             footer_status.set(
                 f"Next-day preparation could not start: {exc}"
             )

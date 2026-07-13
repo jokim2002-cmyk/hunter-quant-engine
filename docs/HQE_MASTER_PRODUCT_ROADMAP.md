@@ -520,3 +520,13 @@ Status: COMPLETED AFTER TEST PASS.
 - Remove conflicting window-size constraints
 
 Next: operator workflow dialogs, loading feedback and error-message polish.
+
+## Current Stabilization Priority — Bunch 7
+
+Status: COMPLETED AFTER TEST PASS.
+
+- Improve loading feedback for long-running app actions
+- Replace raw technical failures with trader-friendly safe messages
+- Preserve callback recovery and paper-only execution locks
+
+Next: final button-by-button operator workflow QA and long-duration smoke.

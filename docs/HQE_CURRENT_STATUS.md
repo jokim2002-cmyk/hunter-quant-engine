@@ -778,3 +778,17 @@ Commit after PASS: `Polish HQE DPI scaling and responsive layout`
 Next: operator dialogs, loading states and error-message polish.
 
 Real trading remains locked. This is not a profitability claim.
+
+## HQE App Stabilization Bunch 7 — Operator Feedback Polish
+
+- Added visible busy cursor and status feedback for long operator actions
+- Market-data, broker-test and next-day preparation flows now clear loading state reliably
+- Raw exception dialogs were replaced with safe trader-friendly error messages
+- Error dialogs explicitly confirm that no real order was sent
+- Permanent paper-only and execution-blocking safety locks remain unchanged
+
+Commit after PASS: `Polish HQE operator loading and error feedback`
+
+Next: final button-by-button operator workflow QA.
+
+Real trading remains locked. This is not a profitability claim.
