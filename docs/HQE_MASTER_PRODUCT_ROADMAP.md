@@ -540,3 +540,14 @@ Status: COMPLETED AFTER TEST PASS.
 - Run combined app, RC, acceptance and sign-off safety smoke
 
 Next: long-duration app soak and final release freeze/sign-off.
+
+## Current Stabilization Priority — Bunch 9
+
+Status: COMPLETED AFTER TEST PASS.
+
+- Run sustained GUI process-responsiveness checks
+- Track peak memory and memory growth
+- Re-run permanent safety guards throughout the soak
+- Store machine-readable soak evidence
+
+Next: clean release build and final freeze/sign-off.

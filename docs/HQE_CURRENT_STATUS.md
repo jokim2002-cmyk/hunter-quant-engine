@@ -806,3 +806,17 @@ Commit after PASS: `Add final operator workflow QA and smoke`
 Next: long-duration app soak and final release freeze/sign-off.
 
 Real trading remains locked. This is not a profitability claim.
+
+## HQE App Stabilization Bunch 9 — Long-Duration GUI Soak
+
+- Added a controlled Windows GUI soak runner
+- Repeatedly checks responsiveness, process memory and HQE safety guards
+- Writes the latest soak evidence into the active validation workspace
+- Automatically closes only the HQE process launched by the soak runner
+- Real orders, broker execution and auto trading remain uninvoked
+
+Commit after PASS: `Add HQE long-duration GUI soak validation`
+
+Next: clean release build and final freeze/sign-off.
+
+Real trading remains locked. This is not a profitability claim.
