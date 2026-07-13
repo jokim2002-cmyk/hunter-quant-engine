@@ -764,3 +764,17 @@ Commit after PASS: `Make HQE startup status refresh non-blocking`
 Next: UI spacing, DPI and responsive-layout polish.
 
 Real trading remains locked. This is not a profitability claim.
+
+## HQE App Stabilization Bunch 6 — DPI and Responsive UI Polish
+
+- Added Windows DPI-awareness initialization
+- Added adaptive Tk scaling for high-DPI displays
+- Sidebar and action-panel widths now respond to window size
+- Removed duplicate conflicting main-window minimum size
+- Permanent paper-only safety locks remain unchanged
+
+Commit after PASS: `Polish HQE DPI scaling and responsive layout`
+
+Next: operator dialogs, loading states and error-message polish.
+
+Real trading remains locked. This is not a profitability claim.

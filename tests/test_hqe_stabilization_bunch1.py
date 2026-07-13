@@ -56,6 +56,6 @@ def test_screen_aware_window_and_safety_language_remain() -> None:
     assert "HQE_STABILIZATION_GEOMETRY_V1" in text
     assert "root.winfo_screenwidth()" in text
     assert "root.winfo_screenheight()" in text
-    assert "root.minsize(900, 600)" in text
+    assert "root.minsize(1020, 680)" in text
     assert "Real trading controls are intentionally absent." in text
     assert "This app cannot place, modify or cancel broker orders." in text

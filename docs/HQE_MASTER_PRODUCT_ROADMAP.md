@@ -509,3 +509,14 @@ Status: COMPLETED AFTER TEST PASS.
 - Preserve lazy-loaded maintenance centers and hidden child processes
 
 Next: professional UI spacing, DPI scaling and responsive layout polish.
+
+## Current Stabilization Priority — Bunch 6
+
+Status: COMPLETED AFTER TEST PASS.
+
+- Improve Windows DPI rendering
+- Apply adaptive Tk scaling
+- Make primary panel widths responsive
+- Remove conflicting window-size constraints
+
+Next: operator workflow dialogs, loading feedback and error-message polish.

@@ -536,6 +536,20 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
+def configure_windows_dpi_awareness() -> None:
+    if os.name != "nt":
+        return
+    try:
+        ctypes.windll.shcore.SetProcessDpiAwareness(1)
+        return
+    except Exception:
+        pass
+    try:
+        ctypes.windll.user32.SetProcessDPIAware()
+    except Exception:
+        pass
+
+
 def run_gui(args: argparse.Namespace) -> int:
     try:
         import tkinter as tk
@@ -554,6 +568,7 @@ def run_gui(args: argparse.Namespace) -> int:
         args.symbol,
     )
 
+    configure_windows_dpi_awareness()
     root = tk.Tk()
     # HQE_STABILIZATION_BUNCH2_CALLBACK_RECOVERY
     def _hqe_report_callback_exception(
@@ -608,10 +623,20 @@ def run_gui(args: argparse.Namespace) -> int:
     window_height = min(900, max(640, int(screen_height * 0.84)))
     window_x = max(0, (screen_width - window_width) // 2)
     window_y = max(0, (screen_height - window_height) // 3)
+    # HQE_STABILIZATION_UI_POLISH_V1
+    try:
+        display_scaling = max(
+            1.0,
+            min(2.0, float(root.winfo_fpixels("1i")) / 72.0),
+        )
+        root.tk.call("tk", "scaling", display_scaling)
+    except Exception:
+        display_scaling = 1.0
+    sidebar_width = min(250, max(205, int(window_width * 0.17)))
+    action_panel_width = min(360, max(300, int(window_width * 0.24)))
     root.geometry(
         f"{window_width}x{window_height}+{window_x}+{window_y}"
     )
-    root.minsize(900, 600)
     root.minsize(1020, 680)
 
     icon = repo_root() / "assets" / "HQE_PRODUCT_APP.ico"
@@ -685,7 +710,7 @@ def run_gui(args: argparse.Namespace) -> int:
     sidebar = tk.Frame(
         main,
         bg=palette["sidebar"],
-        width=235,
+        width=sidebar_width,
         highlightbackground=palette["border"],
         highlightthickness=1,
     )
@@ -843,7 +868,7 @@ def run_gui(args: argparse.Namespace) -> int:
     action_panel_host = tk.Frame(
         body,
         bg=palette["panel"],
-        width=330,
+        width=action_panel_width,
         highlightbackground=palette["border"],
         highlightthickness=1,
     )
@@ -3953,7 +3978,6 @@ def run_gui(args: argparse.Namespace) -> int:
         dialog = tk.Toplevel(root)
         dialog.title("HQE — Strategy Pack Center")
         dialog.geometry("1040x680")
-        dialog.minsize(900, 600)
         dialog.configure(bg=palette.get("bg", palette.get("app_bg", "#0b1220")))
         dialog.transient(root)
 
