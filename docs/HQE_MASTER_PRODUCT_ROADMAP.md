@@ -471,3 +471,12 @@ routing, and unsafe Git visibility of local machine-bound license files.
 Next roadmap bunch: test and repair every app-center action end to end, then
 continue product completion from the master roadmap without reopening real
 execution scope.
+
+## Current Stabilization Priority — Bunch 2
+
+- Callback crash recovery
+- Button callback integrity
+- Persistent local UI error logging
+- Paper-only safety regression
+
+Next: full operator button smoke and remaining slow-center optimization.

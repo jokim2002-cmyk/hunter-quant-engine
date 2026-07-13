@@ -554,6 +554,51 @@ def run_gui(args: argparse.Namespace) -> int:
     )
 
     root = tk.Tk()
+    # HQE_STABILIZATION_BUNCH2_CALLBACK_RECOVERY
+    def _hqe_report_callback_exception(
+        exc_type: type[BaseException],
+        exc_value: BaseException,
+        exc_traceback: object,
+    ) -> None:
+        try:
+            log_dir = Path(
+                os.environ.get("APPDATA")
+                or os.environ.get("LOCALAPPDATA")
+                or str(Path.home())
+            ) / "HQE_PRODUCT_APP"
+            log_dir.mkdir(parents=True, exist_ok=True)
+            log_file = log_dir / "hqe_ui_errors.log"
+            rendered = "".join(
+                traceback.format_exception(
+                    exc_type,
+                    exc_value,
+                    exc_traceback,
+                )
+            )
+            with log_file.open("a", encoding="utf-8") as handle:
+                handle.write(
+                    "\n"
+                    + "=" * 72
+                    + "\n"
+                    + datetime.now().isoformat(timespec="seconds")
+                    + "\n"
+                    + rendered
+                )
+        except Exception:
+            log_file = None
+
+        message = (
+            "This feature could not open safely. "
+            "HQE is still running and no real order was sent."
+        )
+        if log_file is not None:
+            message += f"\n\nError log: {log_file}"
+        try:
+            messagebox.showerror("HQE Feature Error", message)
+        except Exception:
+            pass
+
+    root.report_callback_exception = _hqe_report_callback_exception
     root.title("Hunter Quant Engine")
     # HQE_STABILIZATION_GEOMETRY_V1
     screen_width = max(1024, root.winfo_screenwidth())

@@ -711,3 +711,17 @@ Completed in this bunch:
 
 Safety remains unchanged: paper/data/research only, with no real orders,
 no broker execution, no auto trading, and no option selling.
+
+## HQE App Stabilization Bunch 2 — Callback and Button Reliability
+
+- Added global Tkinter callback recovery
+- One broken feature callback no longer closes the whole app
+- Callback tracebacks are saved to local HQE UI error log
+- Added button callback integrity tests
+- Paper-only and order-blocking safety locks preserved
+
+Commit after PASS: `Harden app callbacks and button reliability`
+
+Next: full operator button smoke and remaining slow-center optimization.
+
+Real trading remains locked. This is not a profitability claim.
