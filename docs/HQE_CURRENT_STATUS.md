@@ -725,3 +725,16 @@ Commit after PASS: `Harden app callbacks and button reliability`
 Next: full operator button smoke and remaining slow-center optimization.
 
 Real trading remains locked. This is not a profitability claim.
+
+## HQE App Stabilization Bunch 3 — Full Center Smoke
+
+- Repaired app-center dialog background fallback
+- Restored the missing Market Data Quality cache-index callback
+- Added real GUI smoke for all safe zero-argument app centers
+- Preserved paper-only and order-blocking safety locks
+
+Commit after PASS: `Repair app centers and add full GUI smoke`
+
+Next: final startup/performance polish and operator UI defect repair.
+
+Real trading remains locked. This is not a profitability claim.

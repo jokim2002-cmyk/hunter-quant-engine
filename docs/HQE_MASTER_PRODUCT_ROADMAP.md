@@ -480,3 +480,12 @@ execution scope.
 - Paper-only safety regression
 
 Next: full operator button smoke and remaining slow-center optimization.
+
+## Current Stabilization Priority — Bunch 3
+
+- Repair app-center dialog palette compatibility
+- Restore missing feature callback
+- Real GUI smoke for all safe app centers
+- Safety regression
+
+Next: final startup/performance polish and operator UI defect repair.

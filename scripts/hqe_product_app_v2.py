@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import ctypes
+import inspect
 import json
 import os
 import socket
@@ -1234,7 +1235,7 @@ def run_gui(args: argparse.Namespace) -> int:
         dialog.title("HQE — Unified Market Data Center")
         dialog.geometry("680x560")
         dialog.minsize(620, 500)
-        dialog.configure(bg=palette["bg"])
+        dialog.configure(bg=palette.get("bg", palette.get("app_bg", "#0b1220")))
         dialog.transient(root)
 
         frame = tk.Frame(dialog, bg=palette["panel"], padx=20, pady=18)
@@ -1344,7 +1345,7 @@ def run_gui(args: argparse.Namespace) -> int:
         dialog.title("HQE — Fyers Login & Token Refresh")
         dialog.geometry("620x610")
         dialog.minsize(590, 560)
-        dialog.configure(bg=palette["bg"])
+        dialog.configure(bg=palette.get("bg", palette.get("app_bg", "#0b1220")))
         dialog.transient(root)
         dialog.grab_set()
 
@@ -2223,7 +2224,7 @@ def run_gui(args: argparse.Namespace) -> int:
         dialog = tk.Toplevel(root)
         dialog.title("HQE — Daily Startup & Checklist")
         dialog.geometry("700x560")
-        dialog.configure(bg=palette["bg"])
+        dialog.configure(bg=palette.get("bg", palette.get("app_bg", "#0b1220")))
         dialog.transient(root)
 
         frame = tk.Frame(dialog, bg=palette["panel"], padx=20, pady=18)
@@ -2408,7 +2409,7 @@ def run_gui(args: argparse.Namespace) -> int:
         dialog = tk.Toplevel(root)
         dialog.title("HQE — Daily Close & Report")
         dialog.geometry("700x540")
-        dialog.configure(bg=palette["bg"])
+        dialog.configure(bg=palette.get("bg", palette.get("app_bg", "#0b1220")))
         dialog.transient(root)
 
         frame = tk.Frame(dialog, bg=palette["panel"], padx=20, pady=18)
@@ -2541,7 +2542,7 @@ def run_gui(args: argparse.Namespace) -> int:
         dialog.title("HQE — Session History & Evidence")
         dialog.geometry("980x650")
         dialog.minsize(860, 560)
-        dialog.configure(bg=palette["bg"])
+        dialog.configure(bg=palette.get("bg", palette.get("app_bg", "#0b1220")))
         dialog.transient(root)
 
         outer = tk.Frame(dialog, bg=palette["panel"], padx=18, pady=16)
@@ -2880,7 +2881,7 @@ def run_gui(args: argparse.Namespace) -> int:
         dialog.title("HQE — Safety & Kill-Switch Evidence")
         dialog.geometry("900x620")
         dialog.minsize(780, 520)
-        dialog.configure(bg=palette["bg"])
+        dialog.configure(bg=palette.get("bg", palette.get("app_bg", "#0b1220")))
         dialog.transient(root)
 
         outer = tk.Frame(
@@ -3137,7 +3138,7 @@ def run_gui(args: argparse.Namespace) -> int:
         dialog.title("HQE — Paper-Watch Session Control")
         dialog.geometry("760x560")
         dialog.minsize(680, 500)
-        dialog.configure(bg=palette["bg"])
+        dialog.configure(bg=palette.get("bg", palette.get("app_bg", "#0b1220")))
         dialog.transient(root)
 
         outer = tk.Frame(
@@ -3333,7 +3334,7 @@ def run_gui(args: argparse.Namespace) -> int:
         dialog.title("HQE — Operator Dashboard")
         dialog.geometry("960x690")
         dialog.minsize(860, 610)
-        dialog.configure(bg=palette["bg"])
+        dialog.configure(bg=palette.get("bg", palette.get("app_bg", "#0b1220")))
         dialog.transient(root)
 
         outer = tk.Frame(
@@ -3651,6 +3652,22 @@ def run_gui(args: argparse.Namespace) -> int:
             )
 
 
+
+    def rebuild_market_data_cache_index() -> None:
+        try:
+            launch_cache_index_worker(repo_root(), workspace)
+            footer_status.set("Market-data cache index rebuild started.")
+            messagebox.showinfo(
+                "Market Data Quality Center",
+                "Cache index rebuild started safely in the background.",
+            )
+        except Exception as exc:
+            footer_status.set(f"Cache-index rebuild failed safely: {exc}")
+            messagebox.showerror(
+                "Market Data Quality Center",
+                str(exc),
+            )
+
     def open_market_data_quality_center() -> None:
         snapshot = refresh_market_data_quality_center(False)
 
@@ -3658,7 +3675,7 @@ def run_gui(args: argparse.Namespace) -> int:
         dialog.title("HQE — Market Data Quality Center")
         dialog.geometry("980x660")
         dialog.minsize(860, 580)
-        dialog.configure(bg=palette["bg"])
+        dialog.configure(bg=palette.get("bg", palette.get("app_bg", "#0b1220")))
         dialog.transient(root)
 
         outer = tk.Frame(
@@ -3865,7 +3882,7 @@ def run_gui(args: argparse.Namespace) -> int:
         dialog.title("HQE — Strategy Pack Center")
         dialog.geometry("1040x680")
         dialog.minsize(900, 600)
-        dialog.configure(bg=palette["bg"])
+        dialog.configure(bg=palette.get("bg", palette.get("app_bg", "#0b1220")))
         dialog.transient(root)
 
         outer = tk.Frame(
@@ -4234,7 +4251,7 @@ def run_gui(args: argparse.Namespace) -> int:
         dialog.title("HQE — Strategy Builder & Selector")
         dialog.geometry("1120x760")
         dialog.minsize(980, 680)
-        dialog.configure(bg=palette["bg"])
+        dialog.configure(bg=palette.get("bg", palette.get("app_bg", "#0b1220")))
         dialog.transient(root)
 
         outer = tk.Frame(
@@ -4789,7 +4806,7 @@ def run_gui(args: argparse.Namespace) -> int:
         dialog.title("HQE — Paper Validation Intelligence")
         dialog.geometry("1080x740")
         dialog.minsize(940, 650)
-        dialog.configure(bg=palette["bg"])
+        dialog.configure(bg=palette.get("bg", palette.get("app_bg", "#0b1220")))
         dialog.transient(root)
 
         outer = tk.Frame(
@@ -5141,7 +5158,7 @@ def run_gui(args: argparse.Namespace) -> int:
         dialog.title("HQE — Windows Release Center")
         dialog.geometry("1040x720")
         dialog.minsize(900, 620)
-        dialog.configure(bg=palette["bg"])
+        dialog.configure(bg=palette.get("bg", palette.get("app_bg", "#0b1220")))
         dialog.transient(root)
 
         outer = tk.Frame(
@@ -5471,7 +5488,7 @@ def run_gui(args: argparse.Namespace) -> int:
         dialog.title("HQE — Final RC Audit & Freeze")
         dialog.geometry("980x650")
         dialog.minsize(860, 570)
-        dialog.configure(bg=palette["bg"])
+        dialog.configure(bg=palette.get("bg", palette.get("app_bg", "#0b1220")))
         dialog.transient(root)
 
         outer = tk.Frame(
@@ -5757,7 +5774,7 @@ def run_gui(args: argparse.Namespace) -> int:
         dialog.title("HQE — Operator Acceptance & RC Sign-Off")
         dialog.geometry("980x650")
         dialog.minsize(860, 570)
-        dialog.configure(bg=palette["bg"])
+        dialog.configure(bg=palette.get("bg", palette.get("app_bg", "#0b1220")))
         dialog.transient(root)
 
         outer = tk.Frame(
@@ -5967,7 +5984,7 @@ def run_gui(args: argparse.Namespace) -> int:
         dialog.title("HQE â€” Backtest Product Center")
         dialog.geometry("1160x760")
         dialog.minsize(1020, 680)
-        dialog.configure(bg=palette["bg"])
+        dialog.configure(bg=palette.get("bg", palette.get("app_bg", "#0b1220")))
         dialog.transient(root)
 
         outer = tk.Frame(
@@ -6989,6 +7006,80 @@ def run_gui(args: argparse.Namespace) -> int:
             250,
             _hqe_smoke_advanced_tools,
         )
+
+
+    # HQE_STABILIZATION_BUNCH3_FULL_CENTER_SMOKE
+    if os.environ.get("HQE_FULL_CENTER_SMOKE") == "1":
+        failures: list[str] = []
+        tested: list[str] = []
+        candidates = []
+        for name, callback in list(locals().items()):
+            if not callable(callback):
+                continue
+            if not (
+                name.startswith("open_")
+                and (
+                    name.endswith("_center")
+                    or name.endswith("_hub")
+                    or name.endswith("_dashboard")
+                )
+            ):
+                continue
+            try:
+                signature = inspect.signature(callback)
+                required = [
+                    parameter
+                    for parameter in signature.parameters.values()
+                    if parameter.default is inspect.Parameter.empty
+                    and parameter.kind
+                    in (
+                        inspect.Parameter.POSITIONAL_ONLY,
+                        inspect.Parameter.POSITIONAL_OR_KEYWORD,
+                    )
+                ]
+            except (TypeError, ValueError):
+                continue
+            if required:
+                continue
+            candidates.append((name, callback))
+
+        for name, callback in sorted(candidates):
+            before = set(root.winfo_children())
+            try:
+                callback()
+                root.update_idletasks()
+                root.update()
+                tested.append(name)
+            except Exception as exc:
+                failures.append(f"{name}: {type(exc).__name__}: {exc}")
+            finally:
+                after = set(root.winfo_children())
+                for widget in after - before:
+                    try:
+                        if isinstance(widget, tk.Toplevel):
+                            widget.destroy()
+                    except Exception:
+                        pass
+                try:
+                    root.update_idletasks()
+                except Exception:
+                    pass
+
+        if not tested:
+            failures.append("No zero-argument app centers were discovered.")
+
+        if failures:
+            print("HQE_FULL_CENTER_SMOKE_FAIL")
+            for failure in failures:
+                print(failure)
+            root.destroy()
+            return 3
+
+        print(f"HQE_FULL_CENTER_SMOKE_PASS:{len(tested)}")
+        for name in tested:
+            print(f"PASS:{name}")
+        root.destroy()
+        return 0
 
     root.mainloop()
     return 0
