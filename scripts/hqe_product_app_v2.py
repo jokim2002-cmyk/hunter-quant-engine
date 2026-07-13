@@ -633,7 +633,7 @@ def run_gui(args: argparse.Namespace) -> int:
     except Exception:
         display_scaling = 1.0
     sidebar_width = min(250, max(205, int(window_width * 0.17)))
-    action_panel_width = min(520, max(420, int(window_width * 0.38)))
+    action_panel_width = min(820, max(620, int(window_width * 0.58)))
     root.geometry(
         f"{window_width}x{window_height}+{window_x}+{window_y}"
     )
@@ -647,17 +647,17 @@ def run_gui(args: argparse.Namespace) -> int:
             pass
 
     palette = {
-        "background": "#0f172a",
-        "sidebar": "#111c35",
-        "panel": "#17213a",
-        "panel_alt": "#1e293b",
+        "background": "#07111f",
+        "sidebar": "#0b1728",
+        "panel": "#101d31",
+        "panel_alt": "#172841",
         "text": "#f8fafc",
-        "muted": "#94a3b8",
-        "accent": "#38bdf8",
+        "muted": "#a8b8cc",
+        "accent": "#2dd4bf",
         "safe": "#22c55e",
         "warning": "#f59e0b",
         "danger": "#ef4444",
-        "border": "#334155",
+        "border": "#29415f",
     }
 
     root.configure(bg=palette["background"])
@@ -669,12 +669,12 @@ def run_gui(args: argparse.Namespace) -> int:
         font=("Segoe UI", 10, "bold"),
         padding=(14, 10),
         background=palette["accent"],
-        foreground="#082f49",
+        foreground="#032f2d",
         borderwidth=0,
     )
     style.map(
         "HQE.TButton",
-        background=[("active", "#7dd3fc")],
+        background=[("active", "#5eead4")],
     )
     style.configure(
         "Secondary.TButton",
@@ -686,7 +686,7 @@ def run_gui(args: argparse.Namespace) -> int:
     )
     style.map(
         "Secondary.TButton",
-        background=[("active", "#334155")],
+        background=[("active", "#29415f")],
     )
 
     selected_broker = tk.StringVar(value="fyers")
@@ -878,7 +878,7 @@ def run_gui(args: argparse.Namespace) -> int:
         side="top",
         fill="y",
         expand=True,
-        padx=24,
+        padx=34,
         pady=(0, 18),
         anchor="center",
     )
@@ -1031,9 +1031,56 @@ def run_gui(args: argparse.Namespace) -> int:
             command=lambda value=definition.broker_id: select_broker(value),
         ).pack(anchor="w", padx=14, pady=(0, 12))
 
+    # HQE_FINAL_RICH_OVERVIEW_V2
+    hqe_overview_hero = tk.Frame(
+        action_panel,
+        bg="#0a2a35",
+        highlightbackground=palette["accent"],
+        highlightthickness=1,
+    )
+    hqe_overview_hero.pack(fill="x", padx=28, pady=(24, 16))
+
+    tk.Frame(
+        hqe_overview_hero,
+        bg=palette["accent"],
+        height=4,
+    ).pack(fill="x")
+
+    tk.Label(
+        hqe_overview_hero,
+        text="HUNTER QUANT ENGINE",
+        font=("Segoe UI Semibold", 9),
+        bg="#0a2a35",
+        fg=palette["accent"],
+        anchor="w",
+    ).pack(fill="x", padx=22, pady=(17, 3))
+
+    tk.Label(
+        hqe_overview_hero,
+        text="Daily Operator Center",
+        font=("Segoe UI Semibold", 22),
+        bg="#0a2a35",
+        fg=palette["text"],
+        anchor="w",
+    ).pack(fill="x", padx=22)
+
+    tk.Label(
+        hqe_overview_hero,
+        text=(
+            "Clean one-by-one access to every paper-validation action. "
+            "Detailed live status remains available inside each center."
+        ),
+        font=("Segoe UI", 10),
+        bg="#0a2a35",
+        fg=palette["muted"],
+        justify="left",
+        wraplength=730,
+        anchor="w",
+    ).pack(fill="x", padx=22, pady=(7, 18))
+
     tk.Label(
         action_panel,
-        text="Daily Actions",
+        text="Quick Actions",
         font=("Segoe UI", 14, "bold"),
         bg=palette["panel"],
         fg=palette["text"],
@@ -1041,11 +1088,11 @@ def run_gui(args: argparse.Namespace) -> int:
 
     tk.Label(
         action_panel,
-        text="No terminal window is required for normal paper-watch use.",
+        text="Choose one action at a time. Every control remains paper/data only.",
         font=("Segoe UI", 9),
         bg=palette["panel"],
         fg=palette["muted"],
-        wraplength=285,
+        wraplength=730,
         justify="left",
     ).pack(anchor="w", padx=18, pady=(0, 14))
 
@@ -1875,8 +1922,91 @@ def run_gui(args: argparse.Namespace) -> int:
 
         clear_page_panel()
 
-        intro = page_card(
+        # HQE_BROKER_CONNECT_SCROLL_V1
+        broker_scroll_shell = tk.Frame(
             page_panel,
+            bg=palette["background"],
+        )
+        broker_scroll_shell.pack(fill="both", expand=True)
+
+        broker_scroll_canvas = tk.Canvas(
+            broker_scroll_shell,
+            bg=palette["background"],
+            highlightthickness=0,
+            borderwidth=0,
+        )
+        broker_scrollbar = ttk.Scrollbar(
+            broker_scroll_shell,
+            orient="vertical",
+            command=broker_scroll_canvas.yview,
+        )
+        broker_scroll_canvas.configure(
+            yscrollcommand=broker_scrollbar.set,
+        )
+        broker_scrollbar.pack(side="right", fill="y")
+        broker_scroll_canvas.pack(
+            side="left",
+            fill="both",
+            expand=True,
+        )
+
+        broker_scroll_inner = tk.Frame(
+            broker_scroll_canvas,
+            bg=palette["background"],
+        )
+        broker_scroll_window = broker_scroll_canvas.create_window(
+            (0, 0),
+            window=broker_scroll_inner,
+            anchor="nw",
+        )
+
+        def _sync_broker_connect_scroll(_event=None) -> None:
+            try:
+                broker_scroll_canvas.itemconfigure(
+                    broker_scroll_window,
+                    width=max(
+                        1,
+                        broker_scroll_canvas.winfo_width(),
+                    ),
+                )
+                bounds = broker_scroll_canvas.bbox("all")
+                if bounds is not None:
+                    broker_scroll_canvas.configure(
+                        scrollregion=bounds,
+                    )
+            except tk.TclError:
+                return
+
+        def _broker_connect_mousewheel(event):
+            try:
+                broker_scroll_canvas.yview_scroll(
+                    -1 if event.delta > 0 else 1,
+                    "units",
+                )
+                return "break"
+            except tk.TclError:
+                return None
+
+        def _bind_broker_connect_scroll(widget) -> None:
+            widget.bind(
+                "<MouseWheel>",
+                _broker_connect_mousewheel,
+                add="+",
+            )
+            for child in widget.winfo_children():
+                _bind_broker_connect_scroll(child)
+
+        broker_scroll_inner.bind(
+            "<Configure>",
+            _sync_broker_connect_scroll,
+        )
+        broker_scroll_canvas.bind(
+            "<Configure>",
+            _sync_broker_connect_scroll,
+        )
+
+        intro = page_card(
+            broker_scroll_inner,
             "Connection policy",
             "Broker connections are market-data only. "
             "Real orders and broker execution remain hard locked.",
@@ -1884,7 +2014,10 @@ def run_gui(args: argparse.Namespace) -> int:
         intro.pack(fill="x", pady=(0, 12))
 
         architecture = architecture_payload(workspace)
-        grid = tk.Frame(page_panel, bg=palette["background"])
+        grid = tk.Frame(
+            broker_scroll_inner,
+            bg=palette["background"],
+        )
         grid.pack(fill="both", expand=True)
 
         for index, broker in enumerate(architecture["brokers"]):
@@ -1940,11 +2073,19 @@ def run_gui(args: argparse.Namespace) -> int:
             ).pack(anchor="w", padx=16, pady=(0, 14))
 
         ttk.Button(
-            page_panel,
+            broker_scroll_inner,
             text="Open Guided Broker Connect",
             style="HQE.TButton",
             command=open_broker_connect_center,
-        ).pack(anchor="e", pady=(12, 0))
+        ).pack(
+            anchor="e",
+            padx=(0, 12),
+            pady=(12, 18),
+        )
+
+        _bind_broker_connect_scroll(broker_scroll_canvas)
+        _bind_broker_connect_scroll(broker_scroll_inner)
+        _sync_broker_connect_scroll()
 
     def show_paper_watch_page() -> None:
         page_title.set("Paper Watch")
@@ -2164,21 +2305,21 @@ def run_gui(args: argparse.Namespace) -> int:
         text="Refresh All Status",
         style="HQE.TButton",
         command=refresh_status,
-    ).pack(fill="x", padx=18, pady=5)
+    ).pack(fill="x", padx=28, pady=7)
 
     ttk.Button(
         action_panel,
         text="Start Paper Watch",
         style="HQE.TButton",
         command=start_watch,
-    ).pack(fill="x", padx=18, pady=5)
+    ).pack(fill="x", padx=28, pady=7)
 
     ttk.Button(
         action_panel,
         text="Stop Paper Watch",
         style="Secondary.TButton",
         command=stop_watch,
-    ).pack(fill="x", padx=18, pady=5)
+    ).pack(fill="x", padx=28, pady=7)
 
     broker_health_panel = tk.Frame(
         action_panel,
@@ -2187,6 +2328,7 @@ def run_gui(args: argparse.Namespace) -> int:
         highlightthickness=1,
     )
     broker_health_panel.pack(fill="x", padx=18, pady=(4, 8))
+    broker_health_panel.pack_forget()
 
     tk.Label(
         broker_health_panel,
@@ -2205,21 +2347,21 @@ def run_gui(args: argparse.Namespace) -> int:
         text="Refresh Broker/Data Health",
         style="Secondary.TButton",
         command=lambda: refresh_broker_data_health(True),
-    ).pack(fill="x", padx=18, pady=3)
+    ).pack(fill="x", padx=28, pady=7)
 
     ttk.Button(
         action_panel,
         text="Run Safe Data Test",
         style="Secondary.TButton",
         command=run_safe_broker_data_test,
-    ).pack(fill="x", padx=18, pady=3)
+    ).pack(fill="x", padx=28, pady=7)
 
     ttk.Button(
         action_panel,
         text="Broker Connect Center",
         style="Secondary.TButton",
         command=open_broker_connect_center,
-    ).pack(fill="x", padx=18, pady=5)
+    ).pack(fill="x", padx=28, pady=7)
 
     tk.Label(
         action_panel, text="Embedded Live Status", bg=palette["panel"],
@@ -2230,25 +2372,25 @@ def run_gui(args: argparse.Namespace) -> int:
         fg=palette["muted"], justify="left", anchor="w", wraplength=255,
         font=("Segoe UI", 9),
     ).pack(fill="x", padx=18, pady=(0, 7))
-    ttk.Button(action_panel, text="Prepare Next Market Day", style="Secondary.TButton", command=prepare_next_market_day).pack(fill="x", padx=18, pady=3)
-    ttk.Button(action_panel, text="Run Day Rollover Guard", style="Secondary.TButton", command=run_day_rollover_guard).pack(fill="x", padx=18, pady=3)
-    ttk.Button(action_panel, text="Generate Daily Close Report", style="Secondary.TButton", command=generate_daily_close_report).pack(fill="x", padx=18, pady=3)
-    ttk.Button(action_panel, text="Refresh Latest Report", style="Secondary.TButton", command=refresh_latest_report).pack(fill="x", padx=18, pady=3)
-    ttk.Button(action_panel, text="Open Latest Evidence", style="Secondary.TButton", command=open_latest_evidence).pack(fill="x", padx=18, pady=3)
+    ttk.Button(action_panel, text="Prepare Next Market Day", style="Secondary.TButton", command=prepare_next_market_day).pack(fill="x", padx=28, pady=7)
+    ttk.Button(action_panel, text="Run Day Rollover Guard", style="Secondary.TButton", command=run_day_rollover_guard).pack(fill="x", padx=28, pady=7)
+    ttk.Button(action_panel, text="Generate Daily Close Report", style="Secondary.TButton", command=generate_daily_close_report).pack(fill="x", padx=28, pady=7)
+    ttk.Button(action_panel, text="Refresh Latest Report", style="Secondary.TButton", command=refresh_latest_report).pack(fill="x", padx=28, pady=7)
+    ttk.Button(action_panel, text="Open Latest Evidence", style="Secondary.TButton", command=open_latest_evidence).pack(fill="x", padx=28, pady=7)
 
     ttk.Button(
         action_panel,
         text="Open Today Report",
         style="Secondary.TButton",
         command=open_report,
-    ).pack(fill="x", padx=18, pady=5)
+    ).pack(fill="x", padx=28, pady=7)
 
     ttk.Button(
         action_panel,
         text="Open Evidence Folder",
         style="Secondary.TButton",
         command=open_workspace,
-    ).pack(fill="x", padx=18, pady=5)
+    ).pack(fill="x", padx=28, pady=7)
 
     tk.Label(
         action_panel,
@@ -2457,6 +2599,7 @@ def run_gui(args: argparse.Namespace) -> int:
         highlightthickness=1,
     )
     daily_startup_panel.pack(fill="x", padx=18, pady=(4, 8))
+    daily_startup_panel.pack_forget()
 
     tk.Label(
         daily_startup_panel,
@@ -2475,7 +2618,7 @@ def run_gui(args: argparse.Namespace) -> int:
         text="Daily Startup & Checklist",
         style="Secondary.TButton",
         command=open_daily_startup_center,
-    ).pack(fill="x", padx=18, pady=3)
+    ).pack(fill="x", padx=28, pady=7)
 
     root.after(750, lambda: refresh_daily_startup_center(False))
 
@@ -2631,6 +2774,7 @@ def run_gui(args: argparse.Namespace) -> int:
         highlightthickness=1,
     )
     daily_close_panel.pack(fill="x", padx=18, pady=(4, 8))
+    daily_close_panel.pack_forget()
 
     tk.Label(
         daily_close_panel,
@@ -2649,7 +2793,7 @@ def run_gui(args: argparse.Namespace) -> int:
         text="Daily Close & Report",
         style="Secondary.TButton",
         command=open_daily_close_center,
-    ).pack(fill="x", padx=18, pady=3)
+    ).pack(fill="x", padx=28, pady=7)
 
     root.after(900, lambda: refresh_daily_close_center(False))
 
@@ -2906,6 +3050,7 @@ def run_gui(args: argparse.Namespace) -> int:
         highlightthickness=1,
     )
     session_history_panel.pack(fill="x", padx=18, pady=(4, 8))
+    session_history_panel.pack_forget()
 
     tk.Label(
         session_history_panel,
@@ -2924,7 +3069,7 @@ def run_gui(args: argparse.Namespace) -> int:
         text="Session History & Evidence",
         style="Secondary.TButton",
         command=open_session_history_center,
-    ).pack(fill="x", padx=18, pady=3)
+    ).pack(fill="x", padx=28, pady=7)
 
 
 
@@ -3165,6 +3310,7 @@ def run_gui(args: argparse.Namespace) -> int:
         highlightthickness=1,
     )
     safety_evidence_panel.pack(fill="x", padx=18, pady=(4, 8))
+    safety_evidence_panel.pack_forget()
 
     tk.Label(
         safety_evidence_panel,
@@ -3183,7 +3329,7 @@ def run_gui(args: argparse.Namespace) -> int:
         text="Safety & Kill-Switch Evidence",
         style="Secondary.TButton",
         command=open_safety_evidence_center,
-    ).pack(fill="x", padx=18, pady=3)
+    ).pack(fill="x", padx=28, pady=7)
 
     root.after(1200, lambda: refresh_safety_evidence_center(False))
 
@@ -3396,6 +3542,7 @@ def run_gui(args: argparse.Namespace) -> int:
         highlightthickness=1,
     )
     paper_watch_panel.pack(fill="x", padx=18, pady=(4, 8))
+    paper_watch_panel.pack_forget()
 
     tk.Label(
         paper_watch_panel,
@@ -3414,7 +3561,7 @@ def run_gui(args: argparse.Namespace) -> int:
         text="Paper-Watch Session Control",
         style="Secondary.TButton",
         command=open_paper_watch_center,
-    ).pack(fill="x", padx=18, pady=3)
+    ).pack(fill="x", padx=28, pady=7)
 
     root.after(1350, lambda: refresh_paper_watch_center(False))
 
@@ -3702,6 +3849,7 @@ def run_gui(args: argparse.Namespace) -> int:
         highlightthickness=2,
     )
     operator_dashboard_panel.pack(fill="x", padx=18, pady=(6, 10))
+    operator_dashboard_panel.pack_forget()
 
     tk.Label(
         operator_dashboard_panel,
@@ -3965,6 +4113,7 @@ def run_gui(args: argparse.Namespace) -> int:
         highlightthickness=1,
     )
     market_data_quality_panel.pack(fill="x", padx=18, pady=(4, 8))
+    market_data_quality_panel.pack_forget()
 
     tk.Label(
         market_data_quality_panel,
@@ -3983,7 +4132,7 @@ def run_gui(args: argparse.Namespace) -> int:
         text="Market Data Quality Center",
         style="Secondary.TButton",
         command=open_market_data_quality_center,
-    ).pack(fill="x", padx=18, pady=3)
+    ).pack(fill="x", padx=28, pady=7)
 
 
 
@@ -4336,6 +4485,7 @@ def run_gui(args: argparse.Namespace) -> int:
         highlightthickness=1,
     )
     strategy_pack_panel.pack(fill="x", padx=18, pady=(4, 8))
+    strategy_pack_panel.pack_forget()
 
     tk.Label(
         strategy_pack_panel,
@@ -4354,7 +4504,7 @@ def run_gui(args: argparse.Namespace) -> int:
         text="Strategy Pack Center",
         style="Secondary.TButton",
         command=open_strategy_pack_center,
-    ).pack(fill="x", padx=18, pady=3)
+    ).pack(fill="x", padx=28, pady=7)
 
 
 
@@ -4774,6 +4924,7 @@ def run_gui(args: argparse.Namespace) -> int:
         highlightthickness=1,
     )
     strategy_builder_panel.pack(fill="x", padx=18, pady=(4, 8))
+    strategy_builder_panel.pack_forget()
 
     tk.Label(
         strategy_builder_panel,
@@ -4792,7 +4943,7 @@ def run_gui(args: argparse.Namespace) -> int:
         text="Strategy Builder & Selector",
         style="Secondary.TButton",
         command=open_strategy_builder_center,
-    ).pack(fill="x", padx=18, pady=3)
+    ).pack(fill="x", padx=28, pady=7)
 
 
 
@@ -4836,6 +4987,7 @@ def run_gui(args: argparse.Namespace) -> int:
         highlightthickness=1,
     )
     backtest_product_panel.pack(fill="x", padx=18, pady=(4, 8))
+    backtest_product_panel.pack_forget()
 
     tk.Label(
         backtest_product_panel,
@@ -4854,7 +5006,7 @@ def run_gui(args: argparse.Namespace) -> int:
         text="Backtest Product Center",
         style="Secondary.TButton",
         command=lambda: open_backtest_product_center(),
-    ).pack(fill="x", padx=18, pady=3)
+    ).pack(fill="x", padx=28, pady=7)
 
 
 
@@ -5172,6 +5324,7 @@ def run_gui(args: argparse.Namespace) -> int:
         padx=18,
         pady=(4, 8),
     )
+    paper_validation_report_panel.pack_forget()
 
     tk.Label(
         paper_validation_report_panel,
@@ -5190,7 +5343,7 @@ def run_gui(args: argparse.Namespace) -> int:
         text="Paper Validation Intelligence",
         style="Secondary.TButton",
         command=open_paper_validation_report_center,
-    ).pack(fill="x", padx=18, pady=3)
+    ).pack(fill="x", padx=28, pady=7)
 
 
 
@@ -5523,6 +5676,7 @@ def run_gui(args: argparse.Namespace) -> int:
         padx=18,
         pady=(4, 8),
     )
+    release_center_panel.pack_forget()
 
     tk.Label(
         release_center_panel,
@@ -5541,7 +5695,7 @@ def run_gui(args: argparse.Namespace) -> int:
         text="Windows Release Center",
         style="Secondary.TButton",
         command=open_release_center,
-    ).pack(fill="x", padx=18, pady=3)
+    ).pack(fill="x", padx=28, pady=7)
 
 
 
@@ -5793,6 +5947,7 @@ def run_gui(args: argparse.Namespace) -> int:
         highlightthickness=2,
     )
     rc_audit_panel.pack(fill="x", padx=18, pady=(6, 10))
+    rc_audit_panel.pack_forget()
 
     tk.Label(
         rc_audit_panel,
@@ -6050,6 +6205,7 @@ def run_gui(args: argparse.Namespace) -> int:
         padx=18,
         pady=(6, 10),
     )
+    operator_acceptance_panel.pack_forget()
 
     tk.Label(
         operator_acceptance_panel,
@@ -7078,11 +7234,7 @@ def run_gui(args: argparse.Namespace) -> int:
         text="Advanced Tools & Product Centers",
         style='Secondary.TButton',
         command=open_advanced_tools_hub,
-    ).pack(
-        fill='x',
-        padx=18,
-        pady=(8, 4),
-    )
+    ).pack(fill="x", padx=28, pady=7)
 
     # HQE_STABILIZATION_MENU_V1
     hqe_menu_bar = tk.Menu(root)

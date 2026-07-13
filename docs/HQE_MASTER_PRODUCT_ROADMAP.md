@@ -584,3 +584,14 @@ Status: COMPLETED AFTER TEST PASS.
 - Keep source fallback available for recovery
 
 Next: final UI pass and final release freeze/sign-off.
+
+## Current Stabilization Priority — Final UI Approval
+
+Status: WAITING FOR OPERATOR VISUAL APPROVAL.
+
+- Rich but uncluttered Overview
+- Wide one-by-one action controls
+- Broker Connect retained as a separate page
+- Detailed status moved into individual centers
+
+Next: final release rebuild, freeze and sign-off.

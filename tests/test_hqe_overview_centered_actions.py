@@ -18,7 +18,7 @@ def test_overview_broker_surface_is_hidden():
 
 def test_daily_actions_are_centered_in_vertical_panel():
     text = source()
-    assert "action_panel_width = min(520, max(420, int(window_width * 0.38)))" in text
+    assert "action_panel_width = min(820, max(620, int(window_width * 0.58)))" in text
     assert 'side="top"' in text
     assert 'anchor="center"' in text
     assert "expand=True" in text

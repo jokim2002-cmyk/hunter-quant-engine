@@ -876,3 +876,16 @@ Commit after PASS: `Add deterministic HQE Windows EXE build`
 Next: final UI pass and final release freeze/sign-off.
 
 Real trading remains locked. This is not a profitability claim.
+
+## HQE Final UI Pass — Rich One-by-One Operator Center
+
+- Added a richer navy/teal product theme
+- Kept broker selection off the main Overview surface
+- Added a wide centered Daily Operator Center hero
+- Arranged all Overview controls as one-by-one full-width buttons
+- Hid verbose Overview status cards; details remain inside each center
+- Permanent paper-only safety locks remain unchanged
+
+Commit only after operator approval: `Polish HQE final operator interface`
+
+Next: final release rebuild, freeze and sign-off.

@@ -45,9 +45,13 @@ def workspace_preflight(repo: Path) -> dict[str, Any]:
         "release/HQE_INSTALL_DESKTOP_SHORTCUT.ps1",
         "release/HQE_PAPER_ONLY_RC_FREEZE_MANIFEST.json",
         "scripts/hqe_desktop_exe_launcher.py",
+        "scripts/hqe_product_app_v2.py",
         "scripts/hqe_release_workspace_preflight.py",
         "scripts/hqe_windows_release_builder.py",
         "tests/test_hqe_release_workspace_preflight.py",
+        "tests/test_hqe_overview_centered_actions.py",
+        "tests/test_hqe_broker_connect_scrollbar.py",
+        "tests/test_hqe_final_rich_overview_ui.py",
         "tests/test_hqe_windows_release_builder.py",
     )
     unexpected = [
