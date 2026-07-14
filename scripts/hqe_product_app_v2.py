@@ -877,12 +877,15 @@ def run_gui(args: argparse.Namespace) -> int:
         show_page(page_name)
 
     for item in (
-        "Overview",
-        "Broker Connect",
-        "Paper Watch",
-        "Today Report",
-        "System Safety",
-    ):
+                    "Overview",
+                    "Broker Connect",
+                    "Paper Watch",
+                    "Daily Operations",
+                    "Today Report",
+                    "Reports & Evidence",
+                    "System Safety",
+                    "Advanced Tools",
+                ):
         button = tk.Button(
             sidebar,
             text=item,
@@ -2356,6 +2359,27 @@ def run_gui(args: argparse.Namespace) -> int:
         _bind_broker_connect_scroll(broker_scroll_inner)
         _sync_broker_connect_scroll()
 
+        # HQE_TRADER_CATEGORY_BROKER_ACTIONS_V2
+        broker_tools = tk.Frame(
+            broker_scroll_inner,
+            bg=palette["background"],
+        )
+        broker_tools.pack(fill="x", padx=(0, 12), pady=(0, 18))
+
+        ttk.Button(
+            broker_tools,
+            text="Refresh Broker/Data Health",
+            style="Secondary.TButton",
+            command=lambda: refresh_broker_data_health(True),
+        ).pack(side="left", padx=(0, 8))
+
+        ttk.Button(
+            broker_tools,
+            text="Run Safe Data Test",
+            style="Secondary.TButton",
+            command=run_safe_broker_data_test,
+        ).pack(side="left", padx=8)
+
     def show_paper_watch_page() -> None:
         page_title.set("Paper Watch")
         page_subtitle.set(
@@ -2422,6 +2446,14 @@ def run_gui(args: argparse.Namespace) -> int:
             style="Secondary.TButton",
             command=open_operator_dashboard,
         ).pack(side="left", padx=8)
+
+        # HQE_TRADER_CATEGORY_PAPER_ACTIONS_V2
+        ttk.Button(
+            page_panel,
+            text="Open Paper-Watch Session Control",
+            style="Secondary.TButton",
+            command=open_paper_watch_center,
+        ).pack(anchor="e", pady=(12, 0))
 
     def show_report_page() -> None:
         page_title.set("Trader Report")
@@ -2592,6 +2624,372 @@ def run_gui(args: argparse.Namespace) -> int:
             justify="left",
         ).pack(anchor="w", pady=(14, 0))
 
+        # HQE_TRADER_CATEGORY_SAFETY_ACTIONS_V2
+        safety_actions = tk.Frame(
+            page_panel,
+            bg=palette["background"],
+        )
+        safety_actions.pack(fill="x", pady=(12, 0))
+
+        ttk.Button(
+            safety_actions,
+            text="Open Safety & Kill-Switch Evidence",
+            style="HQE.TButton",
+            command=open_safety_evidence_center,
+        ).pack(side="left", padx=(0, 8))
+
+        ttk.Button(
+            safety_actions,
+            text="Open Final RC Audit & Freeze",
+            style="Secondary.TButton",
+            command=open_rc_audit_center,
+        ).pack(side="left", padx=8)
+
+    # HQE_TRADER_OVERVIEW_CATEGORY_NAV_V2
+    def _render_category_actions(
+        *,
+        title: str,
+        subtitle: str,
+        actions: tuple[tuple[str, str, Any], ...],
+    ) -> None:
+        page_title.set(title)
+        page_subtitle.set(subtitle)
+        clear_page_panel()
+
+        category_shell = tk.Frame(
+            page_panel,
+            bg=palette["background"],
+        )
+        category_shell.pack(fill="both", expand=True)
+
+        category_canvas = tk.Canvas(
+            category_shell,
+            bg=palette["background"],
+            highlightthickness=0,
+            borderwidth=0,
+        )
+        category_scrollbar = ttk.Scrollbar(
+            category_shell,
+            orient="vertical",
+            command=category_canvas.yview,
+        )
+        category_canvas.configure(
+            yscrollcommand=category_scrollbar.set,
+        )
+        category_scrollbar.pack(side="right", fill="y")
+        category_canvas.pack(side="left", fill="both", expand=True)
+
+        category_inner = tk.Frame(
+            category_canvas,
+            bg=palette["background"],
+        )
+        category_window = category_canvas.create_window(
+            (0, 0),
+            window=category_inner,
+            anchor="nw",
+        )
+
+                # HQE_CATEGORY_CANVAS_VISIBLE_WIDTH_V2
+        def _sync_category_scroll(_event=None) -> None:
+            try:
+                category_shell.update_idletasks()
+                page_panel.update_idletasks()
+
+                scrollbar_width = int(
+                    category_scrollbar.winfo_reqwidth()
+                )
+                canvas_width = int(
+                    category_canvas.winfo_width()
+                )
+                fallback_width = max(
+                    1,
+                    int(category_shell.winfo_width())
+                    - scrollbar_width,
+                    int(page_panel.winfo_width())
+                    - scrollbar_width,
+                )
+                if canvas_width <= 1:
+                    canvas_width = fallback_width
+
+                category_canvas.itemconfigure(
+                    category_window,
+                    width=max(1, canvas_width),
+                )
+                category_inner.update_idletasks()
+
+                bounds = category_canvas.bbox("all")
+                if bounds is not None:
+                    category_canvas.configure(
+                        scrollregion=bounds,
+                    )
+            except tk.TclError:
+                return
+
+        def _category_mousewheel(event):
+            try:
+                if getattr(event, "delta", 0):
+                    units = -max(
+                        1,
+                        abs(int(event.delta)) // 120,
+                    ) if event.delta > 0 else max(
+                        1,
+                        abs(int(event.delta)) // 120,
+                    )
+                    category_canvas.yview_scroll(units, "units")
+                    return "break"
+                if getattr(event, "num", None) == 4:
+                    category_canvas.yview_scroll(-1, "units")
+                    return "break"
+                if getattr(event, "num", None) == 5:
+                    category_canvas.yview_scroll(1, "units")
+                    return "break"
+            except tk.TclError:
+                return None
+            return None
+
+        def _bind_category_scroll(widget) -> None:
+            for sequence in (
+                "<MouseWheel>",
+                "<Button-4>",
+                "<Button-5>",
+            ):
+                widget.bind(
+                    sequence,
+                    _category_mousewheel,
+                    add="+",
+                )
+            for child in widget.winfo_children():
+                _bind_category_scroll(child)
+
+        intro = page_card(
+            category_inner,
+            title,
+            subtitle,
+        )
+        intro.pack(fill="x", pady=(0, 12))
+
+        grid = tk.Frame(
+            category_inner,
+            bg=palette["background"],
+        )
+        grid.pack(fill="both", expand=True)
+
+        for index, (label, description, callback) in enumerate(actions):
+            card = tk.Frame(
+                grid,
+                bg=palette["panel"],
+                highlightbackground=palette["border"],
+                highlightthickness=1,
+                padx=14,
+                pady=12,
+            )
+            card.grid(
+                row=index // 2,
+                column=index % 2,
+                sticky="nsew",
+                padx=6,
+                pady=6,
+            )
+            grid.grid_columnconfigure(index % 2, weight=1)
+
+            tk.Label(
+                card,
+                text=label,
+                font=("Segoe UI Semibold", 12),
+                bg=palette["panel"],
+                fg=palette["text"],
+                anchor="w",
+            ).pack(fill="x")
+
+            tk.Label(
+                card,
+                text=description,
+                font=("Segoe UI", 9),
+                bg=palette["panel"],
+                fg=palette["muted"],
+                justify="left",
+                anchor="w",
+                wraplength=420,
+            ).pack(fill="x", pady=(4, 10))
+
+            ttk.Button(
+                card,
+                text=label,
+                style="Secondary.TButton",
+                command=callback,
+            ).pack(anchor="e")
+
+        _bind_category_scroll(category_canvas)
+        _bind_category_scroll(category_inner)
+        category_inner.bind(
+            "<Configure>",
+            _sync_category_scroll,
+            add="+",
+        )
+        category_canvas.bind(
+            "<Configure>",
+            _sync_category_scroll,
+            add="+",
+        )
+        category_shell.bind(
+            "<Configure>",
+            _sync_category_scroll,
+            add="+",
+        )
+        page_panel.bind(
+            "<Configure>",
+            _sync_category_scroll,
+            add="+",
+        )
+        category_canvas.bind(
+            "<Map>",
+            lambda _event: root.after_idle(
+                _sync_category_scroll
+            ),
+            add="+",
+        )
+
+        _bind_category_scroll(category_canvas)
+        _bind_category_scroll(category_inner)
+
+        _sync_category_scroll()
+        root.after_idle(_sync_category_scroll)
+        root.after(80, _sync_category_scroll)
+        root.after(250, _sync_category_scroll)
+
+
+    def show_daily_operations_page() -> None:
+        _render_category_actions(
+            title="Daily Operations",
+            subtitle=(
+                "Market-day preparation, rollover and close controls."
+            ),
+            actions=(
+                (
+                    "Daily Startup & Checklist",
+                    "Review readiness before beginning the market session.",
+                    open_daily_startup_center,
+                ),
+                (
+                    "Prepare Next Market Day",
+                    "Prepare the next valid paper-validation day safely.",
+                    prepare_next_market_day,
+                ),
+                (
+                    "Run Day Rollover Guard",
+                    "Verify day/date rollover before new evidence is written.",
+                    run_day_rollover_guard,
+                ),
+                (
+                    "Daily Close & Report",
+                    "Open the guided market-close and report center.",
+                    open_daily_close_center,
+                ),
+            ),
+        )
+
+
+    def show_reports_evidence_page() -> None:
+        _render_category_actions(
+            title="Reports & Evidence",
+            subtitle=(
+                "Daily report, technical evidence and session-history access."
+            ),
+            actions=(
+                (
+                    "Open Daily Report",
+                    "Open the verified current-day trader report.",
+                    open_report,
+                ),
+                (
+                    "Generate Daily Close Report",
+                    "Generate the latest paper-only daily-close report.",
+                    generate_daily_close_report,
+                ),
+                (
+                    "Refresh Daily Report",
+                    "Refresh report readiness and open the latest report.",
+                    refresh_latest_report,
+                ),
+                (
+                    "Open Technical Evidence",
+                    "Open the newest verified technical evidence file.",
+                    open_latest_evidence,
+                ),
+                (
+                    "Open Evidence Folder",
+                    "Open the active validation workspace.",
+                    open_workspace,
+                ),
+                (
+                    "Session History & Evidence",
+                    "Browse earlier paper sessions and evidence.",
+                    open_session_history_center,
+                ),
+            ),
+        )
+
+
+    def show_advanced_tools_page() -> None:
+        _render_category_actions(
+            title="Advanced Tools",
+            subtitle=(
+                "Research, validation, release and owner-maintenance centers."
+            ),
+            actions=(
+                (
+                    "Advanced Tools Hub",
+                    "Open every advanced product center in one scrollable hub.",
+                    open_advanced_tools_hub,
+                ),
+                (
+                    "Operator Dashboard",
+                    "Open the guided Connect, Prepare, Watch, Close and Review flow.",
+                    open_operator_dashboard,
+                ),
+                (
+                    "Market Data Quality Center",
+                    "Inspect gaps, timestamps, duplicates and data quality.",
+                    open_market_data_quality_center,
+                ),
+                (
+                    "Strategy Pack Center",
+                    "Review and manage paper-only strategy packs.",
+                    open_strategy_pack_center,
+                ),
+                (
+                    "Strategy Builder & Selector",
+                    "Build and validate paper-only strategy drafts.",
+                    open_strategy_builder_center,
+                ),
+                (
+                    "Backtest Product Center",
+                    "Run guarded recorded-data research workflows.",
+                    open_backtest_product_center,
+                ),
+                (
+                    "Paper Validation Intelligence",
+                    "Review validation progress, reasons and drift.",
+                    open_paper_validation_report_center,
+                ),
+                (
+                    "Windows Release Center",
+                    "Open backup, diagnostics and release controls.",
+                    open_release_center,
+                ),
+                (
+                    "Final RC Audit & Freeze",
+                    "Verify release files, safety and freeze hashes.",
+                    open_rc_audit_center,
+                ),
+                (
+                    "Operator Acceptance & RC Sign-Off",
+                    "Review final paper-only acceptance evidence.",
+                    open_operator_acceptance_center,
+                ),
+            ),
+        )
+
     def show_page(page_name: str, refresh_only: bool = False) -> None:
         if page_name not in nav_buttons:
             page_name = "Overview"
@@ -2617,10 +3015,16 @@ def run_gui(args: argparse.Namespace) -> int:
             show_broker_page()
         elif page_name == "Paper Watch":
             show_paper_watch_page()
+        elif page_name == "Daily Operations":
+            show_daily_operations_page()
         elif page_name == "Today Report":
             show_report_page()
+        elif page_name == "Reports & Evidence":
+            show_reports_evidence_page()
         elif page_name == "System Safety":
             show_safety_page()
+        elif page_name == "Advanced Tools":
+            show_advanced_tools_page()
 
     ttk.Button(
         action_panel,
@@ -7614,6 +8018,305 @@ def run_gui(args: argparse.Namespace) -> int:
         style='Secondary.TButton',
         command=open_advanced_tools_hub,
     ).pack(fill="x", padx=28, pady=7)
+
+    # HQE_TRADER_OVERVIEW_SIMPLE_CONTROLS_V2
+    for _legacy_overview_child in action_panel.winfo_children():
+        _legacy_overview_child.destroy()
+
+    trader_overview_hero = tk.Frame(
+        action_panel,
+        bg="#0a2a35",
+        highlightbackground=palette["accent"],
+        highlightthickness=1,
+    )
+    trader_overview_hero.pack(fill="x", padx=28, pady=(24, 16))
+
+    tk.Frame(
+        trader_overview_hero,
+        bg=palette["accent"],
+        height=4,
+    ).pack(fill="x")
+
+    tk.Label(
+        trader_overview_hero,
+        text="TRADER OVERVIEW",
+        font=("Segoe UI Semibold", 9),
+        bg="#0a2a35",
+        fg=palette["accent"],
+        anchor="w",
+    ).pack(fill="x", padx=22, pady=(17, 3))
+
+    tk.Label(
+        trader_overview_hero,
+        text="Daily Paper Trading Controls",
+        font=("Segoe UI Semibold", 22),
+        bg="#0a2a35",
+        fg=palette["text"],
+        anchor="w",
+    ).pack(fill="x", padx=22)
+
+    tk.Label(
+        trader_overview_hero,
+        text=(
+            "Refresh status, start or stop Paper Trading, "
+            "and open today's verified report."
+        ),
+        font=("Segoe UI", 10),
+        bg="#0a2a35",
+        fg=palette["muted"],
+        justify="left",
+        wraplength=730,
+        anchor="w",
+    ).pack(fill="x", padx=22, pady=(7, 18))
+
+
+    def _set_trader_status_card_health(
+        key: str,
+        healthy: bool,
+    ) -> None:
+        columns = {
+            "internet": 0,
+            "watch": 3,
+        }
+        column = columns.get(key)
+        if column is None:
+            return
+
+        cards = cards_frame.grid_slaves(
+            row=0,
+            column=column,
+        )
+        if not cards:
+            return
+
+        card = cards[0]
+        background = (
+            "#0b3b2e"
+            if healthy
+            else palette["panel"]
+        )
+        border = (
+            palette["safe"]
+            if healthy
+            else palette["border"]
+        )
+        card.configure(
+            bg=background,
+            highlightbackground=border,
+            highlightthickness=2 if healthy else 1,
+        )
+
+        labels = [
+            child
+            for child in card.winfo_children()
+            if isinstance(child, tk.Label)
+        ]
+        for index, label in enumerate(labels):
+            label.configure(
+                bg=background,
+                fg=(
+                    "#86efac"
+                    if healthy and index == 0
+                    else "#dcfce7"
+                    if healthy
+                    else palette["muted"]
+                    if index == 0
+                    else palette["text"]
+                ),
+            )
+
+
+    def _refresh_trader_status_card_health() -> None:
+        running = controller.is_running()
+        internet_online = (
+            card_vars["internet"].get().strip().upper()
+            == "ONLINE"
+        )
+        _set_trader_status_card_health(
+            "internet",
+            running and internet_online,
+        )
+        _set_trader_status_card_health(
+            "watch",
+            running,
+        )
+
+
+    def _schedule_trader_status_card_health() -> None:
+        _refresh_trader_status_card_health()
+        root.after(
+            1000,
+            _schedule_trader_status_card_health,
+        )
+
+
+    def refresh_trader_status() -> None:
+        refresh_status_async()
+        refresh_daily_operations(False)
+        root.after(
+            650,
+            _refresh_trader_status_card_health,
+        )
+
+
+    def start_paper_trading() -> None:
+        start_watch()
+        root.after(
+            75,
+            _refresh_trader_status_card_health,
+        )
+        root.after(
+            500,
+            _refresh_trader_status_card_health,
+        )
+
+
+    def stop_paper_trading() -> None:
+        stop_watch()
+        root.after(
+            75,
+            _refresh_trader_status_card_health,
+        )
+        root.after(
+            500,
+            _refresh_trader_status_card_health,
+        )
+
+
+    trader_quick_actions = tk.Frame(
+        action_panel,
+        bg=palette["panel"],
+    )
+    trader_quick_actions.pack(fill="x", padx=28, pady=(0, 14))
+
+    for _trader_column in range(2):
+        trader_quick_actions.grid_columnconfigure(
+            _trader_column,
+            weight=1,
+            uniform="trader_quick_actions",
+        )
+
+    ttk.Button(
+        trader_quick_actions,
+        text="Refresh Status",
+        style="HQE.TButton",
+        command=refresh_trader_status,
+    ).grid(
+        row=0,
+        column=0,
+        sticky="ew",
+        padx=(0, 7),
+        pady=7,
+    )
+
+    ttk.Button(
+        trader_quick_actions,
+        text="Start Paper Trading",
+        style="HQE.TButton",
+        command=start_paper_trading,
+    ).grid(
+        row=0,
+        column=1,
+        sticky="ew",
+        padx=(7, 0),
+        pady=7,
+    )
+
+    ttk.Button(
+        trader_quick_actions,
+        text="Stop Paper Trading",
+        style="Secondary.TButton",
+        command=stop_paper_trading,
+    ).grid(
+        row=1,
+        column=0,
+        sticky="ew",
+        padx=(0, 7),
+        pady=7,
+    )
+
+    ttk.Button(
+        trader_quick_actions,
+        text="Open Daily Report",
+        style="Secondary.TButton",
+        command=open_report,
+    ).grid(
+        row=1,
+        column=1,
+        sticky="ew",
+        padx=(7, 0),
+        pady=7,
+    )
+
+    trader_overview_spacer = tk.Frame(
+        action_panel,
+        bg=palette["panel"],
+    )
+    trader_overview_spacer.pack(fill="both", expand=True)
+
+    trader_embedded_status = tk.Frame(
+        action_panel,
+        bg=palette["panel_alt"],
+        highlightbackground=palette["border"],
+        highlightthickness=1,
+    )
+    trader_embedded_status.pack(
+        side="bottom",
+        fill="x",
+        padx=28,
+        pady=(8, 22),
+    )
+
+    tk.Label(
+        trader_embedded_status,
+        text="Embedded Live Status",
+        font=("Segoe UI Semibold", 10),
+        bg=palette["panel_alt"],
+        fg=palette["accent"],
+        anchor="w",
+    ).pack(fill="x", padx=16, pady=(12, 3))
+
+    tk.Label(
+        trader_embedded_status,
+        textvariable=daily_ops_status,
+        font=("Segoe UI", 9),
+        bg=palette["panel_alt"],
+        fg=palette["muted"],
+        justify="left",
+        anchor="w",
+        wraplength=760,
+    ).pack(fill="x", padx=16, pady=(0, 12))
+
+
+    def _fit_simple_trader_overview(_event=None) -> None:
+        try:
+            hqe_scroll_canvas.itemconfigure(
+                action_panel_window,
+                width=max(1, hqe_scroll_canvas.winfo_width()),
+                height=max(560, hqe_scroll_canvas.winfo_height()),
+            )
+            bounds = hqe_scroll_canvas.bbox("all")
+            if bounds is not None:
+                hqe_scroll_canvas.configure(scrollregion=bounds)
+        except tk.TclError:
+            return
+
+
+    hqe_scroll_canvas.bind(
+        "<Configure>",
+        _fit_simple_trader_overview,
+        add="+",
+    )
+    action_panel.bind(
+        "<Configure>",
+        _fit_simple_trader_overview,
+        add="+",
+    )
+    root.after_idle(_fit_simple_trader_overview)
+    root.after(
+        250,
+        _schedule_trader_status_card_health,
+    )
 
     # HQE_STABILIZATION_MENU_V1
     hqe_menu_bar = tk.Menu(root)

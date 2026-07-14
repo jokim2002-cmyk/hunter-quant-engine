@@ -1065,3 +1065,22 @@ Next: reopen HQE and visually confirm the Overview cards.
 - Paper-only and data-only execution locks remain unchanged
 
 Next: visually verify the taskbar icon and Advanced Tools wheel.
+
+## Trader Overview and Category Navigation V2
+
+- Overview now shows only Refresh Status, Start Paper Trading, Stop Paper Trading and Open Daily Report.
+- Removed controls are distributed into Broker Connect, Paper Watch, Daily Operations, Reports & Evidence, System Safety and Advanced Tools.
+- Embedded Live Status remains at the bottom of Overview.
+- Internet and Paper Watch cards turn green only while Paper Watch is running and Internet is online.
+- Paper/data-only safety and all real-execution blocks remain unchanged.
+
+Next: visual operator approval before commit, push and EXE rebuild.
+
+## Category Canvas Visibility Fix V2
+
+- Daily Operations, Reports & Evidence and Advanced Tools now refit their inner canvas after the page is packed and mapped.
+- The fix locates the category renderer structurally instead of relying on fragile source-text formatting.
+- Category cards remain visible during window resize, and the vertical scrollbar keeps its correct scroll region.
+- Overview controls, Paper Watch behavior and paper/data-only safety remain unchanged.
+
+Next: visually approve all three populated category pages.

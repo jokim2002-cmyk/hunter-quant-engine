@@ -752,3 +752,25 @@ Status: TASKBAR IDENTITY AND ADVANCED HUB WHEEL REPAIRED; VISUAL REVIEW REQUIRED
 - No trading, order or broker-execution behavior was changed
 
 Next: visual approval, then commit and push.
+
+## Current Priority — Trader Overview V2
+
+Status: IMPLEMENTED; AUTOMATED QA REQUIRED; VISUAL APPROVAL PENDING.
+
+- Keep only four daily trader controls on Overview.
+- Group removed maintenance/report controls into sidebar categories.
+- Keep Embedded Live Status at the bottom.
+- Show green Internet and Paper Watch health while Paper Watch runs.
+
+Next: visual approval, commit/push and deterministic Windows EXE rebuild.
+
+## Category Page Runtime Visibility V2
+
+Status: IMPLEMENTED; AUTOMATED QA REQUIRED; VISUAL APPROVAL PENDING.
+
+- Refit category canvas after page layout and map events.
+- Confirm Daily Operations cards are visible.
+- Confirm Reports & Evidence cards are visible.
+- Confirm Advanced Tools cards and mouse-wheel scrolling are visible.
+
+Next: visual approval, commit/push and deterministic Windows EXE rebuild.

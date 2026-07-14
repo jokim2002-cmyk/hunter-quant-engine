@@ -109,3 +109,16 @@ Open **Advanced Tools & Product Centers**, then select the required center.
 This keeps desktop launch fast and prevents terminal-window flashes.
 A failed UI action displays an error dialog and writes a diagnostic log
 instead of leaving a blank window.
+
+## Trader Overview and Sidebar Categories V2
+
+Overview daily controls:
+
+- Refresh Status
+- Start Paper Trading
+- Stop Paper Trading
+- Open Daily Report
+
+Additional controls are grouped under Broker Connect, Paper Watch, Daily Operations, Reports & Evidence, System Safety and Advanced Tools.
+
+Embedded Live Status remains at the bottom. Green Internet and Paper Watch cards indicate that the paper-only watcher is running with Internet online. Green status does not enable real broker execution.

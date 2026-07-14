@@ -71,6 +71,8 @@ def workspace_preflight(repo: Path) -> dict[str, Any]:
         "tests/test_hqe_expiry_day_next_week_selection.py",
         "tests/test_hqe_paper_watch_ready_card_truth.py",
         "tests/test_hqe_windows_taskbar_and_advanced_scroll.py",
+        "docs/HQE_PAPER_ONLY_RC_OPERATOR_GUIDE.md",
+        "tests/test_hqe_trader_overview_category_navigation.py",
         "scripts/hqe_release_workspace_preflight.py",
         "scripts/hqe_windows_release_builder.py",
         "tests/test_hqe_release_workspace_preflight.py",
