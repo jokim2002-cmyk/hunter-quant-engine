@@ -1054,3 +1054,14 @@ Next: reopen HQE App and verify the live current-day workflow reaches selected h
 - No position, P&L, order or broker execution was enabled
 
 Next: reopen HQE and visually confirm the Overview cards.
+
+## HQE Windows Taskbar Icon and Advanced Scroll Repair
+
+- Added a stable Windows AppUserModelID before Tk root creation
+- Applied the HQE ICO through Tk and Windows WM_SETICON paths
+- Reapplies the icon after the main window is created
+- Advanced Tools mouse-wheel scrolling now works over cards, labels and buttons
+- Added standard Windows wheel plus Button-4/Button-5 compatibility
+- Paper-only and data-only execution locks remain unchanged
+
+Next: visually verify the taskbar icon and Advanced Tools wheel.

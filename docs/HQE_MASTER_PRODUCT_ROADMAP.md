@@ -742,3 +742,13 @@ Status: VERIFIED READY CARD OVERRIDE IMPLEMENTED; VISUAL REVIEW REQUIRED.
 - READY TO START never means a process is already running
 
 Next: Overview visual approval, then final commit and push.
+
+## Current Priority — Final Windows Desktop UX Repair
+
+Status: TASKBAR IDENTITY AND ADVANCED HUB WHEEL REPAIRED; VISUAL REVIEW REQUIRED.
+
+- Main HQE window receives a dedicated taskbar identity and icon
+- Advanced Tools scroll works wherever the pointer is inside the dialog
+- No trading, order or broker-execution behavior was changed
+
+Next: visual approval, then commit and push.

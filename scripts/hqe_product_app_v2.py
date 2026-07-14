@@ -577,6 +577,116 @@ def configure_windows_dpi_awareness() -> None:
         pass
 
 
+# HQE_WINDOWS_TASKBAR_ICON_AND_ADVANCED_WHEEL_V1
+HQE_WINDOWS_APP_USER_MODEL_ID = (
+    "HunterQuantEngine.PaperOnly.AppV2"
+)
+
+
+def _configure_windows_taskbar_identity() -> None:
+    if os.name != "nt":
+        return
+    try:
+        ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(
+            HQE_WINDOWS_APP_USER_MODEL_ID
+        )
+    except Exception:
+        pass
+
+
+def _apply_hqe_window_icon(
+    window: Any,
+    icon_path: Path,
+) -> bool:
+    if not icon_path.exists():
+        return False
+
+    applied = False
+    try:
+        window.iconbitmap(default=str(icon_path))
+        applied = True
+    except Exception:
+        try:
+            window.iconbitmap(str(icon_path))
+            applied = True
+        except Exception:
+            pass
+
+    if os.name != "nt":
+        return applied
+
+    try:
+        user32 = ctypes.windll.user32
+
+        user32.LoadImageW.argtypes = (
+            ctypes.c_void_p,
+            ctypes.c_wchar_p,
+            ctypes.c_uint,
+            ctypes.c_int,
+            ctypes.c_int,
+            ctypes.c_uint,
+        )
+        user32.LoadImageW.restype = ctypes.c_void_p
+
+        user32.GetParent.argtypes = (ctypes.c_void_p,)
+        user32.GetParent.restype = ctypes.c_void_p
+
+        user32.SendMessageW.argtypes = (
+            ctypes.c_void_p,
+            ctypes.c_uint,
+            ctypes.c_void_p,
+            ctypes.c_void_p,
+        )
+        user32.SendMessageW.restype = ctypes.c_ssize_t
+
+        image_icon = 1
+        load_from_file = 0x0010
+        load_default_size = 0x0040
+        wm_seticon = 0x0080
+        icon_small = 0
+        icon_big = 1
+
+        icon_handle = user32.LoadImageW(
+            None,
+            str(icon_path),
+            image_icon,
+            0,
+            0,
+            load_from_file | load_default_size,
+        )
+        if not icon_handle:
+            return applied
+
+        window.update_idletasks()
+        tk_window = ctypes.c_void_p(int(window.winfo_id()))
+        parent_window = user32.GetParent(tk_window)
+        target_window = ctypes.c_void_p(
+            int(parent_window or window.winfo_id())
+        )
+
+        user32.SendMessageW(
+            target_window,
+            wm_seticon,
+            ctypes.c_void_p(icon_big),
+            ctypes.c_void_p(icon_handle),
+        )
+        user32.SendMessageW(
+            target_window,
+            wm_seticon,
+            ctypes.c_void_p(icon_small),
+            ctypes.c_void_p(icon_handle),
+        )
+
+        handles = list(
+            getattr(window, "_hqe_icon_handles", [])
+        )
+        handles.append(icon_handle)
+        window._hqe_icon_handles = handles
+        return True
+    except Exception:
+        return applied
+
+
 def run_gui(args: argparse.Namespace) -> int:
     try:
         import tkinter as tk
@@ -596,6 +706,7 @@ def run_gui(args: argparse.Namespace) -> int:
     )
 
     configure_windows_dpi_awareness()
+    _configure_windows_taskbar_identity()
     root = tk.Tk()
     # HQE_STABILIZATION_BUNCH2_CALLBACK_RECOVERY
     def _hqe_report_callback_exception(
@@ -667,11 +778,10 @@ def run_gui(args: argparse.Namespace) -> int:
     root.minsize(1020, 680)
 
     icon = repo_root() / "assets" / "HQE_PRODUCT_APP.ico"
-    if icon.exists():
-        try:
-            root.iconbitmap(str(icon))
-        except Exception:
-            pass
+    _apply_hqe_window_icon(root, icon)
+    root.after_idle(
+        lambda: _apply_hqe_window_icon(root, icon)
+    )
 
     palette = {
         "background": "#07111f",
@@ -6968,6 +7078,7 @@ def run_gui(args: argparse.Namespace) -> int:
         hub_border = palette.get('border', '#34445f')
         advanced_tools_dialog.configure(bg=hub_bg)
         advanced_tools_dialog.transient(root)
+        _apply_hqe_window_icon(advanced_tools_dialog, icon)
         advanced_tools_shell = tk.Frame(
             advanced_tools_dialog,
             bg=hub_bg,
@@ -7053,11 +7164,43 @@ def run_gui(args: argparse.Namespace) -> int:
                 advanced_tools_canvas.bbox('all'),
             )
         def _advanced_tools_wheel(event):
+            delta = int(getattr(event, "delta", 0) or 0)
+            if delta == 0:
+                return None
+
+            steps = max(1, abs(delta) // 120)
             advanced_tools_canvas.yview_scroll(
-                -1 if event.delta > 0 else 1,
-                'units',
+                -steps if delta > 0 else steps,
+                "units",
             )
-            return 'break'
+            return "break"
+
+
+        def _advanced_tools_wheel_up(_event):
+            advanced_tools_canvas.yview_scroll(-1, "units")
+            return "break"
+
+
+        def _advanced_tools_wheel_down(_event):
+            advanced_tools_canvas.yview_scroll(1, "units")
+            return "break"
+
+
+        def _bind_advanced_tools_mousewheel_tree(widget) -> None:
+            widget.bind(
+                "<MouseWheel>",
+                _advanced_tools_wheel,
+            )
+            widget.bind(
+                "<Button-4>",
+                _advanced_tools_wheel_up,
+            )
+            widget.bind(
+                "<Button-5>",
+                _advanced_tools_wheel_down,
+            )
+            for child in widget.winfo_children():
+                _bind_advanced_tools_mousewheel_tree(child)
         advanced_tools_inner.bind(
             '<Configure>',
             _sync_advanced_tools,
@@ -7461,6 +7604,7 @@ def run_gui(args: argparse.Namespace) -> int:
             side='right',
             pady=(4, 0),
         )
+        _bind_advanced_tools_mousewheel_tree(advanced_tools_dialog)
         advanced_tools_dialog.update_idletasks()
         _sync_advanced_tools()
 
