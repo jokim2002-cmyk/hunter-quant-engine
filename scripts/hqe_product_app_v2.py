@@ -137,6 +137,11 @@ from hqe_product_license_common import (
 )
 from hqe_app_v2_license_activation import run_activation_gui
 from hqe_current_day_session_guard import current_day_report_status
+from hqe_recorded_replay_today_report import recorded_replay_status
+from hqe_automatic_daily_current_day_workflow import launch_app_background_worker
+from hqe_paper_watch_auth_readiness_gate import paper_watch_auth_gate
+
+
 
 
 # HQE desktop mode: hide child console windows on Windows.
@@ -263,22 +268,28 @@ def paper_watch_status(workspace: Path) -> Dict[str, Any]:
 
 
 def today_report_candidates(workspace: Path) -> list[Path]:
-    """Return only artifacts verified for the current IST date."""
+    replay = recorded_replay_status(workspace)
+    candidates: list[Path] = []
+    if replay["ready"]:
+        for raw in (
+            replay["report_path"],
+            replay["summary_path"],
+            replay["evaluations_path"],
+        ):
+            path = Path(raw)
+            if path.exists() and path not in candidates:
+                candidates.append(path)
+        return candidates
+
     freshness = current_day_report_status(workspace)
     if not freshness["today_ready"]:
         return []
-
-    candidates: list[Path] = []
     for path in (
         ensure_trader_report(workspace),
         resolve_latest_report(workspace),
         resolve_latest_evidence(workspace),
     ):
-        if (
-            path is not None
-            and path.exists()
-            and path not in candidates
-        ):
+        if path is not None and path.exists() and path not in candidates:
             candidates.append(path)
     return candidates
 
@@ -1112,6 +1123,74 @@ def run_gui(args: argparse.Namespace) -> int:
         justify="left",
     ).pack(anchor="w", padx=18, pady=(0, 14))
 
+    def apply_paper_watch_auth_gate(
+        *,
+        show_warning: bool = False,
+    ) -> dict:
+        gate = paper_watch_auth_gate(workspace)
+        running = controller.is_running()
+
+        if gate["allowed"]:
+            setattr(
+                apply_paper_watch_auth_gate,
+                "_warning_key",
+                "",
+            )
+            card_vars["broker"].set(gate["broker_card"])
+            card_vars["data"].set(gate["data_card"])
+            card_vars["watch"].set(
+                gate["watch_card_running"]
+                if running
+                else gate["watch_card"]
+            )
+            footer_status.set(
+                "Current-day data path verified. "
+                + (
+                    "Paper Watch is running in paper-only mode."
+                    if running
+                    else "Paper Watch is ready but not running."
+                )
+            )
+            return gate
+
+        card_vars["broker"].set(gate["broker_card"])
+        card_vars["data"].set(gate["data_card"])
+        card_vars["watch"].set(
+            gate["watch_card_running"]
+            if running
+            else gate["watch_card"]
+        )
+        waiting_message = "Waiting for fresh current-day data"
+        footer_status.set(
+            f"{waiting_message}: {gate['message']}"
+        )
+
+        warning_key = (
+            f"{gate['today']}|{gate['state']}|"
+            f"{gate['workflow_status']}|{gate['workflow_stage']}"
+        )
+        previous = getattr(
+            apply_paper_watch_auth_gate,
+            "_warning_key",
+            "",
+        )
+
+        if show_warning and previous != warning_key:
+            setattr(
+                apply_paper_watch_auth_gate,
+                "_warning_key",
+                warning_key,
+            )
+            root.after_idle(
+                lambda title=gate["warning_title"],
+                message=gate["warning_message"]: messagebox.showwarning(
+                    title,
+                    message,
+                )
+            )
+
+        return gate
+
     def refresh_status() -> None:
         payload = app_status_payload(workspace)
         broker_id = selected_broker.get()
@@ -1128,20 +1207,27 @@ def run_gui(args: argparse.Namespace) -> int:
             f"{selected['connection_test']['status'].replace('_', ' ').title()}"
         )
         card_vars["data"].set(
-            selected["market_data_status"]["status"].replace("_", " ").title()
+            selected["market_data_status"]["status"]
+            .replace("_", " ")
+            .title()
         )
 
         if controller.is_running():
             card_vars["watch"].set("Running in background")
         else:
             watch = payload["paper_watch"]["watch_status"]
-            card_vars["watch"].set(watch.replace("_", " ").title())
+            card_vars["watch"].set(
+                watch.replace("_", " ").title()
+            )
 
         footer_status.set("Status refreshed.")
+        apply_paper_watch_auth_gate(show_warning=True)
 
         current_page = active_page.get()
         if current_page != "Overview":
-            root.after_idle(lambda value=current_page: show_page(value, True))
+            root.after_idle(
+                lambda value=current_page: show_page(value, True)
+            )
 
     def refresh_status_async() -> None:
         # Refresh startup status off the Tkinter UI thread.
@@ -1210,33 +1296,31 @@ def run_gui(args: argparse.Namespace) -> int:
                     root.after_idle(
                         lambda value=current_page: show_page(value, True)
                     )
+                apply_paper_watch_auth_gate(show_warning=True)
 
             root.after(0, apply_result)
 
         threading.Thread(target=worker, daemon=True).start()
 
     def start_watch() -> None:
+        gate = paper_watch_auth_gate(workspace)
+        if not gate["allowed"]:
+            apply_paper_watch_auth_gate(show_warning=False)
+            messagebox.showwarning(
+                gate["warning_title"],
+                gate["warning_message"],
+            )
+            return
+
         result = controller.start()
-        running = bool(
-            result.get("started") or controller.is_running()
+        footer_status.set(
+            result["status"].replace("_", " ").title()
         )
         card_vars["watch"].set(
             "Running in background"
-            if running
+            if result.get("started") or controller.is_running()
             else result["status"].replace("_", " ").title()
         )
-        if running:
-            freshness = current_day_report_status(workspace)
-            footer_status.set(
-                "Today's Paper Watch is running for "
-                f"{freshness['today_pretty']}. "
-                "Waiting for fresh current-day data; historical "
-                "reports remain blocked from Today Report."
-            )
-        else:
-            footer_status.set(
-                result["status"].replace("_", " ").title()
-            )
 
     def stop_watch() -> None:
         result = controller.stop()
@@ -1693,12 +1777,27 @@ def run_gui(args: argparse.Namespace) -> int:
                 )
                 root.after(0, lambda: finish_exchange(result))
             except Exception as exc:
+                detail = str(exc).strip()
+                if secret_key:
+                    detail = detail.replace(secret_key, "[REDACTED]")
+                if auth_code:
+                    detail = detail.replace(auth_code, "[REDACTED]")
+                detail = " ".join(detail.split())[:500]
                 safe_error = (
                     "Token refresh failed: "
-                    + type(exc).__name__
-                    + ". Check login details and authorization code."
+                    + (
+                        detail
+                        if detail
+                        else type(exc).__name__
+                    )
                 )
-                root.after(0, lambda: finish_exchange(None, safe_error))
+                root.after(
+                    0,
+                    lambda message=safe_error: finish_exchange(
+                        None,
+                        message,
+                    ),
+                )
 
         def exchange_code() -> None:
             client_id, secret_key, redirect_uri = values()
@@ -1858,11 +1957,21 @@ def run_gui(args: argparse.Namespace) -> int:
 
     def open_report() -> None:
         try:
+            replay = recorded_replay_status(workspace)
+            if replay["ready"]:
+                report = Path(replay["report_path"])
+                os.startfile(str(report))
+                footer_status.set(
+                    f"Opened recorded replay report: {report.name}"
+                )
+                refresh_daily_operations(False)
+                return
+
             freshness = current_day_report_status(workspace)
             if not freshness["today_ready"]:
                 messagebox.showwarning(
                     "Today's Trader Report",
-                    freshness["message"],
+                    replay["message"] + "\n\n" + freshness["message"],
                 )
                 footer_status.set(freshness["message"])
                 return
@@ -1871,29 +1980,15 @@ def run_gui(args: argparse.Namespace) -> int:
             if report is None or not report.exists():
                 messagebox.showinfo(
                     "Today's Trader Report",
-                    (
-                        "Today's source report exists, but the readable "
-                        "trader HTML is not ready yet."
-                    ),
-                )
-                footer_status.set(
-                    "Today's trader report is not available yet."
+                    "Today's readable trader HTML is not ready yet.",
                 )
                 return
-
             os.startfile(str(report))
-            footer_status.set(
-                f"Opened today's trader report: {report.name}"
-            )
+            footer_status.set(f"Opened today's trader report: {report.name}")
             refresh_daily_operations(False)
         except Exception as exc:
-            footer_status.set(
-                "Today's trader report could not be opened."
-            )
-            messagebox.showerror(
-                "Today's Trader Report",
-                str(exc),
-            )
+            footer_status.set("Today's trader report could not be opened.")
+            messagebox.showerror("Today's Trader Report", str(exc))
 
     def open_workspace() -> None:
         try:
@@ -2221,67 +2316,89 @@ def run_gui(args: argparse.Namespace) -> int:
     def show_report_page() -> None:
         page_title.set("Trader Report")
         page_subtitle.set(
-            "Current IST market-day report and technical evidence"
+            "Current IST report, genuine recorded replay and evidence"
         )
-
         clear_page_panel()
 
+        replay = recorded_replay_status(workspace)
         freshness = current_day_report_status(workspace)
-        candidates = today_report_candidates(workspace)
-        available = [
-            path for path in candidates if path.exists()
-        ]
 
-        if freshness["today_ready"] and available:
-            latest = available[0]
+        if replay["ready"]:
+            decisions = replay["decision_counts"]
+            accepted = replay["accepted_side_counts"]
             report_value = (
-                f"Today's report is ready: {latest.name}\n"
+                "RECORDED REPLAY READY\n"
+                f"Trading date: {replay['today_pretty']}\n"
+                f"Evaluations: {replay['evaluation_count']}\n"
+                f"SMC: LONG={decisions.get('LONG', 0)} | "
+                f"SHORT={decisions.get('SHORT', 0)} | "
+                f"NEUTRAL={decisions.get('NEUTRAL', 0)}\n"
+                f"Accepted: CE_BUY={accepted.get('CE_BUY', 0)} | "
+                f"PE_BUY={accepted.get('PE_BUY', 0)}\n"
+                "LONG -> CE BUY | SHORT -> PE BUY | "
+                "NEUTRAL -> NO TRADE\n"
+                "No position or P&L was created.\n"
+                f"Report: {replay['report_path']}"
+            )
+            evidence_text = (
+                "Verified recorded-replay JSON evidence:\n"
+                f"{replay['summary_path']}\n\n"
+                "Evaluation CSV:\n"
+                f"{replay['evaluations_path']}"
+            )
+        elif freshness["today_ready"]:
+            available = today_report_candidates(workspace)
+            latest = available[0] if available else None
+            report_value = (
+                f"Today's trader report is ready: {latest.name}\n"
                 f"Trading date: {freshness['today_pretty']}\n"
                 f"Location: {latest.parent}"
+                if latest is not None
+                else freshness["message"]
+            )
+            evidence_text = (
+                "Today's technical evidence:\n"
+                f"{freshness['evidence_path'] or 'Not available'}"
             )
         else:
             report_value = (
-                freshness["message"]
-                + "\n\nStart Paper Watch to capture fresh NIFTY, "
-                "CE and PE data for the current market day."
+                freshness["message"] + "\n\n"
+                + replay["message"]
+            )
+            evidence_text = (
+                "No verified current-day evidence is available "
+                "on this computer yet."
             )
 
-        report_card = page_card(
+        page_card(
             page_panel,
             "Current-day trader report status",
             report_value,
-        )
-        report_card.pack(fill="x", pady=(0, 12))
+        ).pack(fill="x", pady=(0, 12))
 
-        evidence_path = resolve_latest_evidence(workspace)
-        evidence_is_today = bool(
-            evidence_path is not None
-            and evidence_path.exists()
-            and freshness["evidence_date"] == freshness["today"]
-        )
-        if evidence_is_today:
-            evidence_text = (
-                "Today's technical JSON evidence:\n"
-                f"{evidence_path}"
-            )
-        else:
-            evidence_text = (
-                "Today's technical evidence is not available yet.\n"
-                f"Latest evidence date: "
-                f"{freshness['evidence_date_pretty']}."
-            )
-
-        evidence_card = page_card(
+        page_card(
             page_panel,
             "Technical evidence status",
             evidence_text,
-        )
-        evidence_card.pack(fill="x", pady=(0, 12))
+        ).pack(fill="x", pady=(0, 12))
 
-        actions = tk.Frame(
-            page_panel,
-            bg=palette["background"],
-        )
+        def open_page_evidence() -> None:
+            if replay["ready"]:
+                path = Path(replay["summary_path"])
+                if not path.exists():
+                    messagebox.showerror(
+                        "Recorded Replay Evidence",
+                        f"Evidence file is missing: {path}",
+                    )
+                    return
+                os.startfile(str(path))
+                footer_status.set(
+                    f"Opened recorded replay evidence: {path.name}"
+                )
+                return
+            open_latest_evidence()
+
+        actions = tk.Frame(page_panel, bg=palette["background"])
         actions.pack(fill="x", pady=(8, 0))
 
         ttk.Button(
@@ -2291,12 +2408,20 @@ def run_gui(args: argparse.Namespace) -> int:
             command=open_report,
         ).pack(side="left", padx=(0, 8))
 
-        ttk.Button(
-            actions,
-            text="Open Technical Evidence (JSON)",
-            style="Secondary.TButton",
-            command=open_latest_evidence,
-        ).pack(side="left", padx=8)
+        if replay["ready"]:
+            ttk.Button(
+                actions,
+                text="Open Recorded Replay Evidence (JSON)",
+                style="Secondary.TButton",
+                command=open_page_evidence,
+            ).pack(side="left", padx=8)
+        else:
+            ttk.Button(
+                actions,
+                text="Open Technical Evidence (JSON)",
+                style="Secondary.TButton",
+                command=open_page_evidence,
+            ).pack(side="left", padx=8)
 
         ttk.Button(
             actions,
@@ -3474,6 +3599,19 @@ def run_gui(args: argparse.Namespace) -> int:
 
     def run_paper_watch_operation(operation: str) -> None:
         try:
+            if operation.lower() == "start":
+                gate = paper_watch_auth_gate(workspace)
+                if not gate["allowed"]:
+                    apply_paper_watch_auth_gate(
+                        show_warning=False,
+                    )
+                    paper_watch_status.set(gate["message"])
+                    messagebox.showwarning(
+                        gate["warning_title"],
+                        gate["warning_message"],
+                    )
+                    return
+
             launch_watch_control_worker(
                 repo_root(),
                 workspace,
@@ -7476,6 +7614,11 @@ def run_gui(args: argparse.Namespace) -> int:
         root.destroy()
         return 0
 
+    # HQE_AUTOMATIC_DAILY_WORKFLOW_V1
+    root.after(
+        1500,
+        lambda: launch_app_background_worker(workspace),
+    )
     root.mainloop()
     return 0
 

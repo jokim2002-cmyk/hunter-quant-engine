@@ -679,3 +679,66 @@ Status: RECORDED REPLAY EVALUATION FOUNDATION IMPLEMENTED; SECURE DATA-ONLY PROB
 - App Today Report integration follows visual review
 
 Next: run replay probe, inspect report, then wire it into Today Report.
+
+## Current Priority — App-Native Recorded Replay Evidence
+
+Status: IMPLEMENTED; OPERATOR VISUAL REVIEW REQUIRED.
+
+- Prefer verified current-day recorded replay over stale daily output
+- Show LONG/SHORT/NEUTRAL and CE/PE evaluation counts
+- Keep execution and P&L claims blocked
+- Preserve the current-day stale-report guard
+
+Next: open HQE App → Today Report and verify the operator view.
+
+## Current Priority — Automatic Daily Report Lifecycle
+
+Status: AUTOMATIC DAILY WORKFLOW IMPLEMENTED; LIVE CURRENT-DAY VERIFICATION REQUIRED.
+
+- App startup automatically starts the data-only daily worker
+- During market hours it retries every five minutes
+- Current-day replay evidence is published only after all genuine data guards pass
+- Today Report remains date-locked and cannot open stale evidence
+
+Next: live current-day automatic run, Today Report visual review, then commit and push.
+
+## Current Priority — Honest Broker/Auth Operator State
+
+Status: TOKEN EXPIRY UI WARNING AND PAPER-WATCH START GATE IMPLEMENTED; VISUAL REVIEW REQUIRED.
+
+- Expired/invalid FYERS token must be explicit on Overview
+- Data Ready must never remain visible after an auth failure
+- Running process is not equivalent to fresh market-data readiness
+- Start Paper Watch fails closed until today's data-only auth path is verified
+
+Next: visual review, token refresh, automatic retry and current-day report verification.
+
+## Current Priority — Deterministic FYERS Auth Recovery
+
+Status: SANITIZED TOKEN-EXCHANGE DIAGNOSTICS IMPLEMENTED; LIVE RETRY REQUIRED.
+
+- Generic exception-only popup replaced with exact safe FYERS code/message
+- Full redirect URL paste is accepted
+- No credential or token values are printed
+
+Next: perform one fresh authorization exchange and resolve the returned FYERS cause.
+
+## Current Priority — Expiry-Day Data Continuity
+
+Status: EXPIRY-DAY NEXT-WEEK DATA SELECTION IMPLEMENTED; LIVE VERIFICATION REQUIRED.
+
+- Same-day expiry rows are not admitted through the DTE>=1 guard
+- The next genuine FYERS-listed weekly expiry is selected automatically
+- Existing premium and safety guards are preserved
+
+Next: live workflow completion and Today Report visual review.
+
+## Current Priority — Honest Paper-Watch Runtime State
+
+Status: VERIFIED READY CARD OVERRIDE IMPLEMENTED; VISUAL REVIEW REQUIRED.
+
+- Historical fetch failure is not shown as the current runtime state
+- Current-day workflow proof and actual process state remain separate
+- READY TO START never means a process is already running
+
+Next: Overview visual approval, then final commit and push.

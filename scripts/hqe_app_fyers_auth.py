@@ -282,6 +282,106 @@ def open_login_browser(client_id: str, secret_key: str, redirect_uri: str) -> st
     return url
 
 
+def _sanitize_fyers_message(value: object) -> str:
+    text = str(value or "").strip()
+    if not text:
+        return ""
+
+    replacements = (
+        "access_token",
+        "refresh_token",
+        "secret_key",
+        "client_secret",
+        "auth_code",
+    )
+    lowered = text.lower()
+    for marker in replacements:
+        start = 0
+        while True:
+            index = lowered.find(marker, start)
+            if index < 0:
+                break
+            separator = -1
+            for candidate in ("=", ":", "%3d"):
+                found = lowered.find(candidate, index + len(marker))
+                if found >= 0 and (
+                    separator < 0 or found < separator
+                ):
+                    separator = found
+            if separator < 0:
+                start = index + len(marker)
+                continue
+
+            value_start = separator + (
+                3 if lowered.startswith("%3d", separator) else 1
+            )
+            value_end = len(text)
+            for boundary in ("&", ",", " ", "\"", "'", "}"):
+                found = text.find(boundary, value_start)
+                if found >= 0:
+                    value_end = min(value_end, found)
+
+            text = (
+                text[:value_start]
+                + "[REDACTED]"
+                + text[value_end:]
+            )
+            lowered = text.lower()
+            start = value_start + len("[REDACTED]")
+
+    return " ".join(text.split())[:500]
+
+
+def normalize_authorization_code(value: str) -> str:
+    from urllib.parse import parse_qs, unquote, urlparse
+
+    raw = unquote(str(value or "").strip())
+    if not raw:
+        raise ValueError("Authorization code is required.")
+
+    if "auth_code=" in raw:
+        parsed = urlparse(raw)
+        query = parse_qs(parsed.query)
+        code = str((query.get("auth_code") or [""])[0]).strip()
+
+        if not code and "auth_code=" in parsed.fragment:
+            fragment = parse_qs(parsed.fragment)
+            code = str(
+                (fragment.get("auth_code") or [""])[0]
+            ).strip()
+
+        if not code:
+            tail = raw.split("auth_code=", 1)[1]
+            code = tail.split("&", 1)[0].strip()
+
+        if not code:
+            raise ValueError(
+                "Redirect URL does not contain a usable auth_code."
+            )
+        return code
+
+    return raw.split("&", 1)[0].strip()
+
+
+def _fyers_exchange_error(response: dict[str, Any]) -> str:
+    code = response.get("code", "")
+    message = (
+        response.get("message")
+        or response.get("msg")
+        or response.get("error")
+        or response.get("s")
+        or "Fyers access token was not returned."
+    )
+    safe_message = _sanitize_fyers_message(message)
+    safe_code = _sanitize_fyers_message(code)
+    if safe_code:
+        return (
+            "Fyers token exchange rejected: "
+            f"code={safe_code}; message={safe_message}"
+        )
+    return f"Fyers token exchange rejected: {safe_message}"
+
+
 def exchange_auth_code(
     *,
     client_id: str,
@@ -289,22 +389,48 @@ def exchange_auth_code(
     redirect_uri: str,
     auth_code: str,
 ) -> dict[str, Any]:
-    if not auth_code.strip():
-        raise ValueError("Authorization code is required.")
+    clean_client_id = client_id.strip()
+    clean_secret_key = secret_key.strip()
+    clean_redirect_uri = redirect_uri.strip()
+    clean_auth_code = normalize_authorization_code(auth_code)
+
+    if not clean_client_id:
+        raise ValueError("Fyers Client ID is required.")
+    if not clean_secret_key:
+        raise ValueError("Fyers Secret Key is required.")
+    if not clean_redirect_uri:
+        raise ValueError("Fyers Redirect URI is required.")
+
     session = _session_model(
-        client_id.strip(), secret_key.strip(), redirect_uri.strip()
+        clean_client_id,
+        clean_secret_key,
+        clean_redirect_uri,
     )
-    session.set_token(auth_code.strip())
-    response = session.generate_token()
+    session.set_token(clean_auth_code)
+
+    try:
+        response = session.generate_token()
+    except Exception as exc:
+        detail = _sanitize_fyers_message(str(exc))
+        raise RuntimeError(
+            "Fyers token exchange request failed: "
+            f"{type(exc).__name__}"
+            + (f": {detail}" if detail else "")
+        ) from exc
+
     if not isinstance(response, dict):
-        raise RuntimeError("Fyers returned an invalid token response.")
+        raise RuntimeError(
+            "Fyers returned an invalid token response."
+        )
+
     token = str(response.get("access_token", "")).strip()
     if not token:
-        raise RuntimeError("Fyers access token was not returned.")
+        raise RuntimeError(_fyers_exchange_error(response))
+
     status = merge_and_save(
-        client_id=client_id,
-        secret_key=secret_key,
-        redirect_uri=redirect_uri,
+        client_id=clean_client_id,
+        secret_key=clean_secret_key,
+        redirect_uri=clean_redirect_uri,
         access_token=token,
     )
     return {
@@ -315,6 +441,7 @@ def exchange_auth_code(
         "real_orders_enabled": False,
         "broker_execution_enabled": False,
     }
+
 
 
 def guard_payload() -> dict[str, Any]:

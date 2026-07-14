@@ -982,3 +982,75 @@ Next: run the explicit secure historical data-only probe.
 - No real orders, broker execution, auto trading or option selling
 
 Next: explicit secure recorded-data replay evaluation probe.
+
+## HQE Recorded Replay → Today Report Integration
+
+- Today Report prioritizes verified current-day recorded replay evidence
+- Replay decision counts and accepted CE/PE evaluations are visible in-app
+- Recorded replay JSON evidence has a dedicated app button
+- Stale dates, missing files and incomplete safety truth are blocked
+- No historical trade, position or P&L is claimed
+- Real orders, broker execution, auto trading and option selling remain blocked
+
+Next: operator visual review, then commit and push.
+
+## HQE Automatic Daily Current-Day Workflow
+
+- Starts automatically in a daemon background thread after HQE App opens
+- Detects IST date, weekday and market window
+- Loads the FYERS token from the Windows DPAPI secure store
+- Refreshes genuine option-chain CE and PE data
+- Fetches selected CE and PE 5-minute historical candles
+- Rebuilds the truthful bidirectional SMC recorded replay report
+- Retries every five minutes while market data is incomplete
+- Weekend, pre-market, holiday/data-unavailable and token-refresh states fail safely
+- No historical execution, position or PnL is fabricated
+- No real orders, broker execution, auto trading or option selling
+
+Next: reopen HQE App and verify the 14 Jul automatic workflow status.
+
+## HQE Visible Token Expiry and Paper-Watch Start Gate
+
+- Overview cards now override stale broker/data labels when today's FYERS token fails
+- A visible token-refresh warning appears once per detected auth failure
+- Quick Action Start Paper Watch is blocked before process launch
+- Paper-Watch Session Control start is blocked by the same gate
+- A stored token alone is not treated as validity proof
+- Current-day automatic data-only workflow status is the readiness source of truth
+- Existing running process is labelled as fresh-data blocked rather than healthy
+- No order, position, broker execution or auto trading was enabled
+
+Next: reopen HQE App with the expired token and visually verify the warning and blocked Start Paper Watch action.
+
+## HQE Fyers Token Exchange Diagnostics
+
+- Accepts either a raw authorization code or the complete FYERS redirect URL
+- Preserves and displays the sanitized FYERS response code and message
+- Redacts authorization codes, access tokens and secret-key values
+- Failed exchange never overwrites the previously stored token
+- Successful exchange remains Windows-DPAPI encrypted
+- Real orders and broker execution remain blocked
+
+Next: retry one fresh login and use the visible sanitized error for the exact repair.
+
+## HQE Expiry-Day Next-Week Option Selection
+
+- Confirmed FYERS returned 41 CE and 41 PE rows with DTE=0 on 14 Jul 2026
+- Kept the existing selected-history safety guard at DTE>=1
+- On DTE=0 only, the automatic workflow now requests the nearest later listed expiry
+- Normal non-expiry days keep the original nearest-expiry request
+- Premium guards remain unchanged at 20 to 200
+- No option selling, position opening, P&L calculation, real order or broker execution
+
+Next: reopen HQE App and verify the live current-day workflow reaches selected history.
+
+## HQE Truthful Paper-Watch Ready Card
+
+- Current-day COMPLETE workflow now overrides stale historical Paper Watch failures
+- Verified and stopped state displays READY TO START
+- Verified and running state displays RUNNING WITH VERIFIED DATA PATH
+- Broker and market-data cards display current-day verified truth
+- Expired or unverified auth remains fail-closed
+- No position, P&L, order or broker execution was enabled
+
+Next: reopen HQE and visually confirm the Overview cards.
