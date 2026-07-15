@@ -91,6 +91,8 @@ class Candle:
     volume: float = 0.0
     last_traded_price: float | None = None
     dte: int | None = None
+    symbol: str = ""
+    signal_side: str = ""
 
 
 @dataclass(frozen=True)
@@ -182,6 +184,18 @@ def read_candles(path: Path, *, premium: bool) -> list[Candle]:
                 to_float(row, "last_traded_price", "ltp", "close") if premium else None
             )
             dte = to_int(row, "dte", "days_to_expiry", default=1) if premium else None
+
+            raw_side = (
+                row.get("signal_side")
+                or row.get("option_type")
+                or ""
+            ).strip().upper()
+
+            if raw_side == "CE":
+                raw_side = "CE_BUY"
+            elif raw_side == "PE":
+                raw_side = "PE_BUY"
+
             rows.append(
                 Candle(
                     dt=dt,
@@ -192,6 +206,8 @@ def read_candles(path: Path, *, premium: bool) -> list[Candle]:
                     volume=to_float(row, "volume", default=0.0),
                     last_traded_price=last_traded_price,
                     dte=dte,
+                    symbol=(row.get("symbol") or row.get("tradingsymbol") or "").strip(),
+                    signal_side=raw_side if premium else "",
                 )
             )
     return sorted(rows, key=lambda candle: candle.dt)
@@ -365,11 +381,52 @@ def append_csv(path: Path, row: dict[str, Any], fieldnames: Iterable[str]) -> No
         writer.writerow(row)
 
 
-def evaluate_open_position(state: dict[str, Any], latest_premium: Candle, now: datetime) -> tuple[dict[str, Any], dict[str, Any]]:
+def select_position_premium_candle(
+    premium_candles: list[Candle],
+    state: dict[str, Any],
+) -> Candle | None:
+    side = str(state.get("side", "")).strip().upper()
+    symbol = str(state.get("option_symbol", "")).strip()
+
+    exact = [
+        candle
+        for candle in premium_candles
+        if candle.signal_side == side
+        and (not symbol or candle.symbol == symbol)
+    ]
+    if exact:
+        return exact[-1]
+
+    same_side = [
+        candle
+        for candle in premium_candles
+        if candle.signal_side == side
+    ]
+    if same_side:
+        return same_side[-1]
+
+    # Legacy single-premium CSV files do not contain side/symbol metadata.
+    # Use their latest candle only when the complete stream is unlabelled.
+    if premium_candles and not any(
+        candle.signal_side for candle in premium_candles
+    ):
+        return premium_candles[-1]
+
+    return None
+
+
+def evaluate_open_position(
+    state: dict[str, Any],
+    latest_premium: Candle,
+    now: datetime,
+) -> tuple[dict[str, Any], dict[str, Any]]:
     entry = float(state["entry"])
     stop_loss = float(state["stop_loss"])
     target = float(state["target"])
     quantity = int(state.get("quantity", 1))
+    side = str(state.get("side", ""))
+    option_symbol = str(state.get("option_symbol", ""))
+
     exit_price: float | None = None
     exit_reason = "HOLD_OPEN_PAPER_POSITION"
 
@@ -383,8 +440,17 @@ def evaluate_open_position(state: dict[str, Any], latest_premium: Candle, now: d
         exit_price = latest_premium.last_traded_price or latest_premium.close
         exit_reason = "EOD_EXIT_PAPER_ONLY"
 
+    base_event = {
+        "side": side,
+        "option_symbol": option_symbol,
+        "entry": entry,
+        "stop_loss": stop_loss,
+        "target": target,
+    }
+
     if exit_price is None:
         event = {
+            **base_event,
             "event": "POSITION_HELD",
             "exit_reason": exit_reason,
             "paper_pnl": 0.0,
@@ -393,20 +459,28 @@ def evaluate_open_position(state: dict[str, Any], latest_premium: Candle, now: d
         return state, event
 
     pnl = round((float(exit_price) - entry) * quantity, 2)
+
     closed_state = {
         "status": "FLAT",
         "paper_only": True,
         "module": MODULE_ID,
+        "side": side,
+        "option_symbol": option_symbol,
+        "last_entry": entry,
+        "last_stop_loss": stop_loss,
+        "last_target": target,
         "last_exit_time": now.isoformat(timespec="seconds"),
         "last_exit_price": round(float(exit_price), 2),
         "last_exit_reason": exit_reason,
         "last_paper_pnl": pnl,
-        "last_closed_side": state.get("side", "PE_BUY"),
+        "last_closed_side": side,
         "broker_execution_allowed": False,
         "real_orders_allowed": False,
         "auto_trading_allowed": False,
     }
+
     event = {
+        **base_event,
         "event": "POSITION_CLOSED",
         "exit_reason": exit_reason,
         "exit_price": round(float(exit_price), 2),
@@ -441,7 +515,12 @@ def write_report(
     report_path.parent.mkdir(parents=True, exist_ok=True)
     signal_text = "NO_SIGNAL"
     if signal and signal.signal_generated:
-        signal_text = "SIGNAL_GENERATED_PE_BUY_PAPER_ONLY"
+        signal_side = (
+            "CE_BUY"
+            if "OPTION_SIDE=CE_BUY" in signal.pe_reason
+            else "PE_BUY"
+        )
+        signal_text = f"SIGNAL_GENERATED_{signal_side}_PAPER_ONLY"
     lines = [
         f"# HQE Module {MODULE_ID} - {MODULE_NAME}",
         "",
@@ -503,10 +582,30 @@ def run_one_cycle(paths: SupervisorPaths, now: datetime) -> dict[str, Any]:
     }
 
     if ready:
-        latest_premium = premium_candles[-1]
         if state.get("status") == "OPEN":
-            state, event = evaluate_open_position(state, latest_premium, now)
-            event.update({"module": MODULE_ID, "paper_only": True})
+            latest_premium = select_position_premium_candle(
+                premium_candles,
+                state,
+            )
+
+            if latest_premium is None:
+                event.update(
+                    {
+                        "event": "POSITION_HELD",
+                        "exit_reason": "ACTIVE_OPTION_CANDLE_MISSING",
+                        "paper_pnl": 0.0,
+                        "status": "OPEN",
+                        "side": state.get("side", ""),
+                        "option_symbol": state.get("option_symbol", ""),
+                    }
+                )
+            else:
+                state, event = evaluate_open_position(
+                    state,
+                    latest_premium,
+                    now,
+                )
+                event.update({"module": MODULE_ID, "paper_only": True})
         else:
             signal = evaluate_active_smc_candidate(paths.index_csv, paths.premium_csv, index_candles, premium_candles)
             event.update(
@@ -522,16 +621,36 @@ def run_one_cycle(paths: SupervisorPaths, now: datetime) -> dict[str, Any]:
                 }
             )
             if signal.signal_generated:
+                signal_side = (
+                    "CE_BUY"
+                    if "OPTION_SIDE=CE_BUY" in signal.pe_reason
+                    else "PE_BUY"
+                )
+
+                selected_premium = next(
+                    (
+                        candle
+                        for candle in reversed(premium_candles)
+                        if candle.signal_side == signal_side
+                    ),
+                    None,
+                )
+
                 state = {
                     "status": "OPEN",
                     "paper_only": True,
                     "module": MODULE_ID,
-                    "side": (
-                        "CE_BUY"
-                        if "OPTION_SIDE=CE_BUY" in signal.pe_reason
-                        else "PE_BUY"
+                    "side": signal_side,
+                    "option_symbol": (
+                        selected_premium.symbol
+                        if selected_premium is not None
+                        else ""
                     ),
-                    "candidate": LOCKED_CANDIDATE["name"],
+                    "candidate": (
+                        ACTIVE_SMC_CANDIDATE["name"]
+                        if "SMC_DECISION=" in signal.pe_reason
+                        else LOCKED_CANDIDATE["name"]
+                    ),
                     "entry_time": now.isoformat(timespec="seconds"),
                     "entry": signal.entry,
                     "stop_loss": signal.stop_loss,
@@ -543,6 +662,8 @@ def run_one_cycle(paths: SupervisorPaths, now: datetime) -> dict[str, Any]:
                     "real_money_allowed": False,
                 }
                 event["signal_side"] = state["side"]
+                event["side"] = state["side"]
+                event["option_symbol"] = state["option_symbol"]
                 event["direction_reason"] = signal.pe_reason
                 event["candidate"] = (
                     ACTIVE_SMC_CANDIDATE["name"]
