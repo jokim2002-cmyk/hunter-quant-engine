@@ -1,4 +1,5 @@
-﻿from datetime import datetime
+﻿import csv
+from datetime import datetime
 from pathlib import Path
 
 from scripts import run_forward_intraday_paper_supervisor as s
@@ -223,3 +224,135 @@ def test_legacy_unlabelled_premium_stream_uses_latest_candle():
     )
 
     assert selected is second
+
+
+
+def test_open_event_summary_and_ledger_include_option_symbol(
+    monkeypatch,
+    tmp_path,
+):
+    ce = premium("CE_BUY", "NSE:TESTCE")
+    pe = premium("PE_BUY", "NSE:TESTPE")
+
+    paths, _ = patch_cycle_io(
+        monkeypatch,
+        tmp_path,
+        index_candles(),
+        [ce, pe],
+        {"status": "FLAT", "paper_only": True},
+    )
+
+    calls = []
+
+    monkeypatch.setattr(
+        s,
+        "append_csv",
+        lambda path, row, fieldnames:
+            calls.append((Path(path).name, dict(row), list(fieldnames))),
+    )
+
+    monkeypatch.setattr(
+        s,
+        "evaluate_active_smc_candidate",
+        lambda *args, **kwargs: s.SignalDecision(
+            signal_generated=True,
+            pe_reason=(
+                "SMC_DECISION=LONG;"
+                "OPTION_SIDE=CE_BUY;"
+                "ER20_OK(0.5000)"
+            ),
+            entry=100.0,
+            stop_loss=60.0,
+            target=220.0,
+            er20=0.5,
+            dte=6,
+            ltp=100.0,
+        ),
+    )
+
+    summary = s.run_one_cycle(paths, NOW)
+
+    ledger_call = next(
+        call
+        for call in calls
+        if call[0] == "ledger.csv"
+    )
+
+    _, ledger_row, ledger_fields = ledger_call
+
+    assert summary["option_symbol"] == "NSE:TESTCE"
+    assert ledger_row["option_symbol"] == "NSE:TESTCE"
+    assert "option_symbol" in ledger_fields
+
+
+def test_existing_ledger_schema_migrates_option_symbol_column(tmp_path):
+    ledger = tmp_path / "legacy_ledger.csv"
+
+    ledger.write_text(
+        "timestamp,module,event,side,entry,stop_loss,target,"
+        "exit_reason,paper_pnl,paper_only\n"
+        "2026-07-15T12:55:00,131,POSITION_OPENED,PE_BUY,"
+        "179.0,107.4,393.8,,0.0,True\n",
+        encoding="utf-8",
+    )
+
+    fields = [
+        "timestamp",
+        "module",
+        "event",
+        "side",
+        "option_symbol",
+        "entry",
+        "stop_loss",
+        "target",
+        "exit_reason",
+        "paper_pnl",
+        "paper_only",
+    ]
+
+    s.ensure_csv_schema(ledger, fields)
+
+    with ledger.open(
+        "r",
+        newline="",
+        encoding="utf-8-sig",
+    ) as handle:
+        reader = csv.DictReader(handle)
+        rows = list(reader)
+
+    assert reader.fieldnames == fields
+    assert rows[0]["side"] == "PE_BUY"
+    assert rows[0]["option_symbol"] == ""
+    assert rows[0]["entry"] == "179.0"
+
+
+
+def test_closed_position_preserves_active_candidate_metadata():
+    state = {
+        "status": "OPEN",
+        "side": "PE_BUY",
+        "option_symbol": "NSE:TESTPE",
+        "candidate": s.ACTIVE_SMC_CANDIDATE["name"],
+        "entry": 100.0,
+        "stop_loss": 60.0,
+        "target": 120.0,
+        "quantity": 1,
+    }
+
+    closed, event = s.evaluate_open_position(
+        state,
+        premium(
+            "PE_BUY",
+            "NSE:TESTPE",
+            high=125.0,
+            low=95.0,
+            close=122.0,
+        ),
+        NOW,
+    )
+
+    expected = s.ACTIVE_SMC_CANDIDATE["name"]
+
+    assert event["event"] == "POSITION_CLOSED"
+    assert event["candidate"] == expected
+    assert closed["candidate"] == expected

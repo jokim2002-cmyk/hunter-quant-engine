@@ -426,6 +426,7 @@ def evaluate_open_position(
     quantity = int(state.get("quantity", 1))
     side = str(state.get("side", ""))
     option_symbol = str(state.get("option_symbol", ""))
+    candidate = str(state.get("candidate", ""))
 
     exit_price: float | None = None
     exit_reason = "HOLD_OPEN_PAPER_POSITION"
@@ -443,6 +444,7 @@ def evaluate_open_position(
     base_event = {
         "side": side,
         "option_symbol": option_symbol,
+        "candidate": candidate,
         "entry": entry,
         "stop_loss": stop_loss,
         "target": target,
@@ -466,6 +468,7 @@ def evaluate_open_position(
         "module": MODULE_ID,
         "side": side,
         "option_symbol": option_symbol,
+        "candidate": candidate,
         "last_entry": entry,
         "last_stop_loss": stop_loss,
         "last_target": target,
@@ -556,6 +559,39 @@ def write_report(
         "```",
     ]
     report_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+
+def ensure_csv_schema(
+    path: Path,
+    fieldnames: list[str],
+) -> None:
+    """Safely migrate an existing CSV when new ledger columns are added."""
+    if not path.exists() or path.stat().st_size == 0:
+        return
+
+    with path.open("r", newline="", encoding="utf-8-sig") as handle:
+        reader = csv.DictReader(handle)
+        existing_fields = list(reader.fieldnames or [])
+
+        if existing_fields == fieldnames:
+            return
+
+        rows = [
+            {
+                field: row.get(field, "")
+                for field in fieldnames
+            }
+            for row in reader
+        ]
+
+    temporary = path.with_suffix(path.suffix + ".schema.tmp")
+
+    with temporary.open("w", newline="", encoding="utf-8") as handle:
+        writer = csv.DictWriter(handle, fieldnames=fieldnames)
+        writer.writeheader()
+        writer.writerows(rows)
+
+    temporary.replace(path)
 
 
 def run_one_cycle(paths: SupervisorPaths, now: datetime) -> dict[str, Any]:
@@ -722,6 +758,22 @@ def run_one_cycle(paths: SupervisorPaths, now: datetime) -> dict[str, Any]:
     )
 
     if event.get("event") in {"POSITION_OPENED", "POSITION_CLOSED"}:
+        ledger_fields = [
+            "timestamp",
+            "module",
+            "event",
+            "side",
+            "option_symbol",
+            "entry",
+            "stop_loss",
+            "target",
+            "exit_reason",
+            "paper_pnl",
+            "paper_only",
+        ]
+
+        ensure_csv_schema(paths.ledger_csv, ledger_fields)
+
         append_csv(
             paths.ledger_csv,
             {
@@ -729,6 +781,10 @@ def run_one_cycle(paths: SupervisorPaths, now: datetime) -> dict[str, Any]:
                 "module": MODULE_ID,
                 "event": event.get("event", ""),
                 "side": state.get("side", event.get("side", "PE_BUY")),
+                "option_symbol": event.get(
+                    "option_symbol",
+                    state.get("option_symbol", ""),
+                ),
                 "entry": event.get("entry", state.get("entry", "")),
                 "stop_loss": event.get("stop_loss", state.get("stop_loss", "")),
                 "target": event.get("target", state.get("target", "")),
@@ -736,18 +792,7 @@ def run_one_cycle(paths: SupervisorPaths, now: datetime) -> dict[str, Any]:
                 "paper_pnl": event.get("paper_pnl", 0.0),
                 "paper_only": True,
             },
-            [
-                "timestamp",
-                "module",
-                "event",
-                "side",
-                "entry",
-                "stop_loss",
-                "target",
-                "exit_reason",
-                "paper_pnl",
-                "paper_only",
-            ],
+            ledger_fields,
         )
 
     ledger_status = evaluator_status_text(paths.ledger_csv)
@@ -783,6 +828,10 @@ def run_one_cycle(paths: SupervisorPaths, now: datetime) -> dict[str, Any]:
         "signal_side": event.get(
             "signal_side",
             state.get("side", "NO_TRADE"),
+        ),
+        "option_symbol": event.get(
+            "option_symbol",
+            state.get("option_symbol", ""),
         ),
         "event": event.get("event", ""),
         "direction_reason": event.get(
