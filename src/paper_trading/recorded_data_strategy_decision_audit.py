@@ -660,8 +660,8 @@ def _decision_for_smc_parameter_gate(
         direction="SHORT",
     )
 
-    bullish_setup = bullish_liquidity and bullish_structure and bullish_entry_zone
-    bearish_setup = bearish_liquidity and bearish_structure and bearish_entry_zone
+    bullish_setup = bullish_structure and (bullish_liquidity or bullish_entry_zone)
+    bearish_setup = bearish_structure and (bearish_liquidity or bearish_entry_zone)
 
     reason = (
         "smc_parameter_gate:"
