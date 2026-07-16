@@ -1084,3 +1084,30 @@ Next: visual operator approval before commit, push and EXE rebuild.
 - Overview controls, Paper Watch behavior and paper/data-only safety remain unchanged.
 
 Next: visually approve all three populated category pages.
+
+<!-- HQE_NEXT_CORE_PATH_MULTI_STRATEGY_V1 -->
+## Next core development path: Multi-Strategy HQE
+
+The verified product release at `c5704aa` remains the protected working
+baseline. No engine or runtime change is authorized merely for exploration.
+
+The next core project is the versioned multi-strategy registry/import/selection
+architecture defined in:
+
+- `docs/HQE_MULTI_STRATEGY_ROADMAP.md`
+- `docs/HQE_MASTER_HANDOVER_PROMPT.md`
+
+Work must begin with a read-only architecture audit. The existing strategy must
+remain working through a compatibility adapter. Real orders, broker execution,
+auto trading and real money remain disabled.
+
+<!-- HQE_MULTI_STRATEGY_PHASE4H_CHECKPOINT_V1 -->
+## Multi-Strategy checkpoint: Phase 4H
+
+Phase 0 through Phase 3 are complete. Phase 4 foundations and safety evidence
+are implemented through checkpoint 4H, but canonical one-active-strategy
+forward-paper lifecycle integration is still pending. Actual Product UI strategy
+selection, reviewed package installation, parallel isolated paper tests and
+release closure remain pending.
+
+See `docs/HQE_MULTI_STRATEGY_PHASE4H_CHECKPOINT.md`.

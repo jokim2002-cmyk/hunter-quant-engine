@@ -2768,3 +2768,17 @@ Safety: this is paper/simulation phase-close evidence only. It does not run back
 - Phase 12 status after Module UUUUU: complete.
 - Safe roadmap status after Module UUUUU: freeze-ready.
 - Further feature coding recommended after Module UUUUU: false.
+
+<!-- HQE_PROJECT_CONTINUATION_DOCS_V1 -->
+## Project continuation
+
+The current paper-only release is a protected working baseline.
+
+For the next development phase, read:
+
+- [HQE Multi-Strategy Roadmap](docs/HQE_MULTI_STRATEGY_ROADMAP.md)
+- [HQE Master Handover Prompt](docs/HQE_MASTER_HANDOVER_PROMPT.md)
+
+The next core path is multi-strategy registry, import, selection, backtest and
+forward paper testing. Existing working paper-trading behavior must not be
+changed until the compatibility architecture is approved and tested.
