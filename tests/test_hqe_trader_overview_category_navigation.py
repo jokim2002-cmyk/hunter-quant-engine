@@ -94,7 +94,7 @@ def test_overview_has_only_four_new_trader_controls():
         "Refresh Status",
         "Start Paper Trading",
         "Stop Paper Trading",
-        "Open Daily Report",
+        "Open Today Report",
     }
 
 

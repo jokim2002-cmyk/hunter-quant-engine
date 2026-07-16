@@ -79,25 +79,46 @@ def start(workspace: Path, user_id: str, symbol: str) -> Dict[str, Any]:
     if current["process_alive"]:
         current.update({"started": False, "reason": "already_running"})
         return current
+
     repo = repo_root()
+    executable = (
+        repo / ".venv" / "Scripts" / "pythonw.exe"
+        if os.name == "nt"
+        else repo / ".venv" / "bin" / "python"
+    )
+    fallback = repo / ".venv" / "Scripts" / "python.exe"
+    if not executable.is_file() and fallback.is_file():
+        executable = fallback
+
     command = [
-        str(repo / ".venv" / "Scripts" / "python.exe"),
+        str(executable),
         str(repo / "scripts" / "hqe_market_day_persistent_paper_watch_loop.py"),
-        "--workspace", str(workspace),
-        "--user-id", user_id,
-        "--symbol", symbol,
-        "--interval-seconds", "300",
+        "--workspace",
+        str(workspace),
+        "--user-id",
+        user_id,
+        "--symbol",
+        symbol,
+        "--interval-seconds",
+        "300",
         "--run-data-fetch",
     ]
+
     startupinfo = None
     if os.name == "nt":
         startupinfo = subprocess.STARTUPINFO()
         startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+
     proc = subprocess.Popen(
-        command, cwd=str(repo), stdin=subprocess.DEVNULL,
-        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+        command,
+        cwd=str(repo),
+        stdin=subprocess.DEVNULL,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
         creationflags=CREATE_NO_WINDOW | DETACHED_PROCESS,
-        startupinfo=startupinfo)
+        startupinfo=startupinfo,
+    )
+
     payload = {
         "version": VERSION,
         "generated_at_utc": utc_now(),
@@ -105,6 +126,7 @@ def start(workspace: Path, user_id: str, symbol: str) -> Dict[str, Any]:
         "status": "RUNNING_HIDDEN",
         "pid": proc.pid,
         "visible_terminal_created": False,
+        "pythonw_used": executable.name.lower() == "pythonw.exe",
         "started": True,
         "real_orders_enabled": False,
         "broker_execution_enabled": False,

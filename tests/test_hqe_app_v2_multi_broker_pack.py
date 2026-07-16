@@ -1,4 +1,4 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 import importlib.util
 import json
@@ -178,17 +178,21 @@ def test_hidden_controller_command_is_paper_watch_only(monkeypatch, tmp_path):
         def poll(self):
             return None
 
-        def terminate(self):
-            return None
-
-        def wait(self, timeout=None):
-            return 0
-
     def fake_popen(command, **kwargs):
         captured["command"] = command
         captured["kwargs"] = kwargs
         return FakeProcess()
 
+    monkeypatch.setattr(
+        module,
+        "find_existing_paper_watch_processes",
+        lambda: [],
+    )
+    monkeypatch.setattr(
+        module,
+        "paper_product_status",
+        lambda workspace: {"running": False},
+    )
     monkeypatch.setattr(module.subprocess, "Popen", fake_popen)
 
     controller = module.HiddenPaperWatchController(
@@ -200,8 +204,9 @@ def test_hidden_controller_command_is_paper_watch_only(monkeypatch, tmp_path):
     result = controller.start()
     command_text = " ".join(captured["command"]).lower()
 
-    assert result["status"] == "RUNNING_HIDDEN"
-    assert "hqe_market_day_persistent_paper_watch_loop.py" in command_text
+    assert result["status"] == "RUNNING_CANONICAL_PAPER_RUNTIME"
+    assert "hqe_paper_product_runtime.py" in command_text
+    assert "hqe_market_day_persistent_paper_watch_loop.py" not in command_text
     assert "--run-data-fetch" in command_text
     assert "place_order" not in command_text
     assert result["broker_execution_invoked"] is False

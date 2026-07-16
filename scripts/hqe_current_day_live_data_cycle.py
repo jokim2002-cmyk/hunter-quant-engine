@@ -12,6 +12,8 @@ from zoneinfo import ZoneInfo
 
 from hqe_fyers_candle_csv_writer import write_from_fetch_status
 
+CREATE_NO_WINDOW = 0x08000000 if os.name == "nt" else 0
+
 VERSION = "HQE_CURRENT_DAY_LIVE_DATA_CYCLE_V1"
 INDIA_TZ = ZoneInfo("Asia/Kolkata")
 STATUS_FILENAME = "HQE_CURRENT_DAY_LIVE_DATA_CYCLE.json"
@@ -89,6 +91,7 @@ def run_cycle(
         text=True,
         timeout=120,
         env=child_env,
+        creationflags=CREATE_NO_WINDOW,
     )
 
     status = read_json(status_path)

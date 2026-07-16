@@ -93,11 +93,12 @@ def test_app_has_replay_today_report_integration():
     text = APP.read_text(encoding="utf-8-sig")
     for marker in (
         "recorded_replay_status",
-        "RECORDED REPLAY READY",
-        "Open Recorded Replay Evidence (JSON)",
-        "LONG -> CE BUY",
-        "SHORT -> PE BUY",
-        "NEUTRAL -> NO TRADE",
-        "No position or P&L was created",
+        "Recorded Replay",
+        "Separate Evaluation Evidence",
+        "Evaluation only",
+        "not a paper position",
+        "Accepted CE",
+        "Accepted PE",
+        "Open Replay Evidence",
     ):
         assert marker in text

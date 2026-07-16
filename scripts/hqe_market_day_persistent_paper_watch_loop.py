@@ -11,6 +11,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List
 
+CREATE_NO_WINDOW = 0x08000000 if os.name == "nt" else 0
+
 
 VERSION = "PERSISTENT_MARKET_DAY_PAPER_WATCH_LOOP_V1"
 DEFAULT_WORKSPACE = Path(r"D:\HQE_BACKTEST_RUNS\HQE_FORWARD_PAPER_VALIDATION_ACTIVE_20260708_204722")
@@ -188,6 +190,7 @@ def run_data_fetch(
             capture_output=True,
             text=True,
             timeout=120,
+            creationflags=CREATE_NO_WINDOW,
         )
         return {
             "attempted": True,

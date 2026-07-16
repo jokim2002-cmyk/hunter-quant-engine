@@ -9,6 +9,7 @@ import socket
 import subprocess
 import sys
 import threading
+import time
 import webbrowser
 from datetime import datetime
 from pathlib import Path
@@ -140,6 +141,13 @@ from hqe_current_day_session_guard import current_day_report_status
 from hqe_recorded_replay_today_report import recorded_replay_status
 from hqe_automatic_daily_current_day_workflow import launch_app_background_worker
 from hqe_paper_watch_auth_readiness_gate import paper_watch_auth_gate
+from hqe_paper_product_runtime import (
+    paper_product_snapshot,
+    runtime_paths as paper_product_runtime_paths,
+    status_payload as paper_product_status,
+)
+
+
 
 
 
@@ -460,37 +468,66 @@ class HiddenPaperWatchController:
         self.symbol = symbol
         self.process: Optional[subprocess.Popen[str]] = None
 
+    def status(self) -> Dict[str, Any]:
+        return paper_product_status(self.workspace)
+
     def is_running(self) -> bool:
-        if self.process is not None and self.process.poll() is None:
-            return True
-        return bool(find_existing_paper_watch_processes())
+        return bool(self.status().get("running"))
 
     def start(self) -> Dict[str, Any]:
+        current = self.status()
+        if current.get("running"):
+            return {
+                "started": False,
+                "status": "ALREADY_RUNNING_CANONICAL",
+                "pid": current.get("pid"),
+                "process_count": 1,
+                "runtime_path": current.get("runtime_path", ""),
+            }
+
         existing = find_existing_paper_watch_processes()
         existing_pid = canonical_watch_pid(existing)
-
         if existing_pid is not None:
             return {
                 "started": False,
                 "status": "ALREADY_RUNNING_GLOBAL",
                 "pid": existing_pid,
                 "process_count": len(existing),
-            }
-
-        if self.process is not None and self.process.poll() is None:
-            return {
-                "started": False,
-                "status": "ALREADY_RUNNING_IN_APP",
-                "pid": self.process.pid,
-                "process_count": 1,
+                "message": (
+                    "An older Paper Watch process is already running. "
+                    "Stop it before starting canonical Paper Trading."
+                ),
             }
 
         repo = repo_root()
-        python_exe = repo / ".venv" / "Scripts" / "python.exe"
-        script = repo / "scripts" / "hqe_market_day_persistent_paper_watch_loop.py"
+        executable = (
+            repo / ".venv" / "Scripts" / "pythonw.exe"
+            if os.name == "nt"
+            else repo / ".venv" / "bin" / "python"
+        )
+        fallback = repo / ".venv" / "Scripts" / "python.exe"
+        if not executable.is_file() and fallback.is_file():
+            executable = fallback
+
+        script = repo / "scripts" / "hqe_paper_product_runtime.py"
+        paths = paper_product_runtime_paths(self.workspace)
+        paths["folder"].mkdir(parents=True, exist_ok=True)
+
+        if not executable.is_file():
+            return {
+                "started": False,
+                "status": "PYTHON_NOT_FOUND",
+                "error": str(executable),
+            }
+        if not script.is_file():
+            return {
+                "started": False,
+                "status": "CANONICAL_RUNTIME_NOT_FOUND",
+                "error": str(script),
+            }
 
         command = [
-            str(python_exe),
+            str(executable),
             str(script),
             "--workspace",
             str(self.workspace),
@@ -504,50 +541,115 @@ class HiddenPaperWatchController:
         ]
 
         startupinfo = None
+        creationflags = CREATE_NO_WINDOW
         if os.name == "nt":
             startupinfo = subprocess.STARTUPINFO()
             startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+            creationflags |= getattr(subprocess, "DETACHED_PROCESS", 0)
 
-        self.process = subprocess.Popen(
-            command,
-            cwd=str(repo),
-            stdin=subprocess.DEVNULL,
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-            text=True,
-            creationflags=CREATE_NO_WINDOW,
-            startupinfo=startupinfo,
-        )
+        log_handle = paths["log"].open("a", encoding="utf-8")
+        try:
+            self.process = subprocess.Popen(
+                command,
+                cwd=str(repo),
+                stdin=subprocess.DEVNULL,
+                stdout=log_handle,
+                stderr=log_handle,
+                text=True,
+                creationflags=creationflags,
+                startupinfo=startupinfo,
+            )
+        finally:
+            log_handle.close()
+
+        deadline = time.monotonic() + 8.0
+        latest = self.status()
+        while time.monotonic() < deadline:
+            latest = self.status()
+            if latest.get("running"):
+                break
+            time.sleep(0.10)
+
+        if latest.get("running"):
+            return {
+                "started": True,
+                "status": "RUNNING_CANONICAL_PAPER_RUNTIME",
+                "pid": latest.get("pid"),
+                "runtime_path": latest.get("runtime_path", ""),
+                "log_path": latest.get("log_path", str(paths["log"])),
+                "visible_terminal_created": False,
+                "broker_execution_invoked": False,
+                "order_api_invoked": False,
+                "auto_trading_invoked": False,
+                "real_money_invoked": False,
+            }
 
         return {
             "started": True,
-            "status": "RUNNING_HIDDEN",
-            "pid": self.process.pid,
+            "status": "RUNNING_CANONICAL_PAPER_RUNTIME",
+            "pid": self.process.pid if self.process is not None else None,
+            "runtime_path": str(paths["runtime"]),
+            "log_path": str(paths["log"]),
+            "visible_terminal_created": False,
             "broker_execution_invoked": False,
             "order_api_invoked": False,
+            "auto_trading_invoked": False,
+            "real_money_invoked": False,
         }
 
     def stop(self) -> Dict[str, Any]:
-        if not self.is_running():
+        repo = repo_root()
+        python_exe = repo / ".venv" / "Scripts" / "python.exe"
+        script = repo / "scripts" / "hqe_paper_product_runtime.py"
+
+        if not python_exe.is_file() or not script.is_file():
             return {
                 "stopped": False,
-                "status": "NOT_RUNNING_IN_THIS_APP_SESSION",
+                "status": "CANONICAL_RUNTIME_STOP_UNAVAILABLE",
+                "error": str(script),
             }
 
-        assert self.process is not None
-        pid = self.process.pid
-        self.process.terminate()
+        completed = subprocess.run(
+            [
+                str(python_exe),
+                str(script),
+                "--workspace",
+                str(self.workspace),
+                "--stop",
+            ],
+            cwd=str(repo),
+            capture_output=True,
+            text=True,
+            timeout=30,
+            creationflags=CREATE_NO_WINDOW,
+        )
 
-        try:
-            self.process.wait(timeout=5)
-        except subprocess.TimeoutExpired:
-            self.process.kill()
-            self.process.wait(timeout=5)
+        payload: Dict[str, Any] = {}
+        if completed.stdout.strip():
+            try:
+                decoded = json.loads(completed.stdout)
+                if isinstance(decoded, dict):
+                    payload = decoded
+            except json.JSONDecodeError:
+                payload = {}
+
+        self.process = None
+
+        if completed.returncode != 0:
+            return {
+                "stopped": False,
+                "status": "CANONICAL_RUNTIME_STOP_FAILED",
+                "error": (
+                    completed.stderr.strip()
+                    or completed.stdout.strip()
+                    or f"Exit code {completed.returncode}"
+                ),
+            }
 
         return {
+            **payload,
             "stopped": True,
-            "status": "STOPPED_BY_OPERATOR",
-            "pid": pid,
+            "status": payload.get("status", "STOPPED_BY_OPERATOR"),
         }
 
 
@@ -1325,8 +1427,18 @@ def run_gui(args: argparse.Namespace) -> int:
             .title()
         )
 
-        if controller.is_running():
-            card_vars["watch"].set("Running in background")
+        product = paper_product_snapshot(workspace)
+        runtime_status = product["runtime_status"].replace("_", " ").title()
+        if product["running"]:
+            if product["position_status"] == "OPEN":
+                side = product["side"] or "PAPER POSITION"
+                card_vars["watch"].set(f"Running - {side} OPEN")
+            elif product["data_ready"]:
+                card_vars["watch"].set("Running - Paper lifecycle active")
+            else:
+                card_vars["watch"].set(runtime_status)
+        elif product["runtime_state_exists"]:
+            card_vars["watch"].set(runtime_status)
         else:
             watch = payload["paper_watch"]["watch_status"]
             card_vars["watch"].set(
@@ -1426,19 +1538,80 @@ def run_gui(args: argparse.Namespace) -> int:
             return
 
         result = controller.start()
-        footer_status.set(
-            result["status"].replace("_", " ").title()
-        )
+        status = str(result.get("status") or "UNKNOWN")
+
+        duplicate_statuses = {
+            "ALREADY_RUNNING_CANONICAL",
+            "ALREADY_RUNNING_GLOBAL",
+            "ALREADY_RUNNING_IN_APP",
+        }
+        if status in duplicate_statuses:
+            footer_status.set(
+                "Paper Trading already running. Duplicate start blocked."
+            )
+            card_vars["watch"].set(
+                "Running - duplicate start blocked"
+            )
+            root.after(500, refresh_status)
+            messagebox.showinfo(
+                "HQE Paper Trading",
+                "Paper Trading is already running.\n\n"
+                "Duplicate start was blocked safely. "
+                "No second runtime was started.",
+            )
+            return
+
+        footer_status.set(status.replace("_", " ").title())
+
+        if result.get("started"):
+            card_vars["watch"].set(
+                "Running - canonical paper runtime"
+            )
+            root.after(750, refresh_status)
+            root.after(2500, refresh_status)
+            messagebox.showinfo(
+                "HQE Paper Trading",
+                "Paper trading runtime started safely in the background.\n\n"
+                "Today Report shows the actual paper position, latest "
+                "price, paper P&L and ledger history.\n\n"
+                "No real order was sent.",
+            )
+            return
+
         card_vars["watch"].set(
-            "Running in background"
-            if result.get("started") or controller.is_running()
-            else result["status"].replace("_", " ").title()
+            status.replace("_", " ").title()
+        )
+        messagebox.showwarning(
+            "HQE Paper Trading",
+            result.get(
+                "message",
+                "Paper Trading did not start. Today Report shows "
+                "the exact waiting or error reason.",
+            ),
         )
 
     def stop_watch() -> None:
         result = controller.stop()
-        footer_status.set(result["status"].replace("_", " ").title())
+        status_text = result["status"].replace("_", " ").title()
+        footer_status.set(status_text)
         refresh_status()
+
+        if result.get("stopped"):
+            messagebox.showinfo(
+                "HQE Paper Trading",
+                "Paper trading runtime and its data collector were stopped safely.\n\n"
+                "Any open paper-position state remains saved for restart recovery. "
+                "No real order was sent.",
+            )
+        else:
+            messagebox.showwarning(
+                "HQE Paper Trading",
+                result.get(
+                    "error",
+                    "HQE could not confirm a safe stop. Check Today Report "
+                    "and the runtime log.",
+                ),
+            )
 
     daily_ops_status = tk.StringVar(value="Embedded live status loading...")
     daily_ops_refresh_job = {"id": None}
@@ -2456,128 +2629,431 @@ def run_gui(args: argparse.Namespace) -> int:
         ).pack(anchor="e", pady=(12, 0))
 
     def show_report_page() -> None:
-        page_title.set("Trader Report")
+        page_title.set("Paper Trading Today Report")
         page_subtitle.set(
-            "Current IST report, genuine recorded replay and evidence"
+            "Live paper position, P&L, ledger and separate replay evidence"
         )
         clear_page_panel()
 
+        product = paper_product_snapshot(workspace)
         replay = recorded_replay_status(workspace)
-        freshness = current_day_report_status(workspace)
 
-        if replay["ready"]:
-            decisions = replay["decision_counts"]
-            accepted = replay["accepted_side_counts"]
-            report_value = (
-                "RECORDED REPLAY READY\n"
-                f"Trading date: {replay['today_pretty']}\n"
-                f"Evaluations: {replay['evaluation_count']}\n"
-                f"SMC: LONG={decisions.get('LONG', 0)} | "
-                f"SHORT={decisions.get('SHORT', 0)} | "
-                f"NEUTRAL={decisions.get('NEUTRAL', 0)}\n"
-                f"Accepted: CE_BUY={accepted.get('CE_BUY', 0)} | "
-                f"PE_BUY={accepted.get('PE_BUY', 0)}\n"
-                "LONG -> CE BUY | SHORT -> PE BUY | "
-                "NEUTRAL -> NO TRADE\n"
-                "No position or P&L was created.\n"
-                f"Report: {replay['report_path']}"
+        # HQE_TODAY_REPORT_SCROLLABLE_COMPACT_V1
+        today_report_shell = tk.Frame(
+            page_panel,
+            bg=palette["background"],
+        )
+        today_report_shell.pack(fill="both", expand=True)
+
+        today_report_scroll_canvas = tk.Canvas(
+            today_report_shell,
+            bg=palette["background"],
+            highlightthickness=0,
+            borderwidth=0,
+        )
+        today_report_scrollbar = ttk.Scrollbar(
+            today_report_shell,
+            orient="vertical",
+            command=today_report_scroll_canvas.yview,
+        )
+        today_report_scroll_canvas.configure(
+            yscrollcommand=today_report_scrollbar.set,
+        )
+        today_report_scrollbar.pack(side="right", fill="y")
+        today_report_scroll_canvas.pack(
+            side="left",
+            fill="both",
+            expand=True,
+        )
+
+        today_report_inner = tk.Frame(
+            today_report_scroll_canvas,
+            bg=palette["background"],
+        )
+        today_report_window = today_report_scroll_canvas.create_window(
+            (0, 0),
+            window=today_report_inner,
+            anchor="nw",
+        )
+
+        def _sync_today_report_scroll(_event=None) -> None:
+            try:
+                today_report_scroll_canvas.itemconfigure(
+                    today_report_window,
+                    width=max(
+                        1,
+                        today_report_scroll_canvas.winfo_width(),
+                    ),
+                )
+                bounds = today_report_scroll_canvas.bbox("all")
+                if bounds is not None:
+                    today_report_scroll_canvas.configure(
+                        scrollregion=bounds,
+                    )
+            except tk.TclError:
+                return
+
+        def _today_report_mousewheel(event):
+            try:
+                delta = int(getattr(event, "delta", 0) or 0)
+                if delta == 0:
+                    return None
+                steps = max(1, abs(delta) // 120)
+                today_report_scroll_canvas.yview_scroll(
+                    -steps if delta > 0 else steps,
+                    "units",
+                )
+                return "break"
+            except tk.TclError:
+                return None
+
+        def _today_report_wheel_up(_event):
+            today_report_scroll_canvas.yview_scroll(-1, "units")
+            return "break"
+
+        def _today_report_wheel_down(_event):
+            today_report_scroll_canvas.yview_scroll(1, "units")
+            return "break"
+
+        def _bind_today_report_scroll(widget) -> None:
+            widget.bind(
+                "<MouseWheel>",
+                _today_report_mousewheel,
+                add="+",
             )
-            evidence_text = (
-                "Verified recorded-replay JSON evidence:\n"
-                f"{replay['summary_path']}\n\n"
-                "Evaluation CSV:\n"
-                f"{replay['evaluations_path']}"
+            widget.bind(
+                "<Button-4>",
+                _today_report_wheel_up,
+                add="+",
             )
-        elif freshness["today_ready"]:
-            available = today_report_candidates(workspace)
-            latest = available[0] if available else None
-            report_value = (
-                f"Today's trader report is ready: {latest.name}\n"
-                f"Trading date: {freshness['today_pretty']}\n"
-                f"Location: {latest.parent}"
-                if latest is not None
-                else freshness["message"]
+            widget.bind(
+                "<Button-5>",
+                _today_report_wheel_down,
+                add="+",
             )
-            evidence_text = (
-                "Today's technical evidence:\n"
-                f"{freshness['evidence_path'] or 'Not available'}"
+            for child in widget.winfo_children():
+                _bind_today_report_scroll(child)
+
+        today_report_inner.bind(
+            "<Configure>",
+            _sync_today_report_scroll,
+            add="+",
+        )
+        today_report_scroll_canvas.bind(
+            "<Configure>",
+            _sync_today_report_scroll,
+            add="+",
+        )
+
+        def display_number(
+            value: Any,
+            default: str = "Not available",
+        ) -> str:
+            if value in (None, ""):
+                return default
+            try:
+                return f"{float(value):.2f}"
+            except (TypeError, ValueError):
+                return str(value)
+
+        position_status = str(
+            product["position_status"] or "FLAT"
+        ).upper()
+        if position_status in {"UNKNOWN", "NOT_STARTED"}:
+            position_status = "FLAT"
+
+        runtime_label = (
+            "Running" if product["running"] else "Stopped"
+        )
+        data_label = (
+            "Ready"
+            if product["data_ready"]
+            else "Waiting / not ready"
+        )
+
+        if position_status == "OPEN":
+            unrealized_text = display_number(
+                product["unrealized_paper_pnl"],
+                "Waiting for latest option price",
             )
         else:
-            report_value = (
-                freshness["message"] + "\n\n"
-                + replay["message"]
+            unrealized_text = "0.00"
+
+        realized_text = display_number(
+            product["realized_paper_pnl"],
+            "0.00",
+        )
+
+        summary_card = tk.Frame(
+            today_report_inner,
+            bg=palette["panel"],
+            highlightbackground=palette["border"],
+            highlightthickness=1,
+        )
+        summary_card.pack(fill="x", pady=(0, 12))
+
+        tk.Label(
+            summary_card,
+            text="Actual Paper Trading Position & P&L",
+            font=("Segoe UI", 11, "bold"),
+            bg=palette["panel"],
+            fg=palette["accent"],
+            anchor="w",
+        ).pack(fill="x", padx=18, pady=(14, 10))
+
+        summary_grid = tk.Frame(
+            summary_card,
+            bg=palette["panel"],
+        )
+        summary_grid.pack(fill="x", padx=18, pady=(0, 14))
+        for column in range(4):
+            summary_grid.grid_columnconfigure(
+                column,
+                weight=1 if column in {1, 3} else 0,
             )
-            evidence_text = (
-                "No verified current-day evidence is available "
-                "on this computer yet."
+
+        def summary_field(
+            row: int,
+            column_pair: int,
+            label: str,
+            value: str,
+            *,
+            accent: bool = False,
+        ) -> None:
+            base_column = column_pair * 2
+            tk.Label(
+                summary_grid,
+                text=label,
+                font=("Segoe UI", 9),
+                bg=palette["panel"],
+                fg=palette["muted"],
+                anchor="w",
+            ).grid(
+                row=row,
+                column=base_column,
+                sticky="nw",
+                padx=(0, 8),
+                pady=3,
+            )
+            tk.Label(
+                summary_grid,
+                text=value,
+                font=("Segoe UI", 10, "bold"),
+                bg=palette["panel"],
+                fg=(
+                    palette["safe"]
+                    if accent
+                    else palette["text"]
+                ),
+                anchor="w",
+                justify="left",
+                wraplength=330,
+            ).grid(
+                row=row,
+                column=base_column + 1,
+                sticky="nw",
+                padx=(0, 22),
+                pady=3,
             )
 
-        page_card(
-            page_panel,
-            "Current-day trader report status",
-            report_value,
-        ).pack(fill="x", pady=(0, 12))
+        summary_field(0, 0, "Runtime", runtime_label, accent=product["running"])
+        summary_field(0, 1, "Data", data_label, accent=product["data_ready"])
+        summary_field(1, 0, "Position", position_status, accent=position_status == "OPEN")
+        summary_field(1, 1, "Side", product["side"] or "NO ACTIVE SIDE")
+        summary_field(
+            2,
+            0,
+            "Option symbol",
+            product["option_symbol"] or "Not available",
+        )
+        summary_field(
+            2,
+            1,
+            "Latest price",
+            display_number(product["latest_option_price"]),
+        )
+        summary_field(3, 0, "Entry", display_number(product["entry"]))
+        summary_field(3, 1, "Unrealized P&L", unrealized_text, accent=True)
+        summary_field(4, 0, "Stop loss", display_number(product["stop_loss"]))
+        summary_field(4, 1, "Target", display_number(product["target"]))
+        summary_field(5, 0, "Realized P&L", realized_text)
+        summary_field(
+            5,
+            1,
+            "Completed trades",
+            str(product["today_completed_trades"]),
+        )
 
-        page_card(
-            page_panel,
-            "Technical evidence status",
-            evidence_text,
-        ).pack(fill="x", pady=(0, 12))
+        detail_text = (
+            f"Runtime state: {product['runtime_status']}  |  "
+            f"Readiness: {product['readiness_reason'] or 'Not available'}\n"
+            f"Latest price time: "
+            f"{product['latest_option_price_time'] or 'Not available'}  |  "
+            f"Exit reason: {product['exit_reason'] or 'Not exited'}"
+        )
+        if product["last_error"]:
+            detail_text += (
+                "\nRuntime detail: " + product["last_error"]
+            )
 
-        def open_page_evidence() -> None:
-            if replay["ready"]:
-                path = Path(replay["summary_path"])
-                if not path.exists():
-                    messagebox.showerror(
-                        "Recorded Replay Evidence",
-                        f"Evidence file is missing: {path}",
+        tk.Label(
+            summary_card,
+            text=detail_text,
+            font=("Segoe UI", 9),
+            bg=palette["panel_alt"],
+            fg=palette["muted"],
+            justify="left",
+            anchor="w",
+            wraplength=1000,
+        ).pack(fill="x", padx=18, pady=(0, 14))
+
+        ledger_rows = (
+            product["today_ledger_rows"]
+            if product["today_ledger_rows"]
+            else product["ledger_rows"]
+        )
+        if ledger_rows:
+            history_lines = []
+            for row in ledger_rows[-6:]:
+                history_lines.append(
+                    " | ".join(
+                        [
+                            str(row.get("timestamp", "")),
+                            str(row.get("event", "")),
+                            str(
+                                row.get("side")
+                                or row.get("signal_side")
+                                or ""
+                            ),
+                            str(row.get("option_symbol", "")),
+                            "P&L="
+                            + str(
+                                row.get("paper_pnl")
+                                or row.get("realized_pnl")
+                                or "0.00"
+                            ),
+                        ]
                     )
-                    return
-                os.startfile(str(path))
-                footer_status.set(
-                    f"Opened recorded replay evidence: {path.name}"
+                )
+            history_text = "\n".join(history_lines)
+        else:
+            history_text = (
+                "No paper trade is recorded yet. "
+                "Current status is truthful FLAT / NO SIGNAL."
+            )
+
+        page_card(
+            today_report_inner,
+            "Paper Trade Ledger / History",
+            history_text,
+        ).pack(fill="x", pady=(0, 12))
+
+        def open_path(path_text: str, title: str) -> None:
+            path = Path(path_text)
+            if not path.exists():
+                messagebox.showinfo(
+                    title,
+                    f"File is not available yet: {path}",
                 )
                 return
-            open_latest_evidence()
+            os.startfile(str(path))
+            footer_status.set(f"Opened: {path.name}")
 
-        actions = tk.Frame(page_panel, bg=palette["background"])
-        actions.pack(fill="x", pady=(8, 0))
+        def open_ledger_or_empty_state() -> None:
+            ledger = Path(product["ledger_path"])
+            if ledger.is_file():
+                os.startfile(str(ledger))
+                footer_status.set(f"Opened: {ledger.name}")
+                return
+            messagebox.showinfo(
+                "Paper Ledger / History",
+                "No paper trade has been opened or closed yet, "
+                "so the ledger file does not exist.\n\n"
+                "This is a truthful empty state.",
+            )
+
+        today_actions = tk.Frame(
+            today_report_inner,
+            bg=palette["background"],
+        )
+        today_actions.pack(fill="x", pady=(0, 12))
+        for column in range(3):
+            today_actions.grid_columnconfigure(column, weight=1)
 
         ttk.Button(
-            actions,
-            text="Open Trader Report",
+            today_actions,
+            text="Open Paper Ledger / History",
             style="HQE.TButton",
-            command=open_report,
-        ).pack(side="left", padx=(0, 8))
+            command=open_ledger_or_empty_state,
+        ).grid(row=0, column=0, sticky="ew", padx=(0, 5), pady=4)
+
+        ttk.Button(
+            today_actions,
+            text="Refresh Today Report",
+            style="Secondary.TButton",
+            command=lambda: show_page("Today Report"),
+        ).grid(row=0, column=1, sticky="ew", padx=5, pady=4)
+
+        ttk.Button(
+            today_actions,
+            text="Open Runtime Folder",
+            style="Secondary.TButton",
+            command=lambda: open_path(
+                str(Path(product["runtime_path"]).parent),
+                "Paper Runtime Folder",
+            ),
+        ).grid(row=0, column=2, sticky="ew", padx=(5, 0), pady=4)
+
+        ttk.Button(
+            today_actions,
+            text="Open Lifecycle Report",
+            style="Secondary.TButton",
+            command=lambda: open_path(
+                product["report_path"],
+                "Paper Lifecycle Report",
+            ),
+        ).grid(row=1, column=0, sticky="ew", padx=(0, 5), pady=4)
 
         if replay["ready"]:
             ttk.Button(
-                actions,
-                text="Open Recorded Replay Evidence (JSON)",
+                today_actions,
+                text="Open Replay Evidence",
                 style="Secondary.TButton",
-                command=open_page_evidence,
-            ).pack(side="left", padx=8)
+                command=lambda: open_path(
+                    replay["summary_path"],
+                    "Recorded Replay Evidence",
+                ),
+            ).grid(row=1, column=1, sticky="ew", padx=5, pady=4)
+
+            decisions = replay["decision_counts"]
+            accepted = replay["accepted_side_counts"]
+            replay_text = (
+                "Evaluation only — not a paper position.\n"
+                f"Date: {replay['today_pretty']} | "
+                f"Evaluations: {replay['evaluation_count']} | "
+                f"LONG: {decisions.get('LONG', 0)} | "
+                f"SHORT: {decisions.get('SHORT', 0)} | "
+                f"NEUTRAL: {decisions.get('NEUTRAL', 0)}\n"
+                f"Accepted CE: {accepted.get('CE_BUY', 0)} | "
+                f"Accepted PE: {accepted.get('PE_BUY', 0)}"
+            )
         else:
-            ttk.Button(
-                actions,
-                text="Open Technical Evidence (JSON)",
-                style="Secondary.TButton",
-                command=open_page_evidence,
-            ).pack(side="left", padx=8)
+            replay_text = (
+                "Recorded replay evidence is not ready yet. "
+                "The actual paper-runtime status above remains authoritative."
+            )
 
-        ttk.Button(
-            actions,
-            text="Open Evidence Folder",
-            style="Secondary.TButton",
-            command=open_workspace,
-        ).pack(side="left", padx=8)
+        page_card(
+            today_report_inner,
+            "Recorded Replay — Separate Evaluation Evidence",
+            replay_text,
+        ).pack(fill="x", pady=(0, 16))
 
-        ttk.Button(
-            actions,
-            text="Refresh Trader Report",
-            style="Secondary.TButton",
-            command=lambda: show_page("Today Report"),
-        ).pack(side="left", padx=8)
+        _bind_today_report_scroll(today_report_scroll_canvas)
+        _bind_today_report_scroll(today_report_inner)
+        _sync_today_report_scroll()
+        root.after_idle(_sync_today_report_scroll)
+        root.after(100, _sync_today_report_scroll)
 
     def show_safety_page() -> None:
         page_title.set("System Safety")
@@ -3153,8 +3629,10 @@ def run_gui(args: argparse.Namespace) -> int:
     def close_app() -> None:
         if controller.is_running():
             stop = messagebox.askyesno(
-                "HQE Paper Watch",
-                "Paper watch is running. Stop it before closing HQE?",
+                "HQE Paper Trading",
+                "Paper trading is running. Stop it before closing HQE?\n\n"
+                "Choose No only when you intentionally want the hidden "
+                "paper runtime to continue.",
             )
             if stop:
                 controller.stop()
@@ -8237,9 +8715,9 @@ def run_gui(args: argparse.Namespace) -> int:
 
     ttk.Button(
         trader_quick_actions,
-        text="Open Daily Report",
+        text="Open Today Report",
         style="Secondary.TButton",
-        command=open_report,
+        command=lambda: show_page("Today Report"),
     ).grid(
         row=1,
         column=1,

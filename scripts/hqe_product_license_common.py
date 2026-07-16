@@ -41,13 +41,79 @@ def canonical_json(payload: Dict[str, Any]) -> bytes:
 
 
 def machine_id() -> str:
-    raw = "|".join([
-        platform.node() or "",
-        getpass.getuser() or "",
-        str(uuid.getnode()),
-        platform.platform() or "",
-    ])
-    return "HQE-" + hashlib.sha256(raw.encode("utf-8")).hexdigest().upper()[:32]
+    # Return one persistent HQE Machine ID for this Windows installation.
+    # Existing signed-license identity is pinned into this local file once.
+    stable_path = app_config_dir() / "HQE_STABLE_MACHINE_ID_V1.txt"
+
+    def _normalized(value: object) -> str | None:
+        import re
+
+        text = str(value or "").strip().upper()
+        if re.fullmatch(r"HQE-[A-F0-9]{32}", text):
+            return text
+        return None
+
+    try:
+        stored = _normalized(
+            stable_path.read_text(
+                encoding="utf-8-sig",
+                errors="replace",
+            )
+        )
+    except OSError:
+        stored = None
+
+    if stored:
+        return stored
+
+    seed_parts: list[str] = []
+
+    if os.name == "nt":
+        try:
+            import winreg
+
+            access = winreg.KEY_READ
+            wow64 = getattr(winreg, "KEY_WOW64_64KEY", 0)
+            with winreg.OpenKey(
+                winreg.HKEY_LOCAL_MACHINE,
+                r"SOFTWARE\Microsoft\Cryptography",
+                0,
+                access | wow64,
+            ) as key:
+                machine_guid, _ = winreg.QueryValueEx(
+                    key,
+                    "MachineGuid",
+                )
+            if str(machine_guid).strip():
+                seed_parts.append(
+                    "WINDOWS_MACHINE_GUID="
+                    + str(machine_guid).strip()
+                )
+        except Exception:
+            pass
+
+    if not seed_parts:
+        seed_parts.extend(
+            [
+                "NODE=" + (platform.node() or ""),
+                "USER=" + (getpass.getuser() or ""),
+                "MAC=" + str(uuid.getnode()),
+            ]
+        )
+
+    raw = "HQE_STABLE_MACHINE_ID_V1|" + "|".join(seed_parts)
+    generated = (
+        "HQE-"
+        + hashlib.sha256(raw.encode("utf-8")).hexdigest().upper()[:32]
+    )
+
+    stable_path.parent.mkdir(parents=True, exist_ok=True)
+    temporary = stable_path.with_suffix(
+        stable_path.suffix + f".{os.getpid()}.tmp"
+    )
+    temporary.write_text(generated + "\n", encoding="utf-8")
+    os.replace(temporary, stable_path)
+    return generated
 
 
 def app_config_dir(workspace: str | Path | None = None) -> Path:
