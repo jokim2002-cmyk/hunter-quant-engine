@@ -304,3 +304,20 @@ Until separately approved:
 - replacing the existing backtest engine
 - deleting the current working strategy
 - changing license identity behavior
+
+<!-- HQE_MULTI_STRATEGY_PHASE4N_ROADMAP_CHECKPOINT_V1 -->
+## Phase 4N checkpoint
+
+Phase 4I through Phase 4N are complete on the feature branch:
+
+- reviewed approval and atomic metadata-only installation
+- disabled one-active lifecycle adapter
+- guarded namespaced lifecycle write sandbox
+- read-only canonical reconciliation
+- zero-authority cutover-readiness certificate
+- operator checklist and isolated review export
+
+Canonical activation and runtime cutover are still disabled. The next
+roadmap step is a controlled paper-only cutover rehearsal harness with an
+explicit human gate, followed by the Product UI strategy manager, parallel
+isolated paper observation and Phase 8 release closure.

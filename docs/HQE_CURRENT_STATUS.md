@@ -283,7 +283,7 @@ Real trading remains locked.
 - Sample-schema overwrite during market watch is blocked
 - Dashboard auth state uses latest API result
 
-## HQE App Completion Batch 2 — Daily Operations Integration
+## HQE App Completion Batch 2 ΓÇö Daily Operations Integration
 
 - Dynamic latest day/report/evidence detection added
 - Hardcoded DAY_001 report dependency removed
@@ -295,7 +295,7 @@ Commit after successful tests: `Add app-native daily operations and dynamic repo
 
 Real trading remains locked.
 
-## HQE App Completion Batch 3 — Broker and Data Health Center
+## HQE App Completion Batch 3 ΓÇö Broker and Data Health Center
 
 - Embedded internet, Fyers credential-presence, and market-data health status
 - App-native safe Fyers data-only connection test
@@ -309,7 +309,7 @@ Next roadmap target: app-native Fyers login/token refresh flow, followed by the 
 
 Real trading remains locked. This is not a profitability claim.
 
-## HQE App Completion Batch 4 — App-Native Fyers Login
+## HQE App Completion Batch 4 ΓÇö App-Native Fyers Login
 
 - Fyers login settings and token refresh moved inside the HQE application
 - Windows DPAPI encrypted local storage
@@ -325,7 +325,7 @@ Next roadmap target: unified app-native market-data source and feed-health layer
 
 Real trading remains locked. This is not a profitability claim.
 
-## HQE App Completion Batch 5 — Unified Market Data Center
+## HQE App Completion Batch 5 ΓÇö Unified Market Data Center
 
 - Unified Fyers data-only status center embedded in the main app
 - Latest data file, candle timestamp, row count and freshness detection
@@ -340,7 +340,7 @@ Next roadmap target: app-native daily startup orchestration and automatic operat
 
 Real trading remains locked. This is not a profitability claim.
 
-## HQE App Completion Batch 6 — Daily Startup and Checklist
+## HQE App Completion Batch 6 ΓÇö Daily Startup and Checklist
 
 - One-click daily readiness snapshot in the main app
 - Dynamic latest-day, next-day and next market-day detection
@@ -355,7 +355,7 @@ Next roadmap target: app-native end-of-day close orchestration.
 
 Real trading remains locked. This is not a profitability claim.
 
-## HQE App Completion Batch 7 — Daily Close and Report Center
+## HQE App Completion Batch 7 ΓÇö Daily Close and Report Center
 
 - Dynamic latest-day and trading-date discovery
 - App-native daily-close readiness and safety guard status
@@ -371,7 +371,7 @@ Next roadmap target: app-native session history and evidence browser.
 
 Real trading remains locked. This is not a profitability claim.
 
-## HQE App Completion Batch 8 — Session History and Evidence Browser
+## HQE App Completion Batch 8 ΓÇö Session History and Evidence Browser
 
 - Dynamic DAY-wise validation-session discovery
 - Search by day, date, category, filename or path
@@ -386,7 +386,7 @@ Next roadmap target: app-native safety and kill-switch evidence center.
 
 Real trading remains locked. This is not a profitability claim.
 
-## HQE App Completion Batch 9 — Safety and Kill-Switch Evidence
+## HQE App Completion Batch 9 ΓÇö Safety and Kill-Switch Evidence
 
 - Permanent safety locks consolidated in the main app
 - Dynamic safety, guard, decision, status and kill-switch evidence discovery
@@ -401,7 +401,7 @@ Next roadmap target: app-native paper-watch session control and live-session ope
 
 Real trading remains locked. This is not a profitability claim.
 
-## HQE App Completion Batch 10 — Paper-Watch Session Control
+## HQE App Completion Batch 10 ΓÇö Paper-Watch Session Control
 
 - Existing forward paper runner discovered dynamically
 - Runner CLI capabilities inspected at runtime
@@ -422,7 +422,7 @@ Real trading remains locked. This is not a profitability claim.
 Combined roadmap work completed in one bunch:
 
 1. Unified Operator Dashboard
-2. Connect → Prepare → Watch → Close → Review workflow
+2. Connect ΓåÆ Prepare ΓåÆ Watch ΓåÆ Close ΓåÆ Review workflow
 3. Forward-validation progress engine
 4. Next-recommended-action guidance
 
@@ -712,7 +712,7 @@ Completed in this bunch:
 Safety remains unchanged: paper/data/research only, with no real orders,
 no broker execution, no auto trading, and no option selling.
 
-## HQE App Stabilization Bunch 2 — Callback and Button Reliability
+## HQE App Stabilization Bunch 2 ΓÇö Callback and Button Reliability
 
 - Added global Tkinter callback recovery
 - One broken feature callback no longer closes the whole app
@@ -726,7 +726,7 @@ Next: full operator button smoke and remaining slow-center optimization.
 
 Real trading remains locked. This is not a profitability claim.
 
-## HQE App Stabilization Bunch 3 — Full Center Smoke
+## HQE App Stabilization Bunch 3 ΓÇö Full Center Smoke
 
 - Repaired app-center dialog background fallback
 - Restored the missing Market Data Quality cache-index callback
@@ -739,7 +739,7 @@ Next: final startup/performance polish and operator UI defect repair.
 
 Real trading remains locked. This is not a profitability claim.
 
-## HQE App Stabilization Bunch 4 â€” RC Freeze Integrity Repair
+## HQE App Stabilization Bunch 4 ├óΓé¼ΓÇ¥ RC Freeze Integrity Repair
 
 - Refreshed the paper-only RC SHA-256 freeze manifest after approved stabilization changes
 - Preserved all permanent paper/data/research safety locks
@@ -752,7 +752,7 @@ Next: startup performance profiling and remaining operator UI polish.
 
 Real trading remains locked. This is not a profitability claim.
 
-## HQE App Stabilization Bunch 5 — Non-Blocking Startup Refresh
+## HQE App Stabilization Bunch 5 ΓÇö Non-Blocking Startup Refresh
 
 - Initial internet, broker, market-data and paper-watch checks now run outside the Tkinter UI thread
 - The main window becomes interactive before slow network or process discovery completes
@@ -765,7 +765,7 @@ Next: UI spacing, DPI and responsive-layout polish.
 
 Real trading remains locked. This is not a profitability claim.
 
-## HQE App Stabilization Bunch 6 — DPI and Responsive UI Polish
+## HQE App Stabilization Bunch 6 ΓÇö DPI and Responsive UI Polish
 
 - Added Windows DPI-awareness initialization
 - Added adaptive Tk scaling for high-DPI displays
@@ -779,7 +779,7 @@ Next: operator dialogs, loading states and error-message polish.
 
 Real trading remains locked. This is not a profitability claim.
 
-## HQE App Stabilization Bunch 7 — Operator Feedback Polish
+## HQE App Stabilization Bunch 7 ΓÇö Operator Feedback Polish
 
 - Added visible busy cursor and status feedback for long operator actions
 - Market-data, broker-test and next-day preparation flows now clear loading state reliably
@@ -793,7 +793,7 @@ Next: final button-by-button operator workflow QA.
 
 Real trading remains locked. This is not a profitability claim.
 
-## HQE App Stabilization Bunch 8 — Final Operator Workflow QA
+## HQE App Stabilization Bunch 8 ΓÇö Final Operator Workflow QA
 
 - Added source-level callback coverage for the main operator buttons
 - Verified all primary operator pages and daily workflows remain wired
@@ -807,7 +807,7 @@ Next: long-duration app soak and final release freeze/sign-off.
 
 Real trading remains locked. This is not a profitability claim.
 
-## HQE App Stabilization Bunch 9 — Long-Duration GUI Soak
+## HQE App Stabilization Bunch 9 ΓÇö Long-Duration GUI Soak
 
 - Added a controlled Windows GUI soak runner
 - Repeatedly checks responsiveness, process memory and HQE safety guards
@@ -821,7 +821,7 @@ Next: clean release build and final freeze/sign-off.
 
 Real trading remains locked. This is not a profitability claim.
 
-## HQE App Stabilization Bunch 10 — Centered Overview Actions
+## HQE App Stabilization Bunch 10 ΓÇö Centered Overview Actions
 
 - Removed the broker-card surface from the main Overview page
 - Centered the Daily Actions panel in a clean vertical layout
@@ -835,7 +835,7 @@ Next: final clean release build and freeze/sign-off.
 
 Real trading remains locked. This is not a profitability claim.
 
-## HQE App Stabilization Bunch 10 — Final Release QA
+## HQE App Stabilization Bunch 10 ΓÇö Final Release QA
 
 - Postponed the Overview redesign until final UI work
 - Added final release-asset integrity checks
@@ -849,7 +849,7 @@ Next: clean release build and final freeze/sign-off.
 
 Real trading remains locked. This is not a profitability claim.
 
-## HQE App Stabilization Bunch 11 — Release Workspace Cleanup
+## HQE App Stabilization Bunch 11 ΓÇö Release Workspace Cleanup
 
 - Moved known untracked build, profiling and backup artifacts outside the repository
 - Preserved all removed artifacts in a timestamped quarantine folder
@@ -863,7 +863,7 @@ Next: final UI pass, clean release build and final freeze/sign-off.
 
 Real trading remains locked. This is not a profitability claim.
 
-## HQE App Stabilization Bunch 12 — Deterministic Windows EXE Build
+## HQE App Stabilization Bunch 12 ΓÇö Deterministic Windows EXE Build
 
 - Added a deterministic PyInstaller Windows launcher build
 - Added built-EXE guard verification and SHA-256 evidence
@@ -877,7 +877,7 @@ Next: final UI pass and final release freeze/sign-off.
 
 Real trading remains locked. This is not a profitability claim.
 
-## HQE Final UI Pass — Rich One-by-One Operator Center
+## HQE Final UI Pass ΓÇö Rich One-by-One Operator Center
 
 - Added a richer navy/teal product theme
 - Kept broker selection off the main Overview surface
@@ -890,7 +890,7 @@ Commit only after operator approval: `Polish HQE final operator interface`
 
 Next: final release rebuild, freeze and sign-off.
 
-## HQE Trader Report UX — Human-Readable HTML
+## HQE Trader Report UX ΓÇö Human-Readable HTML
 
 - Added a trader-friendly HTML report renderer
 - Open Trader Report now opens HTML instead of raw JSON
@@ -903,7 +903,7 @@ Commit after approval with the final UI changes.
 
 Next: final release rebuild, freeze and sign-off.
 
-## HQE Trader Report UX — Exact Day-Pack Interpretation
+## HQE Trader Report UX ΓÇö Exact Day-Pack Interpretation
 
 - Replaced generic field guessing with exact Module 133 schema parsing
 - Added plain no-trade headline and Hinglish explanation
@@ -983,7 +983,7 @@ Next: run the explicit secure historical data-only probe.
 
 Next: explicit secure recorded-data replay evaluation probe.
 
-## HQE Recorded Replay → Today Report Integration
+## HQE Recorded Replay ΓåÆ Today Report Integration
 
 - Today Report prioritizes verified current-day recorded replay evidence
 - Replay decision counts and accepted CE/PE evaluations are visible in-app
@@ -1111,3 +1111,17 @@ selection, reviewed package installation, parallel isolated paper tests and
 release closure remain pending.
 
 See `docs/HQE_MULTI_STRATEGY_PHASE4H_CHECKPOINT.md`.
+
+<!-- HQE_MULTI_STRATEGY_PHASE4N_CHECKPOINT_V1 -->
+## Multi-Strategy checkpoint: Phase 4N
+
+Phase 4 implementation is checkpointed through reviewed approval, atomic
+metadata-only installation, the disabled one-active lifecycle adapter,
+guarded namespaced lifecycle writes, read-only canonical reconciliation,
+zero-authority cutover certification and isolated operator evidence export.
+
+Canonical strategy activation, Product UI switching, runtime cutover,
+canonical state/ledger writes, broker execution and real money remain
+disabled.
+
+See `docs/HQE_MULTI_STRATEGY_PHASE4N_CHECKPOINT.md`.

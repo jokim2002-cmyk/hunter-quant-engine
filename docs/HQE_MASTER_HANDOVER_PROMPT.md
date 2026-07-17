@@ -286,3 +286,24 @@ Next core path:
 7. release closure
 
 Read `docs/HQE_MULTI_STRATEGY_PHASE4H_CHECKPOINT.md` before continuing.
+
+<!-- HQE_MULTI_STRATEGY_PHASE4N_HANDOVER_V1 -->
+## Current multi-strategy implementation checkpoint
+
+The feature branch is checkpointed through Phase 4N. Do not restart from
+Phase 4H or rebuild the approval/lifecycle/reconciliation foundations.
+
+Completed after Phase 4H:
+
+1. reviewed approval and atomic metadata-only installation
+2. disabled one-active lifecycle adapter
+3. guarded namespaced lifecycle write sandbox
+4. read-only canonical reconciliation
+5. zero-authority cutover-readiness certificate
+6. read-only operator checklist and isolated evidence export
+
+Next core path: a controlled paper-only cutover rehearsal harness under an
+explicit human gate. Canonical activation and runtime cutover remain disabled
+until a separately reviewed roadmap step explicitly permits them.
+
+Read `docs/HQE_MULTI_STRATEGY_PHASE4N_CHECKPOINT.md` before continuing.
