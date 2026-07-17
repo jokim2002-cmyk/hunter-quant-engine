@@ -36,6 +36,7 @@ SAFETY = {
     "auto_trading_allowed": False,
     "real_money_allowed": False,
     "option_selling_allowed": False,
+    "parallel_isolated_observation_allowed": True,
 }
 
 
@@ -316,6 +317,7 @@ def build_product_strategy_manager_snapshot(
     runtime_snapshot: Mapping[str, Any],
     paper_snapshot: Mapping[str, Any],
     runtime_running: bool,
+    observation_snapshot: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     records = normalize_strategy_records(pack_snapshot, builder_snapshot)
     selected = _selected_configuration(builder_snapshot, records)
@@ -338,6 +340,10 @@ def build_product_strategy_manager_snapshot(
     gate_status = _text(
         runtime_snapshot.get("multi_strategy_gate_status")
     ) or "MISSING"
+    observation = dict(_mapping(observation_snapshot or {}))
+    selected_observation = dict(
+        _mapping(observation.get("selected_session"))
+    )
 
     payload = {
         "schema_version": PRODUCT_STRATEGY_MANAGER_SCHEMA_VERSION,
@@ -356,6 +362,38 @@ def build_product_strategy_manager_snapshot(
             "namespace": _text(
                 runtime_snapshot.get("multi_strategy_namespace")
             ),
+        },
+        "parallel_observation": {
+            "status": _text(observation.get("status")) or "PASS",
+            "session_count": int(observation.get("session_count", 0) or 0),
+            "active_session_count": int(
+                observation.get("active_session_count", 0) or 0
+            ),
+            "latest_session_id": _text(
+                observation.get("latest_session_id")
+            ),
+            "latest_session_status": _text(
+                selected_observation.get("status")
+            ),
+            "latest_cycle_count": int(
+                selected_observation.get("cycle_count", 0) or 0
+            ),
+            "latest_lane_count": int(
+                selected_observation.get("lane_count", 0) or 0
+            ),
+            "active_position_count": int(
+                selected_observation.get("active_position_count", 0) or 0
+            ),
+            "observation_root": _text(
+                observation.get("observation_root")
+            ),
+            "operator_message": _text(
+                observation.get("operator_message")
+            ) or "No parallel observation session exists.",
+            "canonical_runtime_connected": False,
+            "canonical_selection_allowed": False,
+            "canonical_activation_allowed": False,
+            "real_orders_allowed": False,
         },
         "selection_change_allowed": not global_blockers,
         "clear_selection_allowed": not global_blockers,
@@ -376,6 +414,8 @@ def build_product_strategy_manager_snapshot(
             "runtime_start_enabled": False,
             "runtime_stop_enabled": False,
             "lifecycle_write_enabled": False,
+            "parallel_observation_center_enabled": True,
+            "parallel_observation_canonical_connect_enabled": False,
         },
         **SAFETY,
     }
@@ -448,5 +488,7 @@ def guard_payload() -> dict[str, Any]:
         "runtime_running_switch_blocked": True,
         "configuration_selection_only": True,
         "canonical_activation_separately_human_gated": True,
+        "parallel_observation_display": True,
+        "parallel_observation_canonical_connection_blocked": True,
         **SAFETY,
     }

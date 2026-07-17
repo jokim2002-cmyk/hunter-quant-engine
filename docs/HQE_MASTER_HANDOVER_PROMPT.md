@@ -378,3 +378,26 @@ before continuing.
 
 Next core path: implement the complete Phase 7 parallel isolated
 paper-observation workflow without activating imported metadata.
+
+
+<!-- HQE_MULTI_STRATEGY_PHASE7_COMPLETE_HANDOVER_V1 -->
+## Phase 7 complete parallel isolated paper observation handover
+
+Phase 7 is implemented as one cohesive observation-only workflow. Do not add a
+second parallel runner or route observation writes into canonical lifecycle
+paths.
+
+`src/multi_strategy/parallel_observation.py` owns the deterministic fan-out,
+per-lane namespaces, paper lifecycle, P&L, tamper-evident evidence and restart
+resume. The Product Strategy Manager provides the operator surface.
+
+Only reviewed implementations satisfying the recorded/forward-paper adapter
+are eligible. Phase 6 metadata-only installs remain inactive. Observation does
+not select or register a strategy and does not create the Phase 4 human gate.
+
+Read
+`docs/HQE_MULTI_STRATEGY_PHASE7_COMPLETE_PARALLEL_ISOLATED_PAPER_OBSERVATION.md`
+before continuing.
+
+Next core path: Phase 8 final visual acceptance, full release-gate closure,
+freeze-manifest refresh and controlled release checkpoint.

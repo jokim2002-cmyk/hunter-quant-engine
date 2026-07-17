@@ -74,6 +74,18 @@ from src.multi_strategy.product_ui_manager import (
     guard_payload as product_strategy_manager_guard_payload,
 )
 
+from src.multi_strategy.catalog import build_phase3_registry
+from src.multi_strategy.parallel_observation import (
+    ObservationLaneConfig,
+    close_parallel_observation_session,
+    create_parallel_observation_session,
+    eligible_parallel_observation_strategies,
+    guard_payload as parallel_observation_guard_payload,
+    load_recorded_input_from_csv,
+    parallel_observation_snapshot,
+    run_parallel_observation_cycle,
+)
+
 from hqe_app_market_data_quality_center import (
     center_snapshot as data_quality_center_snapshot,
     launch_cache_index_worker,
@@ -370,6 +382,9 @@ def guard_payload() -> Dict[str, Any]:
             strategy_pack_center_guard_payload()[
                 "multi_strategy_phase6_reviewed_import"
             ]
+        ),
+        "multi_strategy_phase7_parallel_observation": (
+            parallel_observation_guard_payload()
         ),
         "safety_lock": SAFETY_LOCK,
     }
@@ -5405,15 +5420,18 @@ def run_gui(args: argparse.Namespace) -> int:
                 workspace,
             )
             paper_snapshot = paper_product_snapshot(workspace)
+            observation_snapshot = parallel_observation_snapshot(workspace)
             snapshot = build_product_strategy_manager_snapshot(
                 pack_snapshot=pack_snapshot,
                 builder_snapshot=builder_snapshot,
                 runtime_snapshot=paper_snapshot,
                 paper_snapshot=paper_snapshot,
                 runtime_running=controller.is_running(),
+                observation_snapshot=observation_snapshot,
             )
             runtime = snapshot.get("canonical_runtime", {})
             selected = snapshot.get("selected_configuration", {})
+            observation = snapshot.get("parallel_observation", {})
             display = (
                 f"Available: {snapshot.get('available_count', 0)} • "
                 f"Valid: {snapshot.get('valid_count', 0)}\n"
@@ -5423,6 +5441,9 @@ def run_gui(args: argparse.Namespace) -> int:
                 f"{runtime.get('runtime_mode', 'UNKNOWN')} • "
                 f"Gate {runtime.get('gate_status', 'UNKNOWN')} • "
                 f"Lifecycle {runtime.get('lifecycle', 'FLAT')}\n"
+                f"Parallel observation: "
+                f"{observation.get('session_count', 0)} sessions • "
+                f"{observation.get('active_session_count', 0)} active\n"
                 f"{snapshot.get('operator_message', '')}"
             )
             product_strategy_manager_status.set(display)
@@ -5478,7 +5499,7 @@ def run_gui(args: argparse.Namespace) -> int:
             outer,
             text=(
                 "Available Strategies • Selected Paper Configuration • "
-                "Canonical Runtime Truth • Safe Change Guards"
+                "Canonical Runtime Truth • Parallel Isolated Observation"
             ),
             bg=palette["panel"],
             fg=palette["muted"],
@@ -5656,6 +5677,453 @@ def run_gui(args: argparse.Namespace) -> int:
                     str(exc),
                 )
 
+        def open_parallel_observation_center() -> None:
+            from tkinter import filedialog, simpledialog
+
+            registry = build_phase3_registry()
+            eligible_records = [
+                item
+                for item in eligible_parallel_observation_strategies(
+                    registry
+                )
+                if item.get("eligible")
+            ]
+            current = parallel_observation_snapshot(workspace)
+
+            observation_dialog = tk.Toplevel(dialog)
+            observation_dialog.title(
+                "HQE — Parallel Isolated Paper Observation"
+            )
+            observation_dialog.geometry("1120x700")
+            observation_dialog.minsize(980, 600)
+            observation_dialog.configure(bg=palette["panel"])
+            observation_dialog.transient(dialog)
+
+            observation_outer = tk.Frame(
+                observation_dialog,
+                bg=palette["panel"],
+                padx=16,
+                pady=14,
+            )
+            observation_outer.pack(
+                fill="both",
+                expand=True,
+                padx=14,
+                pady=14,
+            )
+
+            tk.Label(
+                observation_outer,
+                text="Parallel Isolated Paper Observation",
+                bg=palette["panel"],
+                fg=palette["text"],
+                font=("Segoe UI Semibold", 17),
+                anchor="w",
+            ).pack(fill="x")
+            tk.Label(
+                observation_outer,
+                text=(
+                    "Same recorded input • 2+ reviewed lanes • "
+                    "isolated state, ledger and P&L • no canonical cutover"
+                ),
+                bg=palette["panel"],
+                fg=palette["muted"],
+                anchor="w",
+                pady=5,
+            ).pack(fill="x")
+
+            observation_status = tk.StringVar()
+            detail_var = tk.StringVar()
+            latest = {"value": current}
+            session_records: list[dict] = []
+
+            summary_label = tk.Label(
+                observation_outer,
+                textvariable=observation_status,
+                bg=palette["panel_alt"],
+                fg=palette["text"],
+                justify="left",
+                anchor="w",
+                padx=10,
+                pady=8,
+            )
+            summary_label.pack(fill="x", pady=(8, 10))
+
+            body_frame = tk.Frame(
+                observation_outer,
+                bg=palette["panel"],
+            )
+            body_frame.pack(fill="both", expand=True)
+
+            eligible_frame = tk.Frame(body_frame, bg=palette["panel"])
+            eligible_frame.pack(side="left", fill="both", expand=False)
+            tk.Label(
+                eligible_frame,
+                text="Reviewed forward-compatible lanes",
+                bg=palette["panel"],
+                fg=palette["text"],
+                anchor="w",
+            ).pack(fill="x")
+            eligible_list = tk.Listbox(
+                eligible_frame,
+                width=42,
+                selectmode="extended",
+                exportselection=False,
+            )
+            eligible_list.pack(fill="both", expand=True, pady=(5, 0))
+            for record in eligible_records:
+                eligible_list.insert(
+                    "end",
+                    f"{record.get('display_name', '')} | "
+                    f"{record.get('strategy_version', '')}",
+                )
+
+            session_frame = tk.Frame(
+                body_frame,
+                bg=palette["panel"],
+            )
+            session_frame.pack(
+                side="left",
+                fill="both",
+                expand=False,
+                padx=(12, 0),
+            )
+            tk.Label(
+                session_frame,
+                text="Observation sessions",
+                bg=palette["panel"],
+                fg=palette["text"],
+                anchor="w",
+            ).pack(fill="x")
+            session_list = tk.Listbox(
+                session_frame,
+                width=35,
+                exportselection=False,
+            )
+            session_list.pack(fill="both", expand=True, pady=(5, 0))
+
+            detail_label = tk.Label(
+                body_frame,
+                textvariable=detail_var,
+                bg=palette["panel_alt"],
+                fg=palette["muted"],
+                justify="left",
+                anchor="nw",
+                wraplength=430,
+                padx=12,
+                pady=12,
+            )
+            detail_label.pack(
+                side="left",
+                fill="both",
+                expand=True,
+                padx=(12, 0),
+            )
+
+            def selected_session() -> dict:
+                selection = session_list.curselection()
+                if not selection:
+                    return {}
+                index = int(selection[0])
+                if index >= len(session_records):
+                    return {}
+                return session_records[index]
+
+            def render_session(_event=None) -> None:
+                session = selected_session()
+                if not session:
+                    detail_var.set(
+                        "Select a session. At least two reviewed "
+                        "forward-compatible strategies are required to "
+                        "create a new session."
+                    )
+                    return
+                lane_text = "\n".join(
+                    f"  {lane.get('strategy_id', '')}@"
+                    f"{lane.get('strategy_version', '')} • "
+                    f"{lane.get('position_status', 'FLAT')} • "
+                    f"P&L {lane.get('realized_pnl', 0)}"
+                    for lane in session.get("lanes", [])
+                ) or "  none"
+                detail_var.set(
+                    f"Session: {session.get('session_id', '')}\n"
+                    f"Status: {session.get('status', '')}\n"
+                    f"Symbol/timeframe: {session.get('symbol', '')} / "
+                    f"{session.get('timeframe', '')}\n"
+                    f"Cycles: {session.get('cycle_count', 0)}\n"
+                    f"Active positions: "
+                    f"{session.get('active_position_count', 0)}\n"
+                    f"Aggregate observed paper P&L: "
+                    f"{session.get('aggregate_realized_pnl', 0)}\n\n"
+                    f"Isolated lanes:\n{lane_text}\n\n"
+                    f"Evidence:\n{session.get('session_root', '')}\n\n"
+                    "Comparison evidence only; no ranking or "
+                    "profitability claim."
+                )
+
+            def render_snapshot(snapshot_value: dict) -> None:
+                latest["value"] = snapshot_value
+                observation_status.set(
+                    f"Eligible reviewed lanes: {len(eligible_records)} • "
+                    f"Sessions: {snapshot_value.get('session_count', 0)} • "
+                    f"Active: "
+                    f"{snapshot_value.get('active_session_count', 0)}\n"
+                    f"{snapshot_value.get('operator_message', '')}"
+                )
+                session_records.clear()
+                session_list.delete(0, "end")
+                for session in snapshot_value.get("sessions", []):
+                    session_records.append(session)
+                    session_list.insert(
+                        "end",
+                        f"[{session.get('status', '')}] "
+                        f"{session.get('session_id', '')} • "
+                        f"{session.get('lane_count', 0)} lanes",
+                    )
+                if session_records:
+                    session_list.selection_set(len(session_records) - 1)
+                    render_session()
+                else:
+                    render_session()
+
+            def refresh_observation() -> None:
+                render_snapshot(parallel_observation_snapshot(workspace))
+                refresh_dialog()
+
+            def create_session() -> None:
+                selected_indices = tuple(eligible_list.curselection())
+                if len(selected_indices) < 2:
+                    messagebox.showwarning(
+                        "Parallel Observation",
+                        "Select at least two reviewed forward-compatible "
+                        "strategies. Metadata-only packs remain blocked.",
+                        parent=observation_dialog,
+                    )
+                    return
+                session_id = simpledialog.askstring(
+                    "Create Isolated Observation Session",
+                    "Session ID:",
+                    initialvalue=(
+                        "parallel-observation-"
+                        + datetime.now().strftime("%Y%m%d-%H%M%S")
+                    ),
+                    parent=observation_dialog,
+                )
+                if not session_id:
+                    return
+                actor = simpledialog.askstring(
+                    "Create Isolated Observation Session",
+                    "Created by:",
+                    initialvalue=str(
+                        getattr(args, "user_id", "hqe-user")
+                    ),
+                    parent=observation_dialog,
+                )
+                if not actor:
+                    return
+                symbol = simpledialog.askstring(
+                    "Create Isolated Observation Session",
+                    "Symbol:",
+                    initialvalue="NSE:NIFTY50-INDEX",
+                    parent=observation_dialog,
+                )
+                if not symbol:
+                    return
+                lane_configs = [
+                    ObservationLaneConfig(
+                        strategy_id=eligible_records[int(index)][
+                            "strategy_id"
+                        ],
+                        strategy_version=eligible_records[int(index)][
+                            "strategy_version"
+                        ],
+                        parameters=eligible_records[int(index)][
+                            "default_parameters"
+                        ],
+                    )
+                    for index in selected_indices
+                ]
+                try:
+                    snapshot_value = create_parallel_observation_session(
+                        workspace,
+                        registry,
+                        lane_configs,
+                        session_id=session_id,
+                        created_by=actor,
+                        symbol=symbol,
+                        timeframe="5m",
+                    )
+                    render_snapshot(snapshot_value)
+                    messagebox.showinfo(
+                        "Parallel Observation",
+                        "Isolated observation session created. "
+                        "Canonical runtime and selection were not changed.",
+                        parent=observation_dialog,
+                    )
+                except Exception as exc:
+                    messagebox.showerror(
+                        "Parallel Observation",
+                        str(exc),
+                        parent=observation_dialog,
+                    )
+                    refresh_observation()
+
+            def run_cycle() -> None:
+                session = selected_session()
+                if not session:
+                    messagebox.showwarning(
+                        "Parallel Observation",
+                        "Select an active session first.",
+                        parent=observation_dialog,
+                    )
+                    return
+                index_path = filedialog.askopenfilename(
+                    parent=observation_dialog,
+                    title="Choose recorded index CSV",
+                    filetypes=(("CSV files", "*.csv"), ("All files", "*.*")),
+                )
+                if not index_path:
+                    return
+                premium_path = filedialog.askopenfilename(
+                    parent=observation_dialog,
+                    title="Choose recorded premium CSV",
+                    filetypes=(("CSV files", "*.csv"), ("All files", "*.*")),
+                )
+                if not premium_path:
+                    return
+                cycle_id = simpledialog.askstring(
+                    "Run Observation Cycle",
+                    "Cycle ID:",
+                    initialvalue=(
+                        "cycle-"
+                        + datetime.now().strftime("%Y%m%d-%H%M%S")
+                    ),
+                    parent=observation_dialog,
+                )
+                if not cycle_id:
+                    return
+                er20 = simpledialog.askfloat(
+                    "Run Observation Cycle",
+                    "ER20 value (optional):",
+                    parent=observation_dialog,
+                )
+                try:
+                    request = load_recorded_input_from_csv(
+                        index_path,
+                        premium_path,
+                        er20=er20,
+                        symbol=session.get("symbol", ""),
+                        timeframe=session.get("timeframe", "5m"),
+                    )
+                    snapshot_value = run_parallel_observation_cycle(
+                        workspace,
+                        registry,
+                        session_id=session["session_id"],
+                        cycle_id=cycle_id,
+                        request=request,
+                    )
+                    render_snapshot(snapshot_value)
+                    messagebox.showinfo(
+                        "Parallel Observation",
+                        "Recorded input was fanned out to isolated lanes. "
+                        "No canonical lifecycle evidence was written.",
+                        parent=observation_dialog,
+                    )
+                except Exception as exc:
+                    messagebox.showerror(
+                        "Parallel Observation",
+                        str(exc),
+                        parent=observation_dialog,
+                    )
+                    refresh_observation()
+
+            def close_session() -> None:
+                session = selected_session()
+                if not session:
+                    return
+                actor = simpledialog.askstring(
+                    "Close Observation Session",
+                    "Closed by:",
+                    initialvalue=str(
+                        getattr(args, "user_id", "hqe-user")
+                    ),
+                    parent=observation_dialog,
+                )
+                if not actor:
+                    return
+                try:
+                    snapshot_value = close_parallel_observation_session(
+                        workspace,
+                        session_id=session["session_id"],
+                        closed_by=actor,
+                    )
+                    render_snapshot(snapshot_value)
+                except Exception as exc:
+                    messagebox.showerror(
+                        "Parallel Observation",
+                        str(exc),
+                        parent=observation_dialog,
+                    )
+
+            def open_evidence() -> None:
+                session = selected_session()
+                path_text = str(session.get("session_root", ""))
+                if not path_text:
+                    return
+                try:
+                    os.startfile(Path(path_text))
+                except Exception as exc:
+                    messagebox.showerror(
+                        "Parallel Observation",
+                        str(exc),
+                        parent=observation_dialog,
+                    )
+
+            session_list.bind("<<ListboxSelect>>", render_session)
+            observation_buttons = tk.Frame(
+                observation_outer,
+                bg=palette["panel"],
+            )
+            observation_buttons.pack(fill="x", pady=(12, 0))
+            ttk.Button(
+                observation_buttons,
+                text="Create Isolated Session",
+                command=create_session,
+            ).pack(side="left", padx=(0, 6))
+            ttk.Button(
+                observation_buttons,
+                text="Run Recorded Observation Cycle",
+                command=run_cycle,
+            ).pack(side="left", padx=6)
+            ttk.Button(
+                observation_buttons,
+                text="Close Flat Session",
+                command=close_session,
+            ).pack(side="left", padx=6)
+            ttk.Button(
+                observation_buttons,
+                text="Refresh",
+                command=refresh_observation,
+            ).pack(side="left", padx=6)
+            ttk.Button(
+                observation_buttons,
+                text="Open Evidence Folder",
+                command=open_evidence,
+            ).pack(side="left", padx=6)
+
+            tk.Label(
+                observation_outer,
+                text=(
+                    "OBSERVATION ONLY • PER-LANE STATE/LEDGER/P&L • "
+                    "NO SELECTION • NO CUTOVER • NO REAL ORDERS"
+                ),
+                bg=palette["panel"],
+                fg=palette["muted"],
+                anchor="w",
+                pady=10,
+            ).pack(fill="x")
+            render_snapshot(current)
+
         strategy_list.bind("<<ListboxSelect>>", render_selected)
 
         buttons = tk.Frame(outer, bg=palette["panel"])
@@ -5681,6 +6149,12 @@ def run_gui(args: argparse.Namespace) -> int:
 
         ttk.Button(
             buttons,
+            text="Parallel Observation Center",
+            command=open_parallel_observation_center,
+        ).pack(side="left", padx=6)
+
+        ttk.Button(
+            buttons,
             text="Open Strategy Pack Center",
             command=open_strategy_pack_center,
         ).pack(side="left", padx=6)
@@ -5694,7 +6168,7 @@ def run_gui(args: argparse.Namespace) -> int:
         tk.Label(
             outer,
             text=(
-                "CONFIGURATION SELECTION ONLY • "
+                "CONFIGURATION + ISOLATED OBSERVATION ONLY • "
                 "Canonical activation remains separately human-gated • "
                 "OPEN/HELD OR RUNNING SWITCH BLOCKED • REAL ORDERS NO"
             ),
@@ -8791,7 +9265,7 @@ def run_gui(args: argparse.Namespace) -> int:
         tk.Label(
             card_strategy_manager,
             text=(
-                'View available strategies, selected paper configuration, '
+                'View strategies, paper configuration and parallel observation, '
                 'parameters, validation and safe switch blockers.'
             ),
             bg=hub_panel,
