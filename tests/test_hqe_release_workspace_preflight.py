@@ -28,8 +28,12 @@ def test_release_workspace_preflight_passes():
     module = load_module()
     payload = module.workspace_preflight(REPO)
     assert payload["status"] == "PASS"
-    assert payload["branch"] == "master"
+    assert payload["branch"] in module.APPROVED_RELEASE_BRANCHES
+    assert payload["branch_allowed"] is True
+    assert payload["release_mode"] in {"MASTER_RELEASE", "CONTROLLED_FEATURE_RELEASE"}
     assert payload["remaining_temp_artifacts"] == []
     assert payload["unexpected_git_changes"] == []
     assert payload["real_order_invoked"] is False
     assert payload["broker_execution_invoked"] is False
+    assert payload["canonical_activation_invoked"] is False
+    assert payload["master_merge_invoked"] is False

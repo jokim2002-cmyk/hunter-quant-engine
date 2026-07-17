@@ -401,3 +401,25 @@ before continuing.
 
 Next core path: Phase 8 final visual acceptance, full release-gate closure,
 freeze-manifest refresh and controlled release checkpoint.
+
+
+<!-- HQE_MULTI_STRATEGY_PHASE8_COMPLETE_HANDOVER_V1 -->
+## Phase 8 final release closure handover
+
+Phases 0 through 8 are implemented, validated, checkpointed and pushed on the
+feature branch. Do not reopen the roadmap or create alternate import,
+observation, activation or runtime paths.
+
+Phase 8 adds automated Windows GUI render acceptance, controlled feature-branch
+release preflight, RC5 release assets, final closure evidence and a refreshed
+SHA-256 freeze. The final closure is paper/data/research only.
+
+Automated render smoke does not claim screenshots or manual human visual
+sign-off. The evidence records this explicitly.
+
+Read `docs/HQE_MULTI_STRATEGY_PHASE8_FINAL_RELEASE_CLOSURE.md` before any
+maintenance. Protected master remains dirty and unchanged; do not reset,
+stash, clean or merge it without separate explicit approval.
+
+Next core path: release maintenance only. Any master merge is a separate
+reviewed operation outside this Phase 8 checkpoint.

@@ -1,0 +1,61 @@
+{
+  "auto_trading_enabled": false,
+  "broker_execution_enabled": false,
+  "canonical_activation_performed": false,
+  "canonical_selection_changed": false,
+  "closure_status": "PAPER_ONLY_MULTI_STRATEGY_RELEASE_CLOSED",
+  "engine_version": "HQE_MULTI_STRATEGY_PHASE8_RELEASE_CLOSURE_V1",
+  "generated_at_utc": "2026-07-17T14:00:09+00:00",
+  "human_cutover_gate_created": false,
+  "lifecycle_state_ledger_write_performed": false,
+  "master_merge_performed": false,
+  "multi_strategy_phases_closed": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8
+  ],
+  "option_selling_enabled": false,
+  "product": "Hunter Quant Engine",
+  "profitability_claim": false,
+  "real_money_enabled": false,
+  "real_orders_enabled": false,
+  "release_scope": "PAPER_DATA_RESEARCH_MULTI_STRATEGY_ONLY",
+  "release_statement": "HQE multi-strategy roadmap is closed only for paper/data/research use. Real execution and canonical activation remain excluded.",
+  "release_version": "0.9.0-paper-rc5",
+  "runtime_control_performed": false,
+  "safety_lock": {
+    "data_only": true,
+    "no_auto_trading": true,
+    "no_broker_execution": true,
+    "no_canonical_activation": true,
+    "no_fake_trades": true,
+    "no_option_selling": true,
+    "no_profitability_claim": true,
+    "no_real_money": true,
+    "no_real_orders": true,
+    "paper_only": true,
+    "research_only": true
+  },
+  "schema_version": "1.0",
+  "source_head_before_closure_commit": "4f0866e06f99a276f0ad02599328206286f80e5f",
+  "validation": {
+    "cumulative_multi_strategy": "428/428 PASS",
+    "environment_recovery": "9/9 PASS",
+    "focused_release_tests": "30/30 PASS",
+    "freeze_verification": "PASS",
+    "full_functional_regression": "3586/3586 PASS"
+  },
+  "visual_acceptance": {
+    "actual_gui_render_smoke_executed": true,
+    "manual_visual_signoff_claimed": false,
+    "report_path": "D:\\HQE_BACKTEST_RUNS\\HQE_MULTI_STRATEGY_PHASE8_VISUAL_ACCEPTANCE_20260717_192802\\HQE_PHASE8_AUTOMATED_VISUAL_ACCEPTANCE.json",
+    "sha256": "d3d50d0ce2a673cf8c98e08afcfece352169c60500830006a6dd65eadeb7786a",
+    "status": "PASS"
+  }
+}

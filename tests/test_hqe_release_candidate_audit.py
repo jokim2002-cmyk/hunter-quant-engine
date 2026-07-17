@@ -80,6 +80,8 @@ def test_guard_payload_locks_execution():
     assert payload["guard_check_status"] == "PASS"
     assert payload["snapshot_mode"] == "READ_ONLY"
     assert payload["freeze_hashes"] == "SHA256"
+    assert payload["phase8_release_closure_required"] is True
+    assert payload["multi_strategy_phases_closed"] == list(range(9))
     assert payload["real_orders_enabled"] is False
     assert payload["broker_execution_enabled"] is False
     assert payload["option_selling_enabled"] is False

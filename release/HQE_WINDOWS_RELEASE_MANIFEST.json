@@ -16,12 +16,25 @@
     "scripts/hqe_app_release_candidate_audit_center.py",
     "scripts/hqe_operator_acceptance_engine.py",
     "scripts/hqe_app_operator_acceptance_center.py",
-    "scripts/hqe_final_rc_signoff_engine.py"
+    "scripts/hqe_final_rc_signoff_engine.py",
+    "scripts/hqe_multi_strategy_phase8_visual_acceptance.py",
+    "scripts/hqe_multi_strategy_phase8_release_closure.py"
+  ],
+  "multi_strategy_phases_closed": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8
   ],
   "product": "Hunter Quant Engine",
-  "product_version": "0.9.0-paper-rc4",
+  "product_version": "0.9.0-paper-rc5",
   "profitability_claim": false,
-  "release_channel": "PAPER_RC",
+  "release_channel": "PAPER_MULTI_STRATEGY_RC",
   "required_files": [
     "scripts/hqe_product_app_v2.py",
     "scripts/hqe_release_readiness_engine.py",
@@ -39,16 +52,28 @@
     "docs/HQE_OPERATOR_ACCEPTANCE_RC_SIGNOFF_BUNCH.md",
     "scripts/hqe_final_rc_signoff_engine.py",
     "docs/HQE_FINAL_PAPER_ONLY_RC_SIGNOFF.md",
-    "release/HQE_PAPER_ONLY_RC_SIGNOFF.json"
+    "release/HQE_PAPER_ONLY_RC_SIGNOFF.json",
+    "scripts/hqe_app_strategy_pack_center.py",
+    "src/multi_strategy/product_ui_manager.py",
+    "src/multi_strategy/import_workflow.py",
+    "src/multi_strategy/parallel_observation.py",
+    "docs/HQE_MULTI_STRATEGY_PHASE5_COMPLETE_PRODUCT_UI_STRATEGY_MANAGER.md",
+    "docs/HQE_MULTI_STRATEGY_PHASE6_COMPLETE_REVIEWED_IMPORT_WORKFLOW.md",
+    "docs/HQE_MULTI_STRATEGY_PHASE7_COMPLETE_PARALLEL_ISOLATED_PAPER_OBSERVATION.md",
+    "scripts/hqe_multi_strategy_phase8_visual_acceptance.py",
+    "scripts/hqe_multi_strategy_phase8_release_closure.py",
+    "docs/HQE_MULTI_STRATEGY_PHASE8_FINAL_RELEASE_CLOSURE.md",
+    "release/HQE_MULTI_STRATEGY_PHASE8_RELEASE_CLOSURE.json"
   ],
   "safety": {
     "auto_trading": false,
     "broker_execution": false,
+    "canonical_activation": false,
     "option_selling": false,
     "paper_only": true,
     "real_money": false,
     "real_orders": false
   },
-  "schema_version": "1.0",
+  "schema_version": "1.1",
   "shortcut_name": "Hunter Quant Engine"
 }

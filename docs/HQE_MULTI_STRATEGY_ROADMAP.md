@@ -414,3 +414,26 @@ Parallel observation writes exclusively under its dedicated workspace root.
 
 Next: Phase 8 final validation, visual acceptance, freeze refresh and release
 closure.
+
+
+<!-- HQE_MULTI_STRATEGY_PHASE8_COMPLETE_ROADMAP_V1 -->
+## Phase 8 complete — Final validation and paper-only release closure
+
+Phase 8 implementation is complete:
+
+- actual automated Windows GUI render smoke
+- Advanced Tools and full product-center acceptance
+- controlled master/feature release preflight
+- RC5 multi-strategy Windows release manifest
+- expanded release-asset and safety QA
+- final multi-strategy release-closure evidence
+- SHA-256 freeze refresh against final release bytes
+- closure of all four deferred release/freeze tests
+- exact checkpoint commit and feature-branch push
+- zero master merge, canonical activation or real execution
+
+The multi-strategy roadmap is complete. The release remains strictly
+paper/data/research only and makes no profitability claim.
+
+Next: preserve the closed release. Future work requires a separately approved
+maintenance plan or master-integration review.

@@ -16,9 +16,10 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
-VERSION = "HQE_RELEASE_CANDIDATE_AUDIT_V1"
+VERSION = "HQE_RELEASE_CANDIDATE_AUDIT_V2"
 AUDIT_FOLDER = "HQE_RELEASE_CENTER/rc_audits"
 FREEZE_MANIFEST = "release/HQE_PAPER_ONLY_RC_FREEZE_MANIFEST.json"
+PHASE8_CLOSURE = "release/HQE_MULTI_STRATEGY_PHASE8_RELEASE_CLOSURE.json"
 
 APP_CENTER_MARKERS = (
     "Operator Dashboard",
@@ -30,6 +31,9 @@ APP_CENTER_MARKERS = (
     "Windows Release Center",
     "Safety & Kill-Switch",
     "Paper-Watch Session Control",
+    "Product Strategy Manager",
+    "Reviewed Package Import",
+    "Parallel Observation Center",
 )
 
 SNAPSHOT_SCRIPTS = (
@@ -445,14 +449,14 @@ def generate_freeze_manifest(
         for path in targets
     ]
     payload = {
-        "schema_version": "1.0",
+        "schema_version": "1.1",
         "product": "Hunter Quant Engine",
         "freeze_name": "HQE_PAPER_ONLY_PRODUCT_RC_FREEZE",
-        "version": "0.9.0-paper-rc2",
+        "version": str(read_json(repo_root / "release" / "HQE_WINDOWS_RELEASE_MANIFEST.json").get("product_version", "")),
         "generated_at_utc": utc_now_text(),
         "source_head_before_freeze_commit": source_head,
         "freeze_commit_message": (
-            "Add end-to-end RC audit and paper-only product freeze"
+            "Complete Phase 8 final paper-only multi-strategy release closure"
         ),
         "file_count": len(files),
         "files": files,
@@ -514,6 +518,51 @@ def verify_freeze_manifest(repo_root: Path) -> dict[str, Any]:
     }
 
 
+def release_closure_check(repo_root: Path) -> dict[str, Any]:
+    target = repo_root / PHASE8_CLOSURE
+    payload = read_json(target)
+    allowed = {
+        "VALIDATION_READY",
+        "PAPER_ONLY_MULTI_STRATEGY_RELEASE_CLOSED",
+    }
+    safety = payload.get("safety_lock", {})
+    safe = all(
+        safety.get(key) is value
+        for key, value in SAFETY_LOCK.items()
+    ) and safety.get("no_canonical_activation") is True
+    blocked_flags = all(
+        payload.get(key) is False
+        for key in (
+            "real_money_enabled",
+            "real_orders_enabled",
+            "broker_execution_enabled",
+            "auto_trading_enabled",
+            "option_selling_enabled",
+            "canonical_activation_performed",
+            "human_cutover_gate_created",
+            "master_merge_performed",
+            "profitability_claim",
+        )
+    )
+    passed = (
+        bool(payload)
+        and payload.get("closure_status") in allowed
+        and safe
+        and blocked_flags
+    )
+    return {
+        "name": "Phase 8 paper-only multi-strategy release closure",
+        "status": "PASS" if passed else "FAILED",
+        "message": (
+            "Phase 8 closure evidence is present and execution remains locked."
+            if passed
+            else "Phase 8 closure evidence is missing or unsafe."
+        ),
+        "closure_status": payload.get("closure_status", "MISSING"),
+        "closure_path": str(target),
+    }
+
+
 def audit_snapshot(
     repo_root: Path,
     workspace: Path,
@@ -527,6 +576,7 @@ def audit_snapshot(
             app_navigation_check(repo_root),
             unsafe_app_call_check(repo_root),
             verify_freeze_manifest(repo_root),
+            release_closure_check(repo_root),
         )
     )
     checks.extend(guard_checks(repo_root))
@@ -621,6 +671,8 @@ def guard_payload() -> dict[str, Any]:
         "workflow": "END_TO_END_RC_AUDIT_AND_PAPER_ONLY_FREEZE",
         "snapshot_mode": "READ_ONLY",
         "freeze_hashes": "SHA256",
+        "phase8_release_closure_required": True,
+        "multi_strategy_phases_closed": [0, 1, 2, 3, 4, 5, 6, 7, 8],
         "real_money_enabled": False,
         "real_orders_enabled": False,
         "broker_execution_enabled": False,

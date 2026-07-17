@@ -22,6 +22,9 @@ def test_required_release_assets_cover_core_product_files():
     assert "release/HQE_PAPER_ONLY_RC_FREEZE_MANIFEST.json" in required
     assert "release/HQE_PAPER_ONLY_RC_SIGNOFF.json" in required
     assert "assets/HQE_PRODUCT_APP.ico" in required
+    assert "release/HQE_MULTI_STRATEGY_PHASE8_RELEASE_CLOSURE.json" in required
+    assert "scripts/hqe_multi_strategy_phase8_visual_acceptance.py" in required
+    assert "src/multi_strategy/parallel_observation.py" in required
 
 
 def test_final_release_qa_passes(tmp_path):
@@ -31,4 +34,6 @@ def test_final_release_qa_passes(tmp_path):
     assert payload["real_order_invoked"] is False
     assert payload["broker_execution_invoked"] is False
     assert payload["auto_trading_invoked"] is False
+    assert payload["canonical_activation_invoked"] is False
+    assert payload["master_merge_invoked"] is False
     assert Path(payload["report_path"]).exists()

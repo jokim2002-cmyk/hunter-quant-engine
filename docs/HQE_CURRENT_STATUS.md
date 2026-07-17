@@ -1204,3 +1204,22 @@ execution. No ranking or profitability claim is produced.
 
 Next roadmap phase: complete Phase 8 final validation, freeze and release
 closure.
+
+
+<!-- HQE_MULTI_STRATEGY_PHASE8_COMPLETE_CHECKPOINT_V1 -->
+## Multi-Strategy Phase 8 final validation and release closure
+
+The full multi-strategy roadmap is closed as a paper/data/research release
+candidate. Automated Windows GUI render acceptance, final release QA,
+controlled-branch preflight and the refreshed SHA-256 freeze all pass.
+
+The release freeze now covers the Product Strategy Manager, reviewed metadata
+import workflow, parallel isolated observation and the Phase 8 closure
+evidence. The four formerly deferred release/freeze tests are closed.
+
+No canonical selection or activation occurred. The Phase 4 human cutover gate,
+canonical runtime, lifecycle evidence and real-execution boundary remain
+unchanged. Protected master was not merged.
+
+Next core path: no new roadmap phase. Preserve the release closure and perform
+only separately approved maintenance or master-integration review.
