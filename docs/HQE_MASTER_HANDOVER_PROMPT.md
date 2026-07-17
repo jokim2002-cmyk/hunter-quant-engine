@@ -330,3 +330,26 @@ before continuing.
 
 Next core path: implement the complete Phase 5 Product UI Strategy Manager
 bunch using these APIs. Do not add a second canonical activation path.
+
+
+<!-- HQE_MULTI_STRATEGY_PHASE5_COMPLETE_HANDOVER_V1 -->
+## Phase 5 complete Product Strategy Manager handover
+
+Phase 5 is implemented as one cohesive Product UI bunch. Do not recreate
+the Product Strategy Manager or add a second strategy-selection surface.
+
+The manager is integrated into `scripts/hqe_product_app_v2.py` and uses
+`src/multi_strategy/product_ui_manager.py` as its deterministic safety
+model. It combines the existing Strategy Pack Center, Builder selection
+and Phase 4 canonical runtime truth.
+
+Select/clear operations are configuration-only and are blocked while the
+runtime is running or lifecycle is OPEN/HELD. The manager does not create
+a human gate and does not activate or control the canonical runtime.
+
+Read
+`docs/HQE_MULTI_STRATEGY_PHASE5_COMPLETE_PRODUCT_UI_STRATEGY_MANAGER.md`
+before continuing.
+
+Next core path: implement the complete Phase 6 reviewed strategy-package
+import workflow without auto-activation.

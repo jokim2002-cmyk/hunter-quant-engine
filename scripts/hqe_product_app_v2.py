@@ -15,6 +15,10 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, Optional
 
+REPO_ROOT = Path(__file__).resolve().parents[1]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
 from hqe_app_operator_acceptance_center import (
     launch_operator_acceptance,
     operator_acceptance_center_snapshot,
@@ -56,6 +60,13 @@ from hqe_app_strategy_pack_center import (
     export_pack as export_strategy_pack,
     import_pack as import_strategy_pack,
     strategy_pack_center_snapshot,
+)
+
+from src.multi_strategy.product_ui_manager import (
+    build_product_strategy_manager_snapshot,
+    evaluate_clear_configuration,
+    evaluate_configuration_selection,
+    guard_payload as product_strategy_manager_guard_payload,
 )
 
 from hqe_app_market_data_quality_center import (
@@ -347,6 +358,9 @@ def guard_payload() -> Dict[str, Any]:
         "no_auto_trading": True,
         "no_fake_trades": True,
         "no_profitability_claim": True,
+        "multi_strategy_phase5_product_ui": (
+            product_strategy_manager_guard_payload()
+        ),
         "safety_lock": SAFETY_LOCK,
     }
 
@@ -5363,6 +5377,325 @@ def run_gui(args: argparse.Namespace) -> int:
 
 
 
+
+    product_strategy_manager_status = tk.StringVar(
+        value="Product Strategy Manager will appear after refresh."
+    )
+
+    def refresh_product_strategy_manager_center(
+        show_dialog: bool = False,
+    ) -> dict:
+        try:
+            pack_snapshot = strategy_pack_center_snapshot(
+                repo_root(),
+                workspace,
+            )
+            builder_snapshot = builder_center_snapshot(
+                repo_root(),
+                workspace,
+            )
+            paper_snapshot = paper_product_snapshot(workspace)
+            snapshot = build_product_strategy_manager_snapshot(
+                pack_snapshot=pack_snapshot,
+                builder_snapshot=builder_snapshot,
+                runtime_snapshot=paper_snapshot,
+                paper_snapshot=paper_snapshot,
+                runtime_running=controller.is_running(),
+            )
+            runtime = snapshot.get("canonical_runtime", {})
+            selected = snapshot.get("selected_configuration", {})
+            display = (
+                f"Available: {snapshot.get('available_count', 0)} • "
+                f"Valid: {snapshot.get('valid_count', 0)}\n"
+                f"Paper configuration: "
+                f"{selected.get('display_text', 'None')}\n"
+                f"Canonical runtime: "
+                f"{runtime.get('runtime_mode', 'UNKNOWN')} • "
+                f"Gate {runtime.get('gate_status', 'UNKNOWN')} • "
+                f"Lifecycle {runtime.get('lifecycle', 'FLAT')}\n"
+                f"{snapshot.get('operator_message', '')}"
+            )
+            product_strategy_manager_status.set(display)
+            footer_status.set(snapshot.get("operator_message", display))
+            if show_dialog:
+                messagebox.showinfo(
+                    "Product Strategy Manager",
+                    display,
+                )
+            return snapshot
+        except Exception as exc:
+            product_strategy_manager_status.set(
+                "Product Strategy Manager refresh failed safely."
+            )
+            footer_status.set(f"Strategy Manager error: {exc}")
+            if show_dialog:
+                messagebox.showerror(
+                    "Product Strategy Manager",
+                    str(exc),
+                )
+            return {}
+
+    def open_product_strategy_manager_center() -> None:
+        snapshot = refresh_product_strategy_manager_center(False)
+
+        dialog = tk.Toplevel(root)
+        dialog.title("HQE — Product Strategy Manager")
+        dialog.geometry("1120x720")
+        dialog.minsize(980, 620)
+        dialog.configure(
+            bg=palette.get("bg", palette.get("app_bg", "#0b1220"))
+        )
+        dialog.transient(root)
+
+        outer = tk.Frame(
+            dialog,
+            bg=palette["panel"],
+            padx=16,
+            pady=14,
+        )
+        outer.pack(fill="both", expand=True, padx=14, pady=14)
+
+        tk.Label(
+            outer,
+            text="Product Strategy Manager",
+            bg=palette["panel"],
+            fg=palette["text"],
+            font=("Segoe UI Semibold", 18),
+            anchor="w",
+        ).pack(fill="x")
+
+        tk.Label(
+            outer,
+            text=(
+                "Available Strategies • Selected Paper Configuration • "
+                "Canonical Runtime Truth • Safe Change Guards"
+            ),
+            bg=palette["panel"],
+            fg=palette["muted"],
+            anchor="w",
+            pady=4,
+        ).pack(fill="x")
+
+        summary_var = tk.StringVar(
+            value=product_strategy_manager_status.get()
+        )
+        tk.Label(
+            outer,
+            textvariable=summary_var,
+            bg=palette["panel_alt"],
+            fg=palette["muted"],
+            justify="left",
+            anchor="w",
+            padx=10,
+            pady=8,
+        ).pack(fill="x", pady=(8, 10))
+
+        body = tk.Frame(outer, bg=palette["panel"])
+        body.pack(fill="both", expand=True)
+
+        strategy_list = tk.Listbox(
+            body,
+            width=46,
+            exportselection=False,
+        )
+        strategy_list.pack(side="left", fill="both", expand=False)
+
+        detail_var = tk.StringVar(value="Select a strategy.")
+        detail = tk.Label(
+            body,
+            textvariable=detail_var,
+            bg=palette["panel_alt"],
+            fg=palette["muted"],
+            justify="left",
+            anchor="nw",
+            wraplength=570,
+            padx=12,
+            pady=12,
+        )
+        detail.pack(
+            side="left",
+            fill="both",
+            expand=True,
+            padx=(12, 0),
+        )
+
+        visible_records: list[dict] = []
+        latest_snapshot = {"value": snapshot}
+
+        def selected_record() -> dict:
+            selection = strategy_list.curselection()
+            if not selection:
+                return {}
+            index = int(selection[0])
+            if index >= len(visible_records):
+                return {}
+            return visible_records[index]
+
+        def render_selected(_event=None) -> None:
+            record = selected_record()
+            if not record:
+                detail_var.set("Select a strategy.")
+                return
+            parameters = record.get("parameters", {})
+            parameter_text = "\n".join(
+                f"  {key}: {value}"
+                for key, value in sorted(parameters.items())
+            ) or "  none"
+            validation = record.get("validation", {})
+            detail_var.set(
+                f"Name: {record.get('name', '')}\n"
+                f"ID: {record.get('strategy_id', '')}\n"
+                f"Version: {record.get('version', '')}\n"
+                f"Category: {record.get('category', '')}\n"
+                f"Source: {record.get('source', '')}\n"
+                f"Status: {record.get('status', '')}\n"
+                f"Valid: {record.get('valid', False)}\n"
+                f"Paper only: {record.get('paper_only', False)}\n"
+                f"Reviewed current SMC: "
+                f"{record.get('reviewed_current_smc', False)}\n"
+                f"Validation: {validation}\n\n"
+                f"Parameters:\n{parameter_text}\n\n"
+                f"{record.get('description', '')}\n\n"
+                f"Path:\n{record.get('path', '')}"
+            )
+
+        def populate(current: dict) -> None:
+            latest_snapshot["value"] = current
+            visible_records.clear()
+            strategy_list.delete(0, "end")
+            for record in current.get("records", []):
+                visible_records.append(record)
+                validity = "VALID" if record.get("valid") else "INVALID"
+                reviewed = (
+                    " • REVIEWED CURRENT"
+                    if record.get("reviewed_current_smc")
+                    else ""
+                )
+                strategy_list.insert(
+                    "end",
+                    f"[{validity}] {record.get('name', '')} | "
+                    f"{record.get('version', '')}{reviewed}",
+                )
+            if visible_records:
+                strategy_list.selection_set(0)
+                render_selected()
+            else:
+                detail_var.set("No strategy packs are available.")
+
+        def refresh_dialog() -> None:
+            current = refresh_product_strategy_manager_center(False)
+            summary_var.set(product_strategy_manager_status.get())
+            populate(current)
+
+        def select_configuration() -> None:
+            record = selected_record()
+            if not record:
+                messagebox.showwarning(
+                    "Product Strategy Manager",
+                    "Select a strategy first.",
+                )
+                return
+            decision = evaluate_configuration_selection(
+                latest_snapshot.get("value", {}),
+                record,
+            )
+            if not decision.allowed:
+                messagebox.showwarning(
+                    "Strategy Change Blocked",
+                    "\n".join(decision.blockers),
+                )
+                return
+            try:
+                target = select_paper_pack(
+                    Path(record["path"]),
+                    workspace,
+                )
+                messagebox.showinfo(
+                    "Product Strategy Manager",
+                    "Paper configuration selected safely:\n"
+                    f"{target}\n\n{decision.warning}",
+                )
+                refresh_dialog()
+            except Exception as exc:
+                messagebox.showerror(
+                    "Product Strategy Manager",
+                    str(exc),
+                )
+
+        def clear_configuration() -> None:
+            decision = evaluate_clear_configuration(
+                latest_snapshot.get("value", {})
+            )
+            if not decision.allowed:
+                messagebox.showwarning(
+                    "Strategy Change Blocked",
+                    "\n".join(decision.blockers),
+                )
+                return
+            try:
+                clear_paper_selection(workspace)
+                messagebox.showinfo(
+                    "Product Strategy Manager",
+                    "Paper strategy configuration cleared safely.\n\n"
+                    f"{decision.warning}",
+                )
+                refresh_dialog()
+            except Exception as exc:
+                messagebox.showerror(
+                    "Product Strategy Manager",
+                    str(exc),
+                )
+
+        strategy_list.bind("<<ListboxSelect>>", render_selected)
+
+        buttons = tk.Frame(outer, bg=palette["panel"])
+        buttons.pack(fill="x", pady=(12, 0))
+
+        ttk.Button(
+            buttons,
+            text="Refresh",
+            command=refresh_dialog,
+        ).pack(side="left", padx=(0, 6))
+
+        ttk.Button(
+            buttons,
+            text="Select for Paper Configuration",
+            command=select_configuration,
+        ).pack(side="left", padx=6)
+
+        ttk.Button(
+            buttons,
+            text="Clear Paper Configuration",
+            command=clear_configuration,
+        ).pack(side="left", padx=6)
+
+        ttk.Button(
+            buttons,
+            text="Open Strategy Pack Center",
+            command=open_strategy_pack_center,
+        ).pack(side="left", padx=6)
+
+        ttk.Button(
+            buttons,
+            text="Open Strategy Builder",
+            command=open_strategy_builder_center,
+        ).pack(side="left", padx=6)
+
+        tk.Label(
+            outer,
+            text=(
+                "CONFIGURATION SELECTION ONLY • "
+                "Canonical activation remains separately human-gated • "
+                "OPEN/HELD OR RUNNING SWITCH BLOCKED • REAL ORDERS NO"
+            ),
+            bg=palette["panel"],
+            fg=palette["muted"],
+            anchor="w",
+            pady=10,
+        ).pack(fill="x")
+
+        populate(snapshot)
+
     strategy_pack_status = tk.StringVar(
         value="Strategy-pack registry will appear after refresh."
     )
@@ -8174,6 +8507,48 @@ def run_gui(args: argparse.Namespace) -> int:
             side='right',
             pady=(4, 0),
         )
+        card_strategy_manager = tk.Frame(
+            advanced_tools_inner,
+            bg=hub_panel,
+            highlightthickness=1,
+            highlightbackground=hub_border,
+            padx=12,
+            pady=10,
+        )
+        card_strategy_manager.pack(
+            fill='x',
+            padx=4,
+            pady=5,
+        )
+        tk.Label(
+            card_strategy_manager,
+            text='Product Strategy Manager',
+            bg=hub_panel,
+            fg=hub_text,
+            font=('Segoe UI Semibold', 12),
+            anchor='w',
+        ).pack(fill='x')
+        tk.Label(
+            card_strategy_manager,
+            text=(
+                'View available strategies, selected paper configuration, '
+                'parameters, validation and safe switch blockers.'
+            ),
+            bg=hub_panel,
+            fg=hub_muted,
+            anchor='w',
+            justify='left',
+            wraplength=650,
+            pady=5,
+        ).pack(fill='x')
+        ttk.Button(
+            card_strategy_manager,
+            text='Open Product Strategy Manager',
+            command=open_product_strategy_manager_center,
+        ).pack(
+            side='right',
+            pady=(4, 0),
+        )
         card_3 = tk.Frame(
             advanced_tools_inner,
             bg=hub_panel,
@@ -8844,7 +9219,7 @@ def run_gui(args: argparse.Namespace) -> int:
             rendered = '\n'.join(
                 _collect(dialogs[-1])
             )
-            required = ('Operator Dashboard', 'Market Data Quality Center', 'Strategy Pack Center', 'Strategy Builder & Selector', 'Backtest Product Center', 'Session History', 'Paper Validation Intelligence', 'Windows Release Center', 'Final RC Audit & Freeze', 'Operator Acceptance & RC Sign-Off')
+            required = ('Operator Dashboard', 'Market Data Quality Center', 'Product Strategy Manager', 'Strategy Pack Center', 'Strategy Builder & Selector', 'Backtest Product Center', 'Session History', 'Paper Validation Intelligence', 'Windows Release Center', 'Final RC Audit & Freeze', 'Operator Acceptance & RC Sign-Off')
             missing = [
                 label
                 for label in required

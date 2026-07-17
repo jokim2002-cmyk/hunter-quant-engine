@@ -1145,3 +1145,23 @@ unchanged. Real orders, broker execution, auto trading, real money and
 option selling remain disabled.
 
 Next roadmap phase: the complete Product UI Strategy Manager bunch.
+
+
+<!-- HQE_MULTI_STRATEGY_PHASE5_COMPLETE_CHECKPOINT_V1 -->
+## Multi-Strategy Phase 5 complete Product Strategy Manager
+
+The Product App now includes a dedicated Product Strategy Manager that
+displays available strategy packs, selected paper configuration, version,
+parameters, validation state, canonical runtime mode, gate status,
+lifecycle and exact strategy-change blockers.
+
+Strategy configuration changes are blocked while Paper Trading is running
+or while lifecycle is OPEN/HELD. The manager calls only the existing
+configuration select/clear functions. It cannot create the Phase 4 human
+gate, activate the canonical runtime, start/stop Paper Trading, write
+lifecycle evidence or enable execution.
+
+Real orders, broker execution, auto trading, real money and option selling
+remain disabled.
+
+Next roadmap phase: complete Phase 6 reviewed import workflow.
