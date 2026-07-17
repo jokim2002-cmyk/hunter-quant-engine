@@ -353,3 +353,28 @@ before continuing.
 
 Next core path: implement the complete Phase 6 reviewed strategy-package
 import workflow without auto-activation.
+
+
+<!-- HQE_MULTI_STRATEGY_PHASE6_COMPLETE_HANDOVER_V1 -->
+## Phase 6 complete reviewed import workflow handover
+
+Phase 6 is implemented as one cohesive workflow. Do not recreate quarantine,
+approval or atomic installation primitives, and do not add an alternative
+dynamic-import path.
+
+The operator surface is integrated into the Strategy Pack Center.
+`src/multi_strategy/import_workflow.py` orchestrates inspect, stable
+quarantine, review request, exact-phrase approval and metadata-only catalog
+installation. It persists workflow, approval, install and audit evidence.
+
+Approval is allowed only for implementation keys already reviewed locally.
+Installation does not import package code, register an implementation, change
+paper selection, create a human gate, activate the canonical runtime, control
+Paper Trading or write lifecycle evidence.
+
+Read
+`docs/HQE_MULTI_STRATEGY_PHASE6_COMPLETE_REVIEWED_IMPORT_WORKFLOW.md`
+before continuing.
+
+Next core path: implement the complete Phase 7 parallel isolated
+paper-observation workflow without activating imported metadata.

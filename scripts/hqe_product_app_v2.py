@@ -56,9 +56,14 @@ from hqe_app_strategy_builder_center import (
 )
 
 from hqe_app_strategy_pack_center import (
+    approve_reviewed_package_import,
+    begin_reviewed_package_import,
     clone_pack as clone_strategy_pack,
     export_pack as export_strategy_pack,
+    guard_payload as strategy_pack_center_guard_payload,
     import_pack as import_strategy_pack,
+    install_reviewed_package_metadata,
+    reviewed_import_snapshot,
     strategy_pack_center_snapshot,
 )
 
@@ -360,6 +365,11 @@ def guard_payload() -> Dict[str, Any]:
         "no_profitability_claim": True,
         "multi_strategy_phase5_product_ui": (
             product_strategy_manager_guard_payload()
+        ),
+        "multi_strategy_phase6_reviewed_import": (
+            strategy_pack_center_guard_payload()[
+                "multi_strategy_phase6_reviewed_import"
+            ]
         ),
         "safety_lock": SAFETY_LOCK,
     }
@@ -5761,7 +5771,7 @@ def run_gui(args: argparse.Namespace) -> int:
             outer,
             text=(
                 "Built-ins • Versioning • Import/Export • "
-                "Locked Validation Candidate"
+                "Locked Validation Candidate • Reviewed Import"
             ),
             bg=palette["panel"],
             fg=palette["muted"],
@@ -5985,6 +5995,250 @@ def run_gui(args: argparse.Namespace) -> int:
                     str(exc),
                 )
 
+        def open_reviewed_import_workflow() -> None:
+            import_snapshot = reviewed_import_snapshot(workspace)
+
+            review_dialog = tk.Toplevel(dialog)
+            review_dialog.title("HQE — Reviewed Strategy Package Import")
+            review_dialog.geometry("980x650")
+            review_dialog.minsize(860, 560)
+            review_dialog.configure(bg=palette["panel"])
+            review_dialog.transient(dialog)
+
+            review_outer = tk.Frame(
+                review_dialog,
+                bg=palette["panel"],
+                padx=16,
+                pady=14,
+            )
+            review_outer.pack(fill="both", expand=True, padx=14, pady=14)
+
+            tk.Label(
+                review_outer,
+                text="Reviewed Strategy Package Import",
+                bg=palette["panel"],
+                fg=palette["text"],
+                font=("Segoe UI Semibold", 17),
+                anchor="w",
+            ).pack(fill="x")
+            tk.Label(
+                review_outer,
+                text=(
+                    "Inspect → Stable Quarantine → Review Request → "
+                    "Explicit Approval → Atomic Metadata-Only Install"
+                ),
+                bg=palette["panel"],
+                fg=palette["muted"],
+                anchor="w",
+                pady=5,
+            ).pack(fill="x")
+
+            review_status = tk.StringVar()
+            review_details = tk.StringVar()
+            latest = {"value": import_snapshot}
+
+            def render_import(current: dict) -> None:
+                latest["value"] = current
+                review_status.set(
+                    current.get(
+                        "display_text",
+                        "Reviewed import unavailable",
+                    )
+                )
+                blockers = current.get("blockers", [])
+                controls = current.get("controls", {})
+                review_details.set(
+                    f"State: {current.get('state', 'NO_WORKFLOW')}\n"
+                    f"Strategy: {current.get('strategy_id', '')} "
+                    f"{current.get('version', '')}\n"
+                    f"Implementation: "
+                    f"{current.get('implementation_key', '')}\n"
+                    f"Preview: {current.get('preview_status', '')}\n"
+                    f"Reviewed locally: "
+                    f"{current.get('reviewed_implementation_available', False)}\n"
+                    f"Installed metadata entries: "
+                    f"{current.get('installed_metadata_count', 0)}\n"
+                    f"Blockers: {blockers or 'none'}\n\n"
+                    f"Approve enabled: "
+                    f"{controls.get('approve_enabled', False)}\n"
+                    f"Install metadata enabled: "
+                    f"{controls.get('install_metadata_enabled', False)}\n\n"
+                    "Source code import: BLOCKED\n"
+                    "Strategy selection/activation: BLOCKED\n"
+                    "Runtime control/lifecycle writes: BLOCKED\n"
+                    "Real orders/broker execution/real money: BLOCKED\n\n"
+                    f"Evidence: {current.get('workflow_path', '')}"
+                )
+
+            tk.Label(
+                review_outer,
+                textvariable=review_status,
+                bg=palette["panel_alt"],
+                fg=palette["text"],
+                anchor="w",
+                padx=10,
+                pady=8,
+            ).pack(fill="x", pady=(8, 10))
+            tk.Label(
+                review_outer,
+                textvariable=review_details,
+                bg=palette["panel_alt"],
+                fg=palette["muted"],
+                justify="left",
+                anchor="nw",
+                padx=12,
+                pady=12,
+                wraplength=900,
+            ).pack(fill="both", expand=True)
+
+            def refresh_import() -> None:
+                render_import(reviewed_import_snapshot(workspace))
+
+            def choose_and_quarantine() -> None:
+                selected = filedialog.askdirectory(
+                    parent=review_dialog,
+                    title="Choose HQE Strategy Package Directory",
+                )
+                if not selected:
+                    return
+                actor = simpledialog.askstring(
+                    "Reviewed Import",
+                    "Requested by:",
+                    initialvalue=str(
+                        getattr(args, "user_id", "hqe-user")
+                    ),
+                    parent=review_dialog,
+                )
+                if not actor:
+                    return
+                try:
+                    current = begin_reviewed_package_import(
+                        Path(selected),
+                        workspace,
+                        requested_by=actor,
+                    )
+                    render_import(current)
+                    messagebox.showinfo(
+                        "Reviewed Import",
+                        "Package validated and copied to stable quarantine.\n"
+                        "Review evidence was created. No code was imported.",
+                    )
+                except Exception as exc:
+                    messagebox.showerror("Reviewed Import", str(exc))
+                    refresh_import()
+
+            def approve_import() -> None:
+                phrase = simpledialog.askstring(
+                    "Explicit Reviewed Import Approval",
+                    "Type exactly:\nAPPROVE REVIEWED METADATA IMPORT",
+                    parent=review_dialog,
+                )
+                if phrase is None:
+                    return
+                actor = simpledialog.askstring(
+                    "Explicit Reviewed Import Approval",
+                    "Approved by:",
+                    initialvalue=str(
+                        getattr(args, "user_id", "hqe-user")
+                    ),
+                    parent=review_dialog,
+                )
+                if not actor:
+                    return
+                note = simpledialog.askstring(
+                    "Explicit Reviewed Import Approval",
+                    "Review note (optional):",
+                    parent=review_dialog,
+                ) or ""
+                try:
+                    current = approve_reviewed_package_import(
+                        workspace,
+                        approval_phrase=phrase,
+                        approved_by=actor,
+                        review_note=note,
+                    )
+                    render_import(current)
+                    messagebox.showinfo(
+                        "Reviewed Import",
+                        "Metadata import approved. Activation remains blocked.",
+                    )
+                except Exception as exc:
+                    messagebox.showerror("Reviewed Import", str(exc))
+                    refresh_import()
+
+            def install_metadata() -> None:
+                if not messagebox.askyesno(
+                    "Atomic Metadata-Only Install",
+                    "Install approved metadata into the read-only catalog?\n\n"
+                    "No source code, selection or activation will be installed.",
+                    parent=review_dialog,
+                ):
+                    return
+                try:
+                    current = install_reviewed_package_metadata(workspace)
+                    render_import(current)
+                    messagebox.showinfo(
+                        "Reviewed Import",
+                        "Approved metadata installed atomically.\n"
+                        "Source code and runtime remain untouched.",
+                    )
+                    refresh_dialog()
+                except Exception as exc:
+                    messagebox.showerror("Reviewed Import", str(exc))
+                    refresh_import()
+
+            def open_evidence() -> None:
+                current = latest.get("value", {})
+                path_text = str(current.get("workflow_path", ""))
+                if not path_text:
+                    return
+                folder = Path(path_text).parent
+                try:
+                    os.startfile(folder)
+                except Exception as exc:
+                    messagebox.showerror("Reviewed Import", str(exc))
+
+            review_buttons = tk.Frame(review_outer, bg=palette["panel"])
+            review_buttons.pack(fill="x", pady=(12, 0))
+            ttk.Button(
+                review_buttons,
+                text="Choose & Quarantine Package",
+                command=choose_and_quarantine,
+            ).pack(side="left", padx=(0, 6))
+            ttk.Button(
+                review_buttons,
+                text="Explicitly Approve Metadata Import",
+                command=approve_import,
+            ).pack(side="left", padx=6)
+            ttk.Button(
+                review_buttons,
+                text="Install Approved Metadata",
+                command=install_metadata,
+            ).pack(side="left", padx=6)
+            ttk.Button(
+                review_buttons,
+                text="Refresh Evidence",
+                command=refresh_import,
+            ).pack(side="left", padx=6)
+            ttk.Button(
+                review_buttons,
+                text="Open Evidence Folder",
+                command=open_evidence,
+            ).pack(side="left", padx=6)
+
+            tk.Label(
+                review_outer,
+                text=(
+                    "METADATA CATALOG ONLY • NO DYNAMIC IMPORT • "
+                    "NO SELECTION • NO ACTIVATION • NO REAL EXECUTION"
+                ),
+                bg=palette["panel"],
+                fg=palette["muted"],
+                anchor="w",
+                pady=10,
+            ).pack(fill="x")
+            render_import(import_snapshot)
+
         pack_list.bind("<<ListboxSelect>>", show_selected)
         pack_list.bind(
             "<Double-Button-1>",
@@ -6008,6 +6262,12 @@ def run_gui(args: argparse.Namespace) -> int:
 
         ttk.Button(
             buttons,
+            text="Reviewed Package Import",
+            command=open_reviewed_import_workflow,
+        ).pack(side="left", padx=6)
+
+        ttk.Button(
+            buttons,
             text="Export Selected Pack",
             command=export_selected,
         ).pack(side="left", padx=6)
@@ -6027,8 +6287,8 @@ def run_gui(args: argparse.Namespace) -> int:
         tk.Label(
             outer,
             text=(
-                "PAPER/RESEARCH ONLY • REAL ORDERS BLOCKED • "
-                "OPTION SELLING BLOCKED"
+                "PAPER/RESEARCH ONLY • REVIEWED IMPORT IS METADATA-ONLY • "
+                "REAL ORDERS AND OPTION SELLING BLOCKED"
             ),
             bg=palette["panel"],
             fg=palette["muted"],

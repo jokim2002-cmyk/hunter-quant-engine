@@ -1165,3 +1165,22 @@ Real orders, broker execution, auto trading, real money and option selling
 remain disabled.
 
 Next roadmap phase: complete Phase 6 reviewed import workflow.
+
+
+<!-- HQE_MULTI_STRATEGY_PHASE6_COMPLETE_CHECKPOINT_V1 -->
+## Multi-Strategy Phase 6 complete reviewed import workflow
+
+The Product App now provides a governed reviewed-package import workflow:
+stable data-only quarantine, tamper-evident review request, explicit approval,
+reviewed implementation allowlisting and atomic metadata-only installation.
+
+Packages with unreviewed implementation keys remain quarantined and blocked.
+Identical repeated installs are idempotent; conflicting evidence for the same
+strategy ID/version fails closed.
+
+No package source code is imported, no implementation is registered, no
+strategy is selected or activated, and the Phase 4 human cutover boundary is
+unchanged. Real orders, broker execution, auto trading, real money and option
+selling remain disabled.
+
+Next roadmap phase: complete Phase 7 parallel isolated paper observation.

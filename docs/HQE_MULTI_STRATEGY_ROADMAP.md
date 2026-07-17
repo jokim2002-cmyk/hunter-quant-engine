@@ -366,3 +366,27 @@ integration boundary.
 
 Next: complete Phase 6 reviewed package import workflow, then Phase 7
 parallel isolated paper observation and Phase 8 release closure.
+
+
+<!-- HQE_MULTI_STRATEGY_PHASE6_COMPLETE_ROADMAP_V1 -->
+## Phase 6 complete — Reviewed strategy import workflow
+
+Phase 6 implementation is complete:
+
+- directory-based data-only package validation
+- checksum and executable-file policy enforcement
+- stable isolated quarantine copy
+- tamper-evident review request and approval records
+- exact operator approval phrase
+- reviewed implementation-key allowlist
+- atomic metadata-only installed catalog
+- idempotent duplicate install behavior
+- strategy ID/version collision blocking
+- Product App evidence and action surface
+- no dynamic import, registration, selection or activation authority
+
+Installed metadata remains inactive. Canonical activation continues to require
+the separate Phase 4 human gate and runtime safety boundary.
+
+Next: Phase 7 complete parallel isolated paper observation, followed by
+Phase 8 final validation, freeze and release closure.
