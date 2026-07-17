@@ -1494,8 +1494,16 @@ def run_gui(args: argparse.Namespace) -> int:
             )
 
     def refresh_status_async() -> None:
-        # Refresh startup status off the Tkinter UI thread.
+        # HQE_GUI_SMOKE_REFRESH_ASYNC_NOOP_V9
+        # Keep the production startup call/order unchanged while preventing
+        # automated GUI smoke processes from starting the normal async worker.
+        if (
+            os.environ.get("HQE_ADVANCED_TOOLS_SMOKE") == "1"
+            or os.environ.get("HQE_FULL_CENTER_SMOKE") == "1"
+        ):
+            return
 
+        # Refresh startup status off the Tkinter UI thread.
         def worker() -> None:
             try:
                 payload = app_status_payload(workspace)
@@ -3468,6 +3476,16 @@ def run_gui(args: argparse.Namespace) -> int:
                     open_market_data_quality_center,
                 ),
                 (
+                    "Product Strategy Manager",
+                    "View strategies, paper configuration and safe switch blockers.",
+                    open_product_strategy_manager_center,
+                ),
+                (
+                    "Parallel Observation Center",
+                    "Compare 2+ reviewed strategies in isolated paper-only lanes.",
+                    open_parallel_observation_center_direct,
+                ),
+                (
                     "Strategy Pack Center",
                     "Review and manage paper-only strategy packs.",
                     open_strategy_pack_center,
@@ -3678,11 +3696,16 @@ def run_gui(args: argparse.Namespace) -> int:
         root.destroy()
 
     root.protocol("WM_DELETE_WINDOW", close_app)
+
+    # HQE_ALL_GUI_SMOKE_STARTUP_TIMERS_DISABLED_V7
+    _hqe_gui_smoke_mode = (
+        os.environ.get("HQE_ADVANCED_TOOLS_SMOKE") == "1"
+        or os.environ.get("HQE_FULL_CENTER_SMOKE") == "1"
+    )
+
+    # HQE_NORMAL_STARTUP_ORDER_RESTORED_V9
     show_page("Overview")
     refresh_status_async()
-    # HQE_STABILIZATION_STARTUP_V1
-    root.after(15000, refresh_status_async)
-    root.after(1200, lambda: refresh_daily_operations(False))
 
     def _deferred_fyers_startup() -> None:
         try:
@@ -3693,9 +3716,13 @@ def run_gui(args: argparse.Namespace) -> int:
                 f"Broker startup refresh failed safely: {exc}"
             )
 
-    root.after(1700, _deferred_fyers_startup)
-    root.after(2400, lambda: refresh_broker_data_health(False))
-    root.after(3100, lambda: refresh_market_data_center(False))
+    if not _hqe_gui_smoke_mode:
+        # HQE_STABILIZATION_STARTUP_V1
+        root.after(15000, refresh_status_async)
+        root.after(1200, lambda: refresh_daily_operations(False))
+        root.after(1700, _deferred_fyers_startup)
+        root.after(2400, lambda: refresh_broker_data_health(False))
+        root.after(3100, lambda: refresh_market_data_center(False))
 
     daily_startup_status = tk.StringVar(
         value="Daily startup readiness will appear after refresh."
@@ -5466,7 +5493,9 @@ def run_gui(args: argparse.Namespace) -> int:
                 )
             return {}
 
-    def open_product_strategy_manager_center() -> None:
+    def _open_product_strategy_manager_center(
+        open_parallel: bool = False,
+    ) -> None:
         snapshot = refresh_product_strategy_manager_center(False)
 
         dialog = tk.Toplevel(root)
@@ -6179,6 +6208,56 @@ def run_gui(args: argparse.Namespace) -> int:
         ).pack(fill="x")
 
         populate(snapshot)
+
+    def open_product_strategy_manager_center() -> None:
+        _open_product_strategy_manager_center(False)
+
+    # HQE_DIRECT_PARALLEL_MANAGER_BUTTON_INVOKE_V7
+    def open_parallel_observation_center_direct() -> None:
+        before = set(root.winfo_children())
+        _open_product_strategy_manager_center(False)
+
+        manager_dialogs = [
+            child
+            for child in root.winfo_children()
+            if (
+                child not in before
+                and isinstance(child, tk.Toplevel)
+                and "Product Strategy Manager" in str(child.title())
+            )
+        ]
+        if not manager_dialogs:
+            raise RuntimeError(
+                "Product Strategy Manager parent did not open."
+            )
+        manager_dialog = manager_dialogs[-1]
+
+        def find_visible_button(widget, label: str):
+            try:
+                if (
+                    isinstance(widget, ttk.Button)
+                    and str(widget.cget("text")) == label
+                ):
+                    return widget
+            except Exception:
+                pass
+            for child in widget.winfo_children():
+                found = find_visible_button(child, label)
+                if found is not None:
+                    return found
+            return None
+
+        observation_button = find_visible_button(
+            manager_dialog,
+            "Parallel Observation Center",
+        )
+        if observation_button is None:
+            raise RuntimeError(
+                "Product Strategy Manager observation button is missing."
+            )
+
+        # Invoke the exact visible command an operator clicks.
+        observation_button.invoke()
 
     strategy_pack_status = tk.StringVar(
         value="Strategy-pack registry will appear after refresh."
@@ -9900,10 +9979,12 @@ def run_gui(args: argparse.Namespace) -> int:
         add="+",
     )
     root.after_idle(_fit_simple_trader_overview)
-    root.after(
-        250,
-        _schedule_trader_status_card_health,
-    )
+    # HQE_GUI_SMOKE_HEALTH_LOOP_DISABLED_V7
+    if not _hqe_gui_smoke_mode:
+        root.after(
+            250,
+            _schedule_trader_status_card_health,
+        )
 
     # HQE_STABILIZATION_MENU_V1
     hqe_menu_bar = tk.Menu(root)
@@ -9926,7 +10007,220 @@ def run_gui(args: argparse.Namespace) -> int:
     if os.environ.get(
         'HQE_ADVANCED_TOOLS_SMOKE'
     ) == '1':
-        def _hqe_smoke_advanced_tools():
+        def _hqe_collect_widget_text(widget):
+            values = []
+            try:
+                value = widget.cget('text')
+                if value:
+                    values.append(str(value))
+            except Exception:
+                pass
+            for child in widget.winfo_children():
+                values.extend(_hqe_collect_widget_text(child))
+            return values
+
+        def _hqe_find_button(widget, label):
+            try:
+                if (
+                    isinstance(widget, (ttk.Button, tk.Button))
+                    and str(widget.cget('text')) == label
+                ):
+                    return widget
+            except Exception:
+                pass
+            for child in widget.winfo_children():
+                found = _hqe_find_button(child, label)
+                if found is not None:
+                    return found
+            return None
+
+        # HQE_RECURSIVE_TOPLEVEL_DISCOVERY_V8
+        def _hqe_all_toplevels():
+            discovered = []
+
+            def walk(widget):
+                for child in widget.winfo_children():
+                    if isinstance(child, tk.Toplevel):
+                        discovered.append(child)
+                    walk(child)
+
+            walk(root)
+            return discovered
+
+        def _hqe_new_toplevels(before):
+            return [
+                child
+                for child in _hqe_all_toplevels()
+                if child not in before
+            ]
+
+        # HQE_VISIBLE_NAV_TITLE_WAIT_RECOVERY_V2
+        # TITLE_FRAGMENT_WAIT_V3
+        def _hqe_wait_for_toplevel(
+            before,
+            title_fragments,
+            timeout_seconds=6.0,
+        ):
+            deadline = time.monotonic() + timeout_seconds
+            latest_dialogs = []
+            latest_titles = []
+            while time.monotonic() < deadline:
+                try:
+                    root.update_idletasks()
+                    root.update()
+                except tk.TclError:
+                    break
+                latest_dialogs = _hqe_new_toplevels(before)
+                latest_titles = []
+                for item in latest_dialogs:
+                    try:
+                        latest_titles.append(str(item.title()))
+                    except Exception:
+                        latest_titles.append("")
+                if any(
+                    fragment in title
+                    for title in latest_titles
+                    for fragment in title_fragments
+                ):
+                    return latest_dialogs, latest_titles
+                time.sleep(0.05)
+            return latest_dialogs, latest_titles
+
+        def _hqe_destroy_dialogs(dialogs):
+            for item in reversed(dialogs):
+                try:
+                    item.destroy()
+                except Exception:
+                    pass
+            root.update_idletasks()
+
+        def _hqe_smoke_advanced_tools_body():
+            # HQE_VISIBLE_NAV_CLEAN_EXIT_RECOVERY_V3
+            # Smoke-only suppression: unrelated startup/status dialogs must
+            # never block automated navigation acceptance.
+            for _hqe_modal_name in (
+                "showwarning",
+                "showinfo",
+                "showerror",
+            ):
+                setattr(
+                    messagebox,
+                    _hqe_modal_name,
+                    lambda *_args, **_kwargs: None,
+                )
+            messagebox.askyesno = (
+                lambda *_args, **_kwargs: False
+            )
+
+            # HQE_SMOKE_CALLBACK_ERROR_CAPTURE_V6
+            _hqe_callback_errors = []
+
+            def _hqe_capture_callback_exception(
+                exception_type,
+                exception_value,
+                exception_traceback,
+            ):
+                _hqe_callback_errors.append(
+                    f"{exception_type.__name__}: {exception_value}"
+                )
+                print(
+                    "HQE_SMOKE_CALLBACK_ERROR_V6|"
+                    + _hqe_callback_errors[-1],
+                    flush=True,
+                )
+
+            root.report_callback_exception = (
+                _hqe_capture_callback_exception
+            )
+
+            show_advanced_tools_page()
+            root.update_idletasks()
+            root.update()
+            rendered_page = '\n'.join(
+                _hqe_collect_widget_text(page_panel)
+            )
+            direct_required = (
+                'Product Strategy Manager',
+                'Parallel Observation Center',
+            )
+            direct_missing = [
+                label for label in direct_required
+                if label not in rendered_page
+            ]
+            if direct_missing:
+                raise RuntimeError(
+                    'Advanced Tools page missing direct navigation: '
+                    + ', '.join(direct_missing)
+                )
+
+            manager_button = _hqe_find_button(
+                page_panel, 'Product Strategy Manager'
+            )
+            observation_button = _hqe_find_button(
+                page_panel, 'Parallel Observation Center'
+            )
+            if manager_button is None or observation_button is None:
+                raise RuntimeError(
+                    'Visible multi-strategy navigation buttons not found.'
+                )
+
+            before = set(_hqe_all_toplevels())
+            manager_button.invoke()
+            manager_dialogs, manager_titles = _hqe_wait_for_toplevel(
+                before,
+                ('Product Strategy Manager',),
+            )
+            if not any(
+                'Product Strategy Manager' in title
+                for title in manager_titles
+            ):
+                raise RuntimeError(
+                    'Product Strategy Manager visible button did not open. '
+                    + 'Observed titles: '
+                    + repr(manager_titles)
+                )
+            _hqe_destroy_dialogs(manager_dialogs)
+
+            before = set(_hqe_all_toplevels())
+            observation_button.invoke()
+            observation_dialogs, observation_titles = (
+                _hqe_wait_for_toplevel(
+                    before,
+                    (
+                        'Parallel Isolated Paper Observation',
+                    ),
+                )
+            )
+            if not any(
+                'Parallel Isolated Paper Observation' in title
+                for title in observation_titles
+            ):
+                raise RuntimeError(
+                    'Parallel Observation Center visible button did not open. '
+                    + 'Observed titles: '
+                    + repr(observation_titles)
+                    + '; callback errors: '
+                    + repr(_hqe_callback_errors)
+                )
+            if not any(
+                'Product Strategy Manager' in title
+                for title in observation_titles
+            ):
+                raise RuntimeError(
+                    'Direct Parallel Observation card did not create its '
+                    'manager parent shell. Observed titles: '
+                    + repr(observation_titles)
+                )
+            _hqe_destroy_dialogs(observation_dialogs)
+            print(
+                'HQE_ADVANCED_TOOLS_DIRECT_NAV_PASS'
+                + '|manager='
+                + repr(manager_titles)
+                + '|observation='
+                + repr(observation_titles),
+                flush=True,
+            )
+
             open_advanced_tools_hub()
             root.update_idletasks()
             dialogs = [
@@ -9939,19 +10233,8 @@ def run_gui(args: argparse.Namespace) -> int:
                 raise RuntimeError(
                     'Advanced Tools dialog did not open.'
                 )
-            def _collect(widget):
-                values = []
-                try:
-                    value = widget.cget('text')
-                    if value:
-                        values.append(str(value))
-                except Exception:
-                    pass
-                for child in widget.winfo_children():
-                    values.extend(_collect(child))
-                return values
             rendered = '\n'.join(
-                _collect(dialogs[-1])
+                _hqe_collect_widget_text(dialogs[-1])
             )
             required = ('Operator Dashboard', 'Market Data Quality Center', 'Product Strategy Manager', 'Strategy Pack Center', 'Strategy Builder & Selector', 'Backtest Product Center', 'Session History', 'Paper Validation Intelligence', 'Windows Release Center', 'Final RC Audit & Freeze', 'Operator Acceptance & RC Sign-Off')
             missing = [
@@ -9968,7 +10251,46 @@ def run_gui(args: argparse.Namespace) -> int:
                 'HQE_ADVANCED_TOOLS_SMOKE_PASS',
                 flush=True,
             )
-            root.after(250, root.destroy)
+
+        # SMOKE_FINALLY_DESTROY_V4
+        def _hqe_smoke_advanced_tools():
+            try:
+                _hqe_smoke_advanced_tools_body()
+                print(
+                    "HQE_ADVANCED_TOOLS_SMOKE_CLEAN_EXIT_V4",
+                    flush=True,
+                )
+            except Exception as exc:
+                print(
+                    "HQE_ADVANCED_TOOLS_DIRECT_NAV_FAIL|"
+                    + type(exc).__name__
+                    + "|"
+                    + str(exc),
+                    flush=True,
+                )
+            finally:
+                try:
+                    for child in list(root.winfo_children()):
+                        if isinstance(child, tk.Toplevel):
+                            try:
+                                child.grab_release()
+                            except Exception:
+                                pass
+                            try:
+                                child.destroy()
+                            except Exception:
+                                pass
+                except Exception:
+                    pass
+                try:
+                    root.quit()
+                except Exception:
+                    pass
+                try:
+                    root.destroy()
+                except Exception:
+                    pass
+
         root.after(
             250,
             _hqe_smoke_advanced_tools,
@@ -10049,10 +10371,16 @@ def run_gui(args: argparse.Namespace) -> int:
         return 0
 
     # HQE_AUTOMATIC_DAILY_WORKFLOW_V1
-    root.after(
-        1500,
-        lambda: launch_app_background_worker(workspace),
-    )
+    # Smoke processes must terminate deterministically and must not launch
+    # normal startup workers while GUI navigation is being inspected.
+    if (
+        os.environ.get("HQE_ADVANCED_TOOLS_SMOKE") != "1"
+        and os.environ.get("HQE_FULL_CENTER_SMOKE") != "1"
+    ):
+        root.after(
+            1500,
+            lambda: launch_app_background_worker(workspace),
+        )
     root.mainloop()
     return 0
 

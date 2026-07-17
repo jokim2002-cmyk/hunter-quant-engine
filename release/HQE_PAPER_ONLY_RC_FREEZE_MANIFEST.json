@@ -5,8 +5,8 @@
   "files": [
     {
       "path": "docs/HQE_CURRENT_STATUS.md",
-      "sha256": "4094e792f16fb04fbfefd4b1a8d92e7b0db9292b63db8ba2bbbc085f563d06e1",
-      "size_bytes": 47287
+      "sha256": "c3549eaf9db6373d0b12d899c61b6e6430c5018abb224b896636f8ed5bc50f50",
+      "size_bytes": 48092
     },
     {
       "path": "docs/HQE_FINAL_PAPER_ONLY_RC_SIGNOFF.md",
@@ -30,8 +30,8 @@
     },
     {
       "path": "docs/HQE_MULTI_STRATEGY_PHASE8_FINAL_RELEASE_CLOSURE.md",
-      "sha256": "9db16ea30a7a2498fc99ccdd22b74dc1f5369393f3023e1e53b06a425d93954d",
-      "size_bytes": 1636
+      "sha256": "5bdc578735bf69ec639c3f73298d41284622e9be9f0c265658d4ce7dd3914b73",
+      "size_bytes": 2288
     },
     {
       "path": "docs/HQE_OPERATOR_ACCEPTANCE_RC_SIGNOFF_BUNCH.md",
@@ -50,8 +50,8 @@
     },
     {
       "path": "release/HQE_MULTI_STRATEGY_PHASE8_RELEASE_CLOSURE.json",
-      "sha256": "7ab18849b406cfd76c661b558040f8546929c0df60832d9253668880f529751f",
-      "size_bytes": 2156
+      "sha256": "ab1b575b7063b0069085c937af52cd503c17f4e196df5060b863280c7bd0e64e",
+      "size_bytes": 3142
     },
     {
       "path": "release/HQE_PAPER_ONLY_RC_SIGNOFF.json",
@@ -100,13 +100,13 @@
     },
     {
       "path": "scripts/hqe_multi_strategy_phase8_release_closure.py",
-      "sha256": "2cb6ee6146707770ced82a78d2ab932f98e20374a41db3109abac806d4dff13a",
-      "size_bytes": 12053
+      "sha256": "c7873a0ff2020be992668488c3b17e88c802acad4e2fa512dd71d6299f4b9fb6",
+      "size_bytes": 13413
     },
     {
       "path": "scripts/hqe_multi_strategy_phase8_visual_acceptance.py",
-      "sha256": "5325e1baad4bf73b64a4ea3e7694ff83e2cefdef4bd2b3a928c91e318d96cb43",
-      "size_bytes": 6785
+      "sha256": "135b36c0ca3bb4106e4df860051d2540f594ab15a5b6d2b2592343411e906c95",
+      "size_bytes": 10173
     },
     {
       "path": "scripts/hqe_operator_acceptance_engine.py",
@@ -115,8 +115,8 @@
     },
     {
       "path": "scripts/hqe_product_app_v2.py",
-      "sha256": "30a5e007a2f501f932dc1b4b04d41997228e651228e2d2d836d04900932bb0c4",
-      "size_bytes": 323369
+      "sha256": "3940f161176900688515b8abd424a97da5c70300654725068753991f6e873503",
+      "size_bytes": 334953
     },
     {
       "path": "scripts/hqe_release_candidate_audit.py",
@@ -146,7 +146,7 @@
   ],
   "freeze_commit_message": "Complete Phase 8 final paper-only multi-strategy release closure",
   "freeze_name": "HQE_PAPER_ONLY_PRODUCT_RC_FREEZE",
-  "generated_at_utc": "2026-07-17T14:00:09+00:00",
+  "generated_at_utc": "2026-07-17T16:30:44+00:00",
   "option_selling_enabled": false,
   "product": "Hunter Quant Engine",
   "profitability_claim": false,
@@ -166,6 +166,6 @@
   },
   "schema_version": "1.1",
   "scope": "Paper/data/research product release candidate. Real execution is excluded.",
-  "source_head_before_freeze_commit": "4f0866e06f99a276f0ad02599328206286f80e5f",
+  "source_head_before_freeze_commit": "6d1c22b22cc19448b897f7910f313dc4517d599d",
   "version": "0.9.0-paper-rc5"
 }

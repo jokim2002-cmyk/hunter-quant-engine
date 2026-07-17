@@ -33,3 +33,15 @@ selling remain disabled.
 
 The protected master remains unchanged. A later master merge requires separate
 review and explicit approval outside this Phase 8 closure.
+
+## Visible multi-strategy navigation maintenance
+
+Post-closure operator review found that Product Strategy Manager was reachable
+only through the secondary Advanced Tools Hub. The main Advanced Tools page now
+provides direct visible buttons for Product Strategy Manager and Parallel
+Observation Center. Automated acceptance invokes both real buttons and verifies
+the resulting dialogs, so hidden callback discovery alone cannot pass the gate.
+
+The repair remains paper/data/research only. It does not select or activate a
+strategy, create a cutover gate, control the canonical runtime, write canonical
+state/ledger evidence, or enable real execution.

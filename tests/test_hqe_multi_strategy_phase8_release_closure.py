@@ -27,7 +27,20 @@ def make_repo(tmp_path: Path) -> Path:
 
 def make_visual(tmp_path: Path, status: str = "PASS") -> Path:
     path = tmp_path / "visual.json"
-    path.write_text(json.dumps({"status": status, "actual_gui_render_smoke_executed": True}), encoding="utf-8")
+    path.write_text(
+        json.dumps({
+            "status": status,
+            "actual_gui_render_smoke_executed": True,
+            "visible_navigation": {
+                "status": "PASS",
+                "advanced_tools_page_direct_cards": True,
+                "product_strategy_manager_button_invoked": True,
+                "parallel_observation_button_invoked": True,
+                "actual_button_invocation": True,
+            },
+        }),
+        encoding="utf-8",
+    )
     return path
 
 
@@ -83,6 +96,9 @@ def test_final_payload_has_no_execution_authority(tmp_path):
     assert payload["canonical_activation_performed"] is False
     assert payload["master_merge_performed"] is False
     assert payload["safety_lock"]["no_fake_trades"] is True
+    assert payload["visual_acceptance"]["visible_navigation"][
+        "actual_button_invocation"
+    ] is True
 
 
 def test_atomic_write_leaves_no_temporary_file(tmp_path):

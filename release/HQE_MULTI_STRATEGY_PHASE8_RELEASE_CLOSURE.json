@@ -4,8 +4,8 @@
   "canonical_activation_performed": false,
   "canonical_selection_changed": false,
   "closure_status": "PAPER_ONLY_MULTI_STRATEGY_RELEASE_CLOSED",
-  "engine_version": "HQE_MULTI_STRATEGY_PHASE8_RELEASE_CLOSURE_V1",
-  "generated_at_utc": "2026-07-17T14:00:09+00:00",
+  "engine_version": "HQE_MULTI_STRATEGY_RELEASE_CLOSURE_VISIBLE_NAV_V2",
+  "generated_at_utc": "2026-07-17T16:30:43+00:00",
   "human_cutover_gate_created": false,
   "lifecycle_state_ledger_write_performed": false,
   "master_merge_performed": false,
@@ -43,19 +43,39 @@
     "research_only": true
   },
   "schema_version": "1.0",
-  "source_head_before_closure_commit": "4f0866e06f99a276f0ad02599328206286f80e5f",
+  "source_head_before_closure_commit": "6d1c22b22cc19448b897f7910f313dc4517d599d",
   "validation": {
     "cumulative_multi_strategy": "428/428 PASS",
     "environment_recovery": "9/9 PASS",
-    "focused_release_tests": "30/30 PASS",
+    "focused_release_tests": "73/73 PASS",
     "freeze_verification": "PASS",
     "full_functional_regression": "3586/3586 PASS"
   },
   "visual_acceptance": {
     "actual_gui_render_smoke_executed": true,
     "manual_visual_signoff_claimed": false,
-    "report_path": "D:\\HQE_BACKTEST_RUNS\\HQE_MULTI_STRATEGY_PHASE8_VISUAL_ACCEPTANCE_20260717_192802\\HQE_PHASE8_AUTOMATED_VISUAL_ACCEPTANCE.json",
-    "sha256": "d3d50d0ce2a673cf8c98e08afcfece352169c60500830006a6dd65eadeb7786a",
-    "status": "PASS"
+    "report_path": "D:\\HQE_BACKTEST_RUNS\\HQE_VISIBLE_MULTI_STRATEGY_UI_NAVIGATION_VISUAL_20260717_215840\\HQE_PHASE8_AUTOMATED_VISUAL_ACCEPTANCE.json",
+    "sha256": "9fbddeb1bd50c73f4025ac81a0e438bee9c709f704e89149104e11220dfae31d",
+    "status": "PASS",
+    "visible_navigation": {
+      "accepted_parallel_window_title": "Parallel Isolated Paper Observation",
+      "actual_button_invocation": true,
+      "advanced_tools_page_direct_cards": true,
+      "all_gui_smoke_background_workers_started": false,
+      "all_gui_smoke_startup_timers_scheduled": false,
+      "callback_error_capture_enabled": true,
+      "detector_version": "RECURSIVE_TOPLEVEL_DISCOVERY_V8",
+      "direct_manager_button_command_invoked": true,
+      "direct_parallel_open_mode": "MANAGER_VISIBLE_BUTTON_COMMAND",
+      "nested_observation_window_expected": true,
+      "nested_toplevel_discovery": true,
+      "parallel_observation_button_invoked": true,
+      "product_strategy_manager_button_invoked": true,
+      "smoke_background_worker_started": false,
+      "smoke_clean_exit_marker_found": true,
+      "smoke_warning_modals_suppressed": true,
+      "status": "PASS",
+      "trader_health_loop_scheduled_in_smoke": false
+    }
   }
 }

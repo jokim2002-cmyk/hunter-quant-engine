@@ -423,3 +423,20 @@ stash, clean or merge it without separate explicit approval.
 
 Next core path: release maintenance only. Any master merge is a separate
 reviewed operation outside this Phase 8 checkpoint.
+
+
+<!-- HQE_VISIBLE_MULTI_STRATEGY_NAVIGATION_HANDOVER_V1 -->
+## Visible multi-strategy navigation maintenance handover
+
+The main Advanced Tools page must permanently expose direct visible buttons for
+Product Strategy Manager and Parallel Observation Center. Do not regress these
+features to hidden callbacks or secondary-hub-only access.
+
+The automated `HQE_ADVANCED_TOOLS_SMOKE` flow now renders the main Advanced
+Tools page, finds the actual buttons, invokes both buttons, and verifies the
+Product Strategy Manager and Parallel Observation Center dialogs. It then
+checks the full Advanced Tools Hub.
+
+Release closure evidence records direct visible-navigation PASS and actual
+button invocation. Any future UI change must preserve this gate and all
+paper/data/research-only execution locks.

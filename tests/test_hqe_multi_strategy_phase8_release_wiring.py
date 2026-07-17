@@ -54,9 +54,65 @@ def test_final_qa_covers_phase8_closure_and_visual_assets():
 
 
 def test_visual_acceptance_executes_both_gui_render_smokes():
+    app_text = source("scripts/hqe_product_app_v2.py")
+    assert '"Product Strategy Manager",' in app_text
+    assert '"Parallel Observation Center",' in app_text
+    assert "open_parallel_observation_center_direct" in app_text
+    assert "manager_button.invoke()" in app_text
+    assert "observation_button.invoke()" in app_text
+    assert "_hqe_wait_for_toplevel" in app_text
+    assert "Parallel Isolated Paper Observation" in app_text
+    assert "HQE_VISIBLE_NAV_TITLE_WAIT_RECOVERY_V2" in app_text
+    assert "TITLE_FRAGMENT_WAIT_V3" in app_text
+    assert "HQE_VISIBLE_NAV_CLEAN_EXIT_RECOVERY_V3" in app_text
+    assert "SMOKE_FINALLY_DESTROY_V4" in app_text
+    assert "HQE_DIRECT_PARALLEL_MANAGER_BUTTON_INVOKE_V7" in app_text
+    assert "HQE_RECURSIVE_TOPLEVEL_DISCOVERY_V8" in app_text
+    assert "def _hqe_all_toplevels" in app_text
+    assert "walk(root)" in app_text
+    assert "for child in _hqe_all_toplevels()" in app_text
+    assert "before = set(_hqe_all_toplevels())" in app_text
+    assert "find_visible_button" in app_text
+    assert "observation_button.invoke()" in app_text
+    assert "HQE_ALL_GUI_SMOKE_STARTUP_TIMERS_DISABLED_V7" in app_text
+    assert "HQE_GUI_SMOKE_HEALTH_LOOP_DISABLED_V7" in app_text
+    assert "HQE_GUI_SMOKE_REFRESH_ASYNC_NOOP_V9" in app_text
+    assert "HQE_NORMAL_STARTUP_ORDER_RESTORED_V9" in app_text
+    assert 'show_page("Overview")\n    refresh_status_async()' in app_text
+    assert "root.after(15000, refresh_status_async)" in app_text
+    assert "root.after(1200, lambda: refresh_daily_operations(False))" in app_text
+    assert "root.after(1700, _deferred_fyers_startup)" in app_text
+    assert "root.after(2400, lambda: refresh_broker_data_health(False))" in app_text
+    assert "root.after(3100, lambda: refresh_market_data_center(False))" in app_text
+    assert "HQE_SMOKE_CALLBACK_ERROR_CAPTURE_V6" in app_text
+    assert "root.report_callback_exception" in app_text
+    assert 'os.environ.get("HQE_FULL_CENTER_SMOKE") == "1"' in app_text
+    assert "dialog.after_idle(open_parallel_observation_center)" not in app_text
+    assert "HQE_DIRECT_PARALLEL_SYNCHRONOUS_OPEN_V5" not in app_text
+    assert "HQE_ADVANCED_TOOLS_SMOKE_CLEAN_EXIT_V4" in app_text
+    assert 'os.environ.get("HQE_ADVANCED_TOOLS_SMOKE") != "1"' in app_text
+    assert "messagebox.askyesno = (" in app_text
+    assert "root.quit()" in app_text
+    assert "root.destroy()" in app_text
+    assert "HQE_ADVANCED_TOOLS_DIRECT_NAV_PASS" in app_text
     text = source("scripts/hqe_multi_strategy_phase8_visual_acceptance.py")
     assert "HQE_ADVANCED_TOOLS_SMOKE" in text
+    assert "HQE_ADVANCED_TOOLS_DIRECT_NAV_PASS" in text
     assert "HQE_FULL_CENTER_SMOKE" in text
+    assert '"visible_navigation": {' in text
+    assert '"actual_button_invocation"' in text
+    assert "RECURSIVE_TOPLEVEL_DISCOVERY_V8" in text
+    assert "MANAGER_VISIBLE_BUTTON_COMMAND" in text
+    assert '"nested_toplevel_discovery": True' in text
+    assert '"nested_observation_window_expected": True' in text
+    assert "HQE_DIRECT_PARALLEL_MANAGER_BUTTON_INVOKE_V7" in text
+    assert "HQE_ALL_GUI_SMOKE_STARTUP_TIMERS_DISABLED_V7" in text
+    assert "HQE_GUI_SMOKE_HEALTH_LOOP_DISABLED_V7" in text
+    assert "HQE_SMOKE_CALLBACK_ERROR_CAPTURE_V6" in text
+    assert "HQE_ADVANCED_TOOLS_SMOKE_CLEAN_EXIT_V4" in text
+    assert '"smoke_background_worker_started": False' in text
+    assert '"smoke_clean_exit_marker_found"' in text
+    assert "Parallel Isolated Paper Observation" in text
     assert '"screenshots_captured": False' in text
 
 

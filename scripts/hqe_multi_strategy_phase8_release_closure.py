@@ -8,7 +8,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-VERSION = "HQE_MULTI_STRATEGY_PHASE8_RELEASE_CLOSURE_V1"
+VERSION = "HQE_MULTI_STRATEGY_RELEASE_CLOSURE_VISIBLE_NAV_V2"
 CLOSURE_PATH = "release/HQE_MULTI_STRATEGY_PHASE8_RELEASE_CLOSURE.json"
 MANIFEST_PATH = "release/HQE_WINDOWS_RELEASE_MANIFEST.json"
 FINAL_STATUS = "PAPER_ONLY_MULTI_STRATEGY_RELEASE_CLOSED"
@@ -68,12 +68,24 @@ def git_head(repo_root: Path) -> str:
     return completed.stdout.strip()
 
 
+def visible_navigation_passed(visual: dict[str, Any]) -> bool:
+    navigation = visual.get("visible_navigation", {})
+    return (
+        navigation.get("status") == "PASS"
+        and navigation.get("advanced_tools_page_direct_cards") is True
+        and navigation.get("product_strategy_manager_button_invoked") is True
+        and navigation.get("parallel_observation_button_invoked") is True
+        and navigation.get("actual_button_invocation") is True
+    )
+
+
 def guard_payload() -> dict[str, Any]:
     return {
         "version": VERSION,
         "guard_check_status": "PASS",
         "workflow": "FINAL_PAPER_ONLY_MULTI_STRATEGY_RELEASE_CLOSURE",
         "freeze_refresh_required": True,
+        "direct_visible_navigation_required": True,
         "master_merge_allowed": False,
         "canonical_activation_allowed": False,
         "runtime_control_allowed": False,
@@ -92,8 +104,10 @@ def build_ready_payload(
     source_head: str,
 ) -> dict[str, Any]:
     visual = read_json(visual_report)
-    if visual.get("status") != "PASS":
-        raise ValueError("Validation-ready closure requires visual acceptance PASS")
+    if visual.get("status") != "PASS" or not visible_navigation_passed(visual):
+        raise ValueError(
+            "Validation-ready closure requires direct visible-navigation PASS"
+        )
     return {
         "schema_version": "1.0",
         "engine_version": VERSION,
@@ -109,6 +123,9 @@ def build_ready_payload(
             "sha256": sha256(visual_report),
             "actual_gui_render_smoke_executed": bool(
                 visual.get("actual_gui_render_smoke_executed")
+            ),
+            "visible_navigation": dict(
+                visual.get("visible_navigation", {})
             ),
             "manual_visual_signoff_claimed": False,
         },
@@ -161,6 +178,7 @@ def build_final_payload(
     }
     all_pass = (
         visual.get("status") == "PASS"
+        and visible_navigation_passed(visual)
         and all("PASS" in value for value in validations.values())
     )
     if not all_pass:
@@ -180,6 +198,9 @@ def build_final_payload(
             "sha256": sha256(visual_report),
             "actual_gui_render_smoke_executed": bool(
                 visual.get("actual_gui_render_smoke_executed")
+            ),
+            "visible_navigation": dict(
+                visual.get("visible_navigation", {})
             ),
             "manual_visual_signoff_claimed": False,
         },
@@ -265,6 +286,15 @@ def verify_closure(repo_root: Path, *, require_final: bool = True) -> dict[str, 
             problems.append("visual_acceptance_evidence")
         if visual.get("status") != "PASS":
             problems.append("visual_acceptance.status")
+        navigation = visual.get("visible_navigation", {})
+        if not (
+            navigation.get("status") == "PASS"
+            and navigation.get("advanced_tools_page_direct_cards") is True
+            and navigation.get("product_strategy_manager_button_invoked") is True
+            and navigation.get("parallel_observation_button_invoked") is True
+            and navigation.get("actual_button_invocation") is True
+        ):
+            problems.append("visual_acceptance.visible_navigation")
         if not all("PASS" in str(value) for value in payload.get("validation", {}).values()):
             problems.append("validation")
     return {

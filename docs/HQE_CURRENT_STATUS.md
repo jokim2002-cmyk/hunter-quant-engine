@@ -1223,3 +1223,20 @@ unchanged. Protected master was not merged.
 
 Next core path: no new roadmap phase. Preserve the release closure and perform
 only separately approved maintenance or master-integration review.
+
+
+<!-- HQE_VISIBLE_MULTI_STRATEGY_NAVIGATION_RECOVERY_V1 -->
+## Visible multi-strategy UI navigation recovery
+
+Operator screenshot review found that Product Strategy Manager was reachable
+only through the secondary Advanced Tools Hub, while the main Advanced Tools
+page did not show direct access. The page now has visible cards for Product
+Strategy Manager and Parallel Observation Center.
+
+Automated Windows acceptance now locates and invokes both real buttons and
+verifies that the expected dialogs open. Hidden callback discovery alone can no
+longer satisfy visual acceptance.
+
+The repair remains paper/data/research only. It does not select or activate a
+strategy, create a human cutover gate, control the canonical runtime, write
+canonical lifecycle/state/ledger evidence, or enable real execution.
