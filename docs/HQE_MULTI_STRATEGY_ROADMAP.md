@@ -321,3 +321,26 @@ Canonical activation and runtime cutover are still disabled. The next
 roadmap step is a controlled paper-only cutover rehearsal harness with an
 explicit human gate, followed by the Product UI strategy manager, parallel
 isolated paper observation and Phase 8 release closure.
+
+
+<!-- HQE_MULTI_STRATEGY_PHASE4_COMPLETE_ROADMAP_V1 -->
+## Phase 4 complete — Forward paper integration
+
+Phase 4 implementation is complete:
+
+- explicit paper-only human cutover gate
+- reviewed current-SMC one-active binding
+- atomic legacy Module 131 migration
+- per-strategy state, ledger, report and reason-log namespace
+- canonical runtime routing and restart recovery
+- open-position/runtime-running/unreviewed switch guards
+- initial reconciliation and flat/stopped rollback
+- isolated OPEN-to-CLOSED lifecycle and OPEN-state migration rehearsal
+
+The implementation script does not activate the user's real product
+workspace. Legacy runtime behavior remains the default until an explicit
+valid gate is created.
+
+Next: Phase 5 complete Product UI Strategy Manager bunch, followed by the
+complete import workflow, parallel isolated observation and Phase 8 release
+closure.

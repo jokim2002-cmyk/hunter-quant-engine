@@ -307,3 +307,26 @@ explicit human gate. Canonical activation and runtime cutover remain disabled
 until a separately reviewed roadmap step explicitly permits them.
 
 Read `docs/HQE_MULTI_STRATEGY_PHASE4N_CHECKPOINT.md` before continuing.
+
+
+<!-- HQE_MULTI_STRATEGY_PHASE4_COMPLETE_HANDOVER_V1 -->
+## Phase 4 complete forward-paper integration handover
+
+Phase 4 is implemented as one cohesive bunch. Do not restart the lifecycle,
+migration, reconciliation or cutover-foundation work.
+
+The canonical paper runtime now consumes
+`src/multi_strategy/canonical_runtime.py`. A valid explicit human gate routes
+Module 131 evidence into the reviewed current-SMC strategy namespace.
+Missing gate preserves legacy behavior; invalid gate fails closed.
+
+Existing OPEN state and ledger evidence are migrated atomically without
+deleting the legacy source. Runtime-running, open-position and unreviewed
+strategy switches are blocked. Rollback requires FLAT plus stopped runtime.
+
+Read
+`docs/HQE_MULTI_STRATEGY_PHASE4_COMPLETE_FORWARD_PAPER_INTEGRATION.md`
+before continuing.
+
+Next core path: implement the complete Phase 5 Product UI Strategy Manager
+bunch using these APIs. Do not add a second canonical activation path.

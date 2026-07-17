@@ -6,12 +6,24 @@ import json
 import os
 import signal
 import subprocess
+import sys
 import time
 import traceback
 from datetime import date, datetime, time as clock_time
 from pathlib import Path
 from typing import Any, Iterable
 from zoneinfo import ZoneInfo
+
+REPO_ROOT = Path(__file__).resolve().parents[1]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+from src.multi_strategy.canonical_runtime import (
+    guard_payload as multi_strategy_guard_payload,
+    integration_snapshot as multi_strategy_integration_snapshot,
+    prepare_canonical_runtime_cutover,
+    resolve_canonical_runtime_paths,
+)
 
 IST = ZoneInfo("Asia/Kolkata")
 UTC = ZoneInfo("UTC")
@@ -48,18 +60,24 @@ def now_utc_text() -> str:
 
 
 def runtime_paths(workspace: Path) -> dict[str, Path]:
-    workspace = Path(workspace).resolve()
-    folder = workspace / RUNTIME_FOLDER
-    return {
-        "folder": folder,
-        "runtime": folder / RUNTIME_STATE_FILE,
-        "log": folder / RUNTIME_LOG_FILE,
-        "stop": folder / STOP_FILE,
-        "state": folder / MODULE_STATE_FILE,
-        "ledger": folder / MODULE_LEDGER_FILE,
-        "summary": folder / MODULE_SUMMARY_FILE,
-        "report": folder / MODULE_REPORT_FILE,
-    }
+    resolved = resolve_canonical_runtime_paths(
+        Path(workspace).resolve(),
+        runtime_folder=RUNTIME_FOLDER,
+        runtime_state_file=RUNTIME_STATE_FILE,
+        runtime_log_file=RUNTIME_LOG_FILE,
+        stop_file=STOP_FILE,
+    )
+    return resolved.runtime_mapping()
+
+
+def multi_strategy_runtime_snapshot(workspace: Path) -> dict[str, Any]:
+    return multi_strategy_integration_snapshot(
+        Path(workspace).resolve(),
+        runtime_folder=RUNTIME_FOLDER,
+        runtime_state_file=RUNTIME_STATE_FILE,
+        runtime_log_file=RUNTIME_LOG_FILE,
+        stop_file=STOP_FILE,
+    )
 
 
 def read_json(path: Path) -> dict[str, Any]:
@@ -174,6 +192,7 @@ def status_payload(workspace: Path) -> dict[str, Any]:
         "ledger_path": str(paths["ledger"]),
         "summary_path": str(paths["summary"]),
         "report_path": str(paths["report"]),
+        **multi_strategy_runtime_snapshot(workspace),
         **SAFETY,
     }
 
@@ -454,6 +473,7 @@ def paper_product_snapshot(
         "ledger_path": str(paths["ledger"]),
         "summary_path": str(paths["summary"]),
         "report_path": str(paths["report"]),
+        **multi_strategy_runtime_snapshot(workspace),
         **SAFETY,
     }
 
@@ -506,6 +526,7 @@ def write_runtime(
         "ledger_path": str(paths["ledger"]),
         "summary_path": str(paths["summary"]),
         "report_path": str(paths["report"]),
+        **multi_strategy_runtime_snapshot(workspace),
         **SAFETY,
     }
     write_json(paths["runtime"], payload)
@@ -639,9 +660,6 @@ def recover_prior_day_open_position(
 
 def run(args: argparse.Namespace) -> int:
     workspace = Path(args.workspace).resolve()
-    paths = runtime_paths(workspace)
-    paths["folder"].mkdir(parents=True, exist_ok=True)
-
     current_status = status_payload(workspace)
     old_pid = safe_int(current_status.get("pid"))
     if (
@@ -661,6 +679,16 @@ def run(args: argparse.Namespace) -> int:
         )
         return 0
 
+    cutover = prepare_canonical_runtime_cutover(
+        workspace,
+        runtime_folder=RUNTIME_FOLDER,
+        runtime_state_file=RUNTIME_STATE_FILE,
+        runtime_log_file=RUNTIME_LOG_FILE,
+        stop_file=STOP_FILE,
+        runtime_running=False,
+    )
+    paths = runtime_paths(workspace)
+    paths["folder"].mkdir(parents=True, exist_ok=True)
     paths["stop"].unlink(missing_ok=True)
     collector = start_collector(
         workspace,
@@ -668,6 +696,7 @@ def run(args: argparse.Namespace) -> int:
         args.symbol,
         args.run_data_fetch,
     )
+    collector = {**collector, "multi_strategy_cutover": cutover}
 
     stopping = False
 
@@ -879,6 +908,7 @@ def stop(workspace: Path) -> int:
         "ledger_path": str(paths["ledger"]),
         "summary_path": str(paths["summary"]),
         "report_path": str(paths["report"]),
+        **multi_strategy_runtime_snapshot(workspace),
         **SAFETY,
     }
     write_json(paths["runtime"], final)
@@ -888,6 +918,7 @@ def stop(workspace: Path) -> int:
 
 
 def guard_payload() -> dict[str, Any]:
+    multi_strategy_guard = multi_strategy_guard_payload()
     return {
         "version": RUNTIME_VERSION,
         "guard_check_status": "PASS",
@@ -898,6 +929,7 @@ def guard_payload() -> dict[str, Any]:
         "trade_ledger_visible": True,
         "no_visible_terminal": True,
         "pythonw_runtime_supported": True,
+        "multi_strategy_phase4_integration": multi_strategy_guard,
         **SAFETY,
     }
 

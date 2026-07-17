@@ -1125,3 +1125,23 @@ canonical state/ledger writes, broker execution and real money remain
 disabled.
 
 See `docs/HQE_MULTI_STRATEGY_PHASE4N_CHECKPOINT.md`.
+
+
+<!-- HQE_MULTI_STRATEGY_PHASE4_COMPLETE_CHECKPOINT_V1 -->
+## Multi-Strategy Phase 4 complete implementation
+
+The complete forward-paper integration bunch is implemented on the feature
+branch. The reviewed current SMC strategy can be routed through one
+namespaced canonical Module 131 lifecycle only after an explicit paper-only
+human gate.
+
+Implemented: one-active identity binding, atomic legacy evidence migration,
+per-strategy state/ledger/report paths, OPEN-position preservation, restart
+recovery, switch guards, reconciliation and flat/stopped rollback.
+
+The real product workspace has not been activated by this implementation
+script. Without a valid gate, the released legacy runtime path continues
+unchanged. Real orders, broker execution, auto trading, real money and
+option selling remain disabled.
+
+Next roadmap phase: the complete Product UI Strategy Manager bunch.
